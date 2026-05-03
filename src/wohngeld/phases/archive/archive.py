@@ -13,7 +13,7 @@ class Archive:
             "rejection_reason": state.get("disqualification_reason", ""),
             "calculated_amount_eur": state.get("calculated_benefit", 0.0),
             "human_reviewed": state.get("human_approved", False),
-            "extracted_data": state.get("extracted_data", {}),
+            "input_data": state.get("input_data", {}),
         }
 
         os.makedirs("archives", exist_ok=True)

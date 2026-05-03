@@ -4,6 +4,8 @@ from typing import TypedDict
 class WohngeldState(TypedDict):
     # Phase 1: Eingaben
     input_data: str
+    rent: float
+    income: float
 
     # Phase 2 & 3: Pruefungen
     is_formally_valid: bool

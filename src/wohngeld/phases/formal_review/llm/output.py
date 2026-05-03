@@ -14,3 +14,11 @@ class Result(BaseModel):
     benoetigt_manuelle_pruefung: bool = Field(
         description="True, wenn eine manuelle Pruefung erforderlich ist.",
     )
+    rent: float = Field(
+        default=0.0,
+        description="Monatliche Miete in EUR.",
+    )
+    income: float = Field(
+        default=0.0,
+        description="Nettoeinkommen in EUR.",
+    )

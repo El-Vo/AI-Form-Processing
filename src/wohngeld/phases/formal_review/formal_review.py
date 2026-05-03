@@ -18,6 +18,8 @@ class FormalReview:
         needs_human = answer_data["benoetigt_manuelle_pruefung"]  # type: ignore
         is_valid = answer_data["ist_gueltig"] or needs_human  # type: ignore
         inconsistencies = list(answer_data["befunde"])  # type: ignore
+        rent = answer_data.get("rent", 0.0)  # type: ignore
+        income = answer_data.get("income", 0.0)  # type: ignore
 
         if needs_human:
             inconsistencies.append("Manuelle Pruefung noetig.")
@@ -28,6 +30,8 @@ class FormalReview:
 
         return {
             "current_phase": "phase_2_formal_review",
+            "rent": rent,
+            "income": income,
             "is_formally_valid": is_valid,
             "formal_inconsistencies": inconsistencies,
             "formal_review_needs_human": needs_human,
