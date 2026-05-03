@@ -4,7 +4,8 @@ from typing import cast, Any
 from pathlib import Path
 from langchain_core.runnables import RunnableConfig
 from wohngeld.state import WohngeldState
-from wohngeld.graph import WohngeldGraphBuilder
+import logging
+from wohngeld.graph import WohngeldGraphBuilder, PHASE_TWO, PHASE_THREE, PHASE_FIVE
 from wohngeld.llm.generic_agent import Agent
 
 
@@ -68,6 +69,7 @@ def run_cli():
         {"configurable": {"thread_id": f"cli_thread_{uuid.uuid4().hex[:8]}"}},
     )
 
+    logging.basicConfig(level=logging.INFO)
     print("\nStart Workflow...")
     while True:
         for event in graph.stream(initial_state, config):
@@ -91,15 +93,15 @@ def run_cli():
                 continue
             next_node = state.next[0]
 
-        if next_node == "phase_2_formal_review":  # Pause vor Phase 2
+        if next_node == PHASE_TWO:  # Pause vor Phase 2
             print("\n[Halt] Formale Pruefung startet gleich.")
             input("Druecken Sie Enter, um fortzufahren...")
 
-        if next_node == "phase_3_material_review":  # Pause vor Phase 3
+        if next_node == PHASE_THREE:  # Pause vor Phase 3
             print("\n[Halt] Materielle Pruefung startet gleich.")
             input("Druecken Sie Enter, um fortzufahren...")
 
-        elif next_node == "phase_5_notification":  # Pause nach Phase 4
+        elif next_node == PHASE_FIVE:  # Pause nach Phase 4
             decision_state = state.values.get("final_decision", "")
             if decision_state == "Rejected":
                 print("\n[Halt] Vorgang ist abgelehnt. Review wird dokumentiert.")

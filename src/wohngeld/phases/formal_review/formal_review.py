@@ -1,3 +1,5 @@
+import logging
+
 from wohngeld.state import WohngeldState
 from wohngeld.phases.formal_review.llm.agent import FormalReviewAgent
 
@@ -11,6 +13,7 @@ class FormalReview:
 
         answer = self.reviewer.pruefe_formal(input_data)
         answer_data = answer.model_dump() if hasattr(answer, "model_dump") else answer  # type: ignore
+        logging.info("LLM FormalReview output: %s", answer_data)
 
         needs_human = answer_data["benoetigt_manuelle_pruefung"]  # type: ignore
         is_valid = answer_data["ist_gueltig"] or needs_human  # type: ignore
