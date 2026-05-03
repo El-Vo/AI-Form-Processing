@@ -16,6 +16,14 @@ PHASE_FIVE = "Phase 5 - Notification"
 PHASE_SIX = "Phase 6 - Archive"
 
 
+def check_input_validation(state: WohngeldState) -> str:
+    if state.get("human_feedback_status") == "negative":
+        return PHASE_FIVE
+    if state.get("input_validation_needs_human", False):
+        return PHASE_TWO
+    return PHASE_TWO
+
+
 def check_formal_review(state: WohngeldState) -> str:
     if state.get("human_feedback_status") == "negative":
         return PHASE_FIVE
@@ -44,7 +52,14 @@ class WohngeldGraphBuilder:
         builder.add_node(PHASE_SIX, Archive())
 
         builder.add_edge(START, PHASE_ONE)
-        builder.add_edge(PHASE_ONE, PHASE_TWO)
+        builder.add_conditional_edges(
+            PHASE_ONE,
+            check_input_validation,
+            {
+                PHASE_TWO: PHASE_TWO,
+                PHASE_FIVE: PHASE_FIVE,
+            },
+        )
 
         builder.add_conditional_edges(
             PHASE_TWO,

@@ -24,7 +24,7 @@ def _handle_human_feedback(graph, config: RunnableConfig) -> None:
     phase = values.get("human_feedback_phase", "")
     findings = []
     if phase == "phase_1_input":
-        findings = values.get("input_findings", [])
+        findings = values.get("input_validation_inconsistencies", [])
     elif phase == "phase_2_formal_review":
         findings = values.get("formal_inconsistencies", [])
     elif phase == "phase_3_material_review":

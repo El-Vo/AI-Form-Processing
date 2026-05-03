@@ -5,11 +5,11 @@ class Result(BaseModel):
     """Strukturierter Output fuer die formale Pruefung."""
 
     ist_gueltig: bool = Field(
-        description="True, wenn der Antrag formal gueltig ist.",
+        description="True, wenn Name, Miete und Nettoeinkommen vorhanden sind.",
     )
     befunde: list[str] = Field(
         default_factory=list,
-        description="Liste formaler Befunde oder Fehler.",
+        description="Liste fehlender Pflichtfelder oder Fehler.",
     )
     benoetigt_manuelle_pruefung: bool = Field(
         description="True, wenn eine manuelle Pruefung erforderlich ist.",

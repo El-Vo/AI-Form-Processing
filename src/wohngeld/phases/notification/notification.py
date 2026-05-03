@@ -14,5 +14,5 @@ class Notification:
                 f"Abgelehnt. Grund: {reason if reason else 'Berechneter Betrag 0 EUR.'}"
             )
 
-        print(f"--- MOCKED NOTIFICATION ---\n{msg}\n---------------------------")
+        print(f"---------------------------\n{msg}\n---------------------------")
         return {"current_phase": "phase_5_notification"}

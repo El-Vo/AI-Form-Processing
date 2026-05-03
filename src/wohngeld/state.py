@@ -6,6 +6,8 @@ class WohngeldState(TypedDict):
     input_data: str
     rent: float
     income: float
+    input_validation_inconsistencies: list[str]
+    input_validation_needs_human: bool
 
     # Phase 2 & 3: Pruefungen
     is_formally_valid: bool
