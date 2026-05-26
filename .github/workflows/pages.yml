@@ -1,0 +1,63 @@
+name: Deploy to GitHub Pages
+
+on:
+  # Löst den Workflow jeden Tag um Mitternacht (UTC) aus
+  schedule:
+    - cron: "0 0 * * *"
+  # Erlaubt das manuelle Starten über das Interface "Actions"
+  workflow_dispatch:
+
+# Notwendige Berechtigungen, um mit GitHub Pages interagieren zu dürfen
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: write # Notwendig, um den Workflow selbst abbrechen zu können
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Check for recent commits
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -z "$(git log -1 --since='24 hours ago' --format='%H')" ]; then
+            echo "Keine Änderungen in den letzten 24 Stunden. Workflow wird graceful abgebrochen."
+            gh run cancel ${{ github.run_id }}
+            sleep 60
+          fi
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Generate data/index.json
+        run: node generate_index.js
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Wir laden den kompletten Ordner hoch
+          path: '.'
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
