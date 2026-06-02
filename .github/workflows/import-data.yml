@@ -1,0 +1,66 @@
+name: Import data from n8n-workflow-results
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "import-data"
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Import data into main
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin main n8n-workflow-results
+
+          mapfile -t imported_names < <(
+            git log --format=%s origin/main..origin/n8n-workflow-results -- data \
+              | sed -nE 's/^add report (.+)$/\1/p' \
+              | awk '!seen[$0]++'
+          )
+
+          git checkout -B main origin/main
+          git checkout origin/n8n-workflow-results -- data
+
+          git add data
+
+          if git diff --cached --quiet; then
+            echo "No data changes to import."
+          else
+            commit_subject="Import data from n8n-workflow-results"
+            commit_body="Imported reports:"
+
+            if [ "${#imported_names[@]}" -gt 0 ]; then
+              for name in "${imported_names[@]}"; do
+                commit_body="$commit_body"$'\n''- '"$name"
+              done
+            else
+              commit_body="$commit_body"$'\n''- Found no fitting commit messages.'
+            fi
+
+            git commit -m "$commit_subject" -m "$commit_body"
+            git push origin HEAD:main
+          fi
+
+      - name: Rebase source branch onto main
+        run: |
+          set -euo pipefail
+
+          git checkout -B n8n-workflow-results origin/n8n-workflow-results
+          git rebase main
+          git push --force-with-lease origin HEAD:n8n-workflow-results
