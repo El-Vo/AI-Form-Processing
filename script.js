@@ -2,58 +2,166 @@ document.addEventListener('DOMContentLoaded', async () => {
     const endTableBody = document.querySelector('#end-reports-table tbody');
     const interimTableBody = document.querySelector('#interim-reports-table tbody');
 
-    // Extrahiert das Datum aus Dateinamen wie:
+    let allReports = []; // { rawFilename, decodedFilename, type, dateDisplay, dateValue }
+    const sortState = {
+        end: { column: 'date', direction: 'desc' },
+        interim: { column: 'date', direction: 'desc' }
+    };
+
+    // Erkennt das Datum aus Dateinamen wie:
     // - "WG-20260526-I1FQEY.html"          (aktuelles Format: JJJJMMTT-ZUFALL)
     // - "WG-2026-07-25T20:06:41.755Z.html" (ISO-Timestamp, alt)
     // - "WG-1781617513200.html"            (Unix-Timestamp in ms, alt)
-    function extractDate(filename) {
-        const decodedName = decodeURIComponent(filename);
-
-        let match = decodedName.match(/WG-(\d{4})(\d{2})(\d{2})-/);
+    function parseReportDate(decodedFilename) {
+        let match = decodedFilename.match(/WG-(\d{4})(\d{2})(\d{2})-/);
         if (match) {
-            return `${match[3]}.${match[2]}.${match[1]}`;
+            const [, y, m, d] = match;
+            return { display: `${d}.${m}.${y}`, value: new Date(`${y}-${m}-${d}`).getTime() };
         }
 
-        match = decodedName.match(/WG-(\d{4})-(\d{2})-(\d{2})T/);
+        match = decodedFilename.match(/WG-(\d{4})-(\d{2})-(\d{2})T/);
         if (match) {
-            return `${match[3]}.${match[2]}.${match[1]}`;
+            const [, y, m, d] = match;
+            return { display: `${d}.${m}.${y}`, value: new Date(`${y}-${m}-${d}`).getTime() };
         }
 
-        match = decodedName.match(/WG-(\d{10,13})(?:\.html)?$/);
+        match = decodedFilename.match(/WG-(\d{10,13})(?:\.html)?$/);
         if (match) {
-            const d = new Date(parseInt(match[1], 10));
+            const ts = parseInt(match[1], 10);
+            const d = new Date(ts);
             if (!isNaN(d.getTime())) {
                 const dd = String(d.getDate()).padStart(2, '0');
                 const mm = String(d.getMonth() + 1).padStart(2, '0');
-                return `${dd}.${mm}.${d.getFullYear()}`;
+                return { display: `${dd}.${mm}.${d.getFullYear()}`, value: d.getTime() };
             }
         }
 
-        return "Unbekannt";
+        return { display: 'Unbekannt', value: null };
     }
 
-    // Zwischenberichte heißen immer "zwischenbericht_{caseId}_{runde}.html"
-    function isInterimReport(filename) {
-        return filename.startsWith('zwischenbericht_');
+    function getFilterValues() {
+        const search = document.getElementById('search-input').value.trim().toLowerCase();
+        const fromStr = document.getElementById('date-from').value;
+        const toStr = document.getElementById('date-to').value;
+        return {
+            search,
+            from: fromStr ? new Date(fromStr + 'T00:00:00').getTime() : null,
+            to: toStr ? new Date(toStr + 'T23:59:59').getTime() : null
+        };
     }
 
-    function renderRow(tbody, rawFilename, decodedFilename) {
-        const row = document.createElement('tr');
-
-        const dateCell = document.createElement('td');
-        dateCell.textContent = extractDate(decodedFilename);
-        row.appendChild(dateCell);
-
-        const filenameCell = document.createElement('td');
-        const link = document.createElement('a');
-        link.href = `data/${rawFilename}`;
-        link.textContent = decodedFilename;
-        link.target = '_blank';
-        filenameCell.appendChild(link);
-        row.appendChild(filenameCell);
-
-        tbody.appendChild(row);
+    function matchesFilter(report, filters) {
+        if (filters.search) {
+            const haystack = (report.decodedFilename + ' ' + report.dateDisplay).toLowerCase();
+            if (!haystack.includes(filters.search)) return false;
+        }
+        if (filters.from !== null && (report.dateValue === null || report.dateValue < filters.from)) return false;
+        if (filters.to !== null && (report.dateValue === null || report.dateValue > filters.to)) return false;
+        return true;
     }
+
+    function sortReports(reports, sort) {
+        const sorted = [...reports];
+        sorted.sort((a, b) => {
+            if (sort.column === 'date') {
+                // "Unbekannt"-Daten immer ans Ende, unabhaengig von der Richtung
+                if (a.dateValue === null && b.dateValue === null) return 0;
+                if (a.dateValue === null) return 1;
+                if (b.dateValue === null) return -1;
+                return sort.direction === 'asc' ? a.dateValue - b.dateValue : b.dateValue - a.dateValue;
+            } else {
+                const av = a.decodedFilename.toLowerCase();
+                const bv = b.decodedFilename.toLowerCase();
+                if (av < bv) return sort.direction === 'asc' ? -1 : 1;
+                if (av > bv) return sort.direction === 'asc' ? 1 : -1;
+                return 0;
+            }
+        });
+        return sorted;
+    }
+
+    function updateSortIndicators(tableId, sort) {
+        document.querySelectorAll(`#${tableId} th.sortable`).forEach(th => {
+            const indicator = th.querySelector('.sort-indicator');
+            indicator.textContent = th.dataset.sort === sort.column
+                ? (sort.direction === 'asc' ? '▲' : '▼')
+                : '';
+        });
+    }
+
+    function renderTable(type, tbody) {
+        const filters = getFilterValues();
+        let reports = allReports.filter(r => r.type === type && matchesFilter(r, filters));
+        reports = sortReports(reports, sortState[type]);
+
+        tbody.innerHTML = '';
+
+        if (!reports.length) {
+            const row = document.createElement('tr');
+            const cell = document.createElement('td');
+            cell.colSpan = 2;
+            cell.style.fontStyle = 'italic';
+            cell.style.color = '#6c757d';
+            cell.textContent = 'Keine Berichte gefunden.';
+            row.appendChild(cell);
+            tbody.appendChild(row);
+            return;
+        }
+
+        reports.forEach(r => {
+            const row = document.createElement('tr');
+
+            const dateCell = document.createElement('td');
+            dateCell.textContent = r.dateDisplay;
+            row.appendChild(dateCell);
+
+            const filenameCell = document.createElement('td');
+            const link = document.createElement('a');
+            link.href = `data/${r.rawFilename}`;
+            link.textContent = r.decodedFilename;
+            link.target = '_blank';
+            filenameCell.appendChild(link);
+            row.appendChild(filenameCell);
+
+            tbody.appendChild(row);
+        });
+    }
+
+    function renderAll() {
+        renderTable('end', endTableBody);
+        renderTable('interim', interimTableBody);
+    }
+
+    function setupSortHandlers(tableId, type) {
+        document.querySelectorAll(`#${tableId} th.sortable`).forEach(th => {
+            th.addEventListener('click', () => {
+                const column = th.dataset.sort;
+                const current = sortState[type];
+                if (current.column === column) {
+                    current.direction = current.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    current.column = column;
+                    current.direction = column === 'date' ? 'desc' : 'asc';
+                }
+                updateSortIndicators(tableId, current);
+                renderAll();
+            });
+        });
+        updateSortIndicators(tableId, sortState[type]);
+    }
+
+    setupSortHandlers('end-reports-table', 'end');
+    setupSortHandlers('interim-reports-table', 'interim');
+
+    ['search-input', 'date-from', 'date-to'].forEach(id => {
+        document.getElementById(id).addEventListener('input', renderAll);
+    });
+    document.getElementById('reset-filters').addEventListener('click', () => {
+        document.getElementById('search-input').value = '';
+        document.getElementById('date-from').value = '';
+        document.getElementById('date-to').value = '';
+        renderAll();
+    });
 
     try {
         const response = await fetch('data/index.json');
@@ -64,14 +172,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         const uniqueReports = await response.json();
 
-        uniqueReports.forEach(filename => {
+        allReports = uniqueReports.map(filename => {
             const decodedFilename = decodeURIComponent(filename);
-            if (isInterimReport(decodedFilename)) {
-                renderRow(interimTableBody, filename, decodedFilename);
-            } else {
-                renderRow(endTableBody, filename, decodedFilename);
-            }
+            const { display, value } = parseReportDate(decodedFilename);
+            return {
+                rawFilename: filename,
+                decodedFilename,
+                type: decodedFilename.startsWith('zwischenbericht_') ? 'interim' : 'end',
+                dateDisplay: display,
+                dateValue: value
+            };
         });
+
+        renderAll();
 
     } catch (error) {
         console.error("Fehler beim Laden der Berichte aus dem data/ Verzeichnis:", error);
