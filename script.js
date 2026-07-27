@@ -1,14 +1,32 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const tableBody = document.querySelector('#reports-table tbody');
 
-    // Hilfsfunktion zum Extrahieren des Datums aus Dateinamen wie "...WG-20260526..."
-    function extractDate(filename) {
-        // Dekodiert URL-Zeichenfolgen (%20 zu Leerzeichen), um den Regex sicher anzuwenden
+function extractDate(filename) {
         const decodedName = decodeURIComponent(filename);
-        const match = decodedName.match(/WG-(\d{4})(\d{2})(\d{2})/);
+
+        // Format 1: WG-JJJJMMTT- (8 Ziffern, direkt gefolgt von einem Bindestrich)
+        let match = decodedName.match(/WG-(\d{4})(\d{2})(\d{2})-/);
         if (match) {
             return `${match[3]}.${match[2]}.${match[1]}`;
         }
+
+        // Format 2: WG-JJJJ-MM-TTT... (ISO-Timestamp mit Bindestrichen, "T" folgt)
+        match = decodedName.match(/WG-(\d{4})-(\d{2})-(\d{2})T/);
+        if (match) {
+            return `${match[3]}.${match[2]}.${match[1]}`;
+        }
+
+        // Format 3: WG-<Unix-Timestamp in Millisekunden> (10-13 Ziffern, altes Format)
+        match = decodedName.match(/WG-(\d{10,13})(?:\.html)?$/);
+        if (match) {
+            const d = new Date(parseInt(match[1], 10));
+            if (!isNaN(d.getTime())) {
+                const dd = String(d.getDate()).padStart(2, '0');
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                return `${dd}.${mm}.${d.getFullYear()}`;
+            }
+        }
+
         return "Unbekannt";
     }
 
