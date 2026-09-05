@@ -1,11 +1,13 @@
 document.addEventListener('DOMContentLoaded', async () => {
-    const endTableBody = document.querySelector('#end-reports-table tbody');
-    const interimTableBody = document.querySelector('#interim-reports-table tbody');
+    const finalTableBody = document.querySelector('#final-reports-table tbody');
+    const testTableBody = document.querySelector('#test-reports-table tbody');
+    const tempTableBody = document.querySelector('#temp-reports-table tbody');
 
     let allReports = []; // { rawFilename, decodedFilename, type, dateDisplay, dateValue }
     const sortState = {
-        end: { column: 'date', direction: 'desc' },
-        interim: { column: 'date', direction: 'desc' }
+        final: { column: 'date', direction: 'desc' },
+        test: { column: 'date', direction: 'desc' },
+        temp: { column: 'date', direction: 'desc' }
     };
 
     // Erkennt das Datum aus Dateinamen wie:
@@ -64,7 +66,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const sorted = [...reports];
         sorted.sort((a, b) => {
             if (sort.column === 'date') {
-                // "Unbekannt"-Daten immer ans Ende, unabhaengig von der Richtung
+                // "Unbekannt"-Daten immer ans Ende, unabhängig von der Richtung
                 if (a.dateValue === null && b.dateValue === null) return 0;
                 if (a.dateValue === null) return 1;
                 if (b.dateValue === null) return -1;
@@ -84,7 +86,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelectorAll(`#${tableId} th.sortable`).forEach(th => {
             const indicator = th.querySelector('.sort-indicator');
             indicator.textContent = th.dataset.sort === sort.column
-                ? (sort.direction === 'asc' ? '▲' : '▼')
+                ? (sort.direction === 'asc' ? '\u25b2' : '\u25bc')
                 : '';
         });
     }
@@ -128,8 +130,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function renderAll() {
-        renderTable('end', endTableBody);
-        renderTable('interim', interimTableBody);
+        renderTable('final', finalTableBody);
+        renderTable('test', testTableBody);
+        renderTable('temp', tempTableBody);
     }
 
     function setupSortHandlers(tableId, type) {
@@ -150,8 +153,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         updateSortIndicators(tableId, sortState[type]);
     }
 
-    setupSortHandlers('end-reports-table', 'end');
-    setupSortHandlers('interim-reports-table', 'interim');
+    setupSortHandlers('final-reports-table', 'final');
+    setupSortHandlers('test-reports-table', 'test');
+    setupSortHandlers('temp-reports-table', 'temp');
 
     ['search-input', 'date-from', 'date-to'].forEach(id => {
         document.getElementById(id).addEventListener('input', renderAll);
@@ -175,14 +179,29 @@ document.addEventListener('DOMContentLoaded', async () => {
         allReports = uniqueReports.map(filename => {
             const decodedFilename = decodeURIComponent(filename);
             const { display, value } = parseReportDate(decodedFilename);
+            
+            // Bestimme den Typ des Berichts
+            let type = 'temp'; // Standard: Temporäre Berichte
+            
+            if (decodedFilename.startsWith('final_')) {
+                type = 'final';
+            } else if (decodedFilename.includes('Metabericht') || 
+                       decodedFilename.includes('Testbericht') ||
+                       decodedFilename.startsWith('meta_')) {
+                type = 'test';
+            } else if (decodedFilename.startsWith('TF-')) {
+                // TF-*.html Dateien werden nicht angezeigt (nur über Metabericht verlinkt)
+                return null;
+            }
+            
             return {
                 rawFilename: filename,
                 decodedFilename,
-                type: decodedFilename.startsWith('zwischenbericht_') ? 'interim' : 'end',
+                type,
                 dateDisplay: display,
                 dateValue: value
             };
-        });
+        }).filter(r => r !== null && r.rawFilename !== '.html'); // Filtere null-Einträge (TF-*.html) und leere Dateien heraus
 
         renderAll();
 
@@ -194,6 +213,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         errorCell.colSpan = 2;
         errorCell.style.color = "red";
         errorCell.textContent = "Konnte das Verzeichnis 'data/' nicht auslesen. Stellen Sie sicher, dass das Webserver-Directory-Listing aktiv ist oder eine Index-Datei vorliegt.";
-        endTableBody.appendChild(errorRow);
+        finalTableBody.appendChild(errorRow);
     }
 });
