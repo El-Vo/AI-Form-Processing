@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // - "WG-20260526-I1FQEY.html"          (aktuelles Format: JJJJMMTT-ZUFALL)
     // - "WG-2026-07-25T20:06:41.755Z.html" (ISO-Timestamp, alt)
     // - "WG-1781617513200.html"            (Unix-Timestamp in ms, alt)
+    // - "metabericht_TL-2026-09-05T19-56-06-019Z.html" (TL-Timestamp)
     function parseReportDate(decodedFilename) {
         let match = decodedFilename.match(/WG-(\d{4})(\d{2})(\d{2})-/);
         if (match) {
@@ -36,6 +37,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const mm = String(d.getMonth() + 1).padStart(2, '0');
                 return { display: `${dd}.${mm}.${d.getFullYear()}`, value: d.getTime() };
             }
+        }
+
+        // Handle metabericht_TL-YYYY-MM-DDTHH-MM-SS-SSSZ.html format
+        match = decodedFilename.match(/metabericht_TL-(\d{4})-(\d{2})-(\d{2})T/);
+        if (match) {
+            const [, y, m, d] = match;
+            return { display: `${d}.${m}.${y}`, value: new Date(`${y}-${m}-${d}`).getTime() };
+        }
+
+        // Handle TL-YYYY-MM-DDTHH-MM-SS-SSSZ.html format (for _TL- files)
+        match = decodedFilename.match(/_TL-(\d{4})-(\d{2})-(\d{2})T/);
+        if (match) {
+            const [, y, m, d] = match;
+            return { display: `${d}.${m}.${y}`, value: new Date(`${y}-${m}-${d}`).getTime() };
+        }
+
+        // Handle TL-YYYY-MM-DDTHH-MM-SS-SSSZ.html format (for files starting with TL-)
+        match = decodedFilename.match(/TL-(\d{4})-(\d{2})-(\d{2})T/);
+        if (match) {
+            const [, y, m, d] = match;
+            return { display: `${d}.${m}.${y}`, value: new Date(`${y}-${m}-${d}`).getTime() };
         }
 
         return { display: 'Unbekannt', value: null };
