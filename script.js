@@ -185,7 +185,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (decodedFilename.startsWith('final_')) {
                 type = 'final';
-            } else if (decodedFilename.includes('Metabericht') || 
+            } else if (decodedFilename.startsWith('metabericht_') || 
+                       decodedFilename.includes('Metabericht') ||
                        decodedFilename.includes('Testbericht') ||
                        decodedFilename.startsWith('meta_')) {
                 type = 'test';
