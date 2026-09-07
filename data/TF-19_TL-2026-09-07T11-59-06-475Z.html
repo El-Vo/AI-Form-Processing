@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Testbericht TF-19</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&family=Ubuntu+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cg-blue-900:#003A5C; --cg-blue-700:#005587; --cg-blue-500:#0070AD;
+  --cg-blue-300:#66A6CC; --cg-blue-100:#D9EBF4; --cg-blue-050:#EFF6FA;
+  --cg-vibrant-600:#0E8CB3; --cg-vibrant-500:#12ABDB; --cg-vibrant-100:#D8F0F9;
+  --ink-900:#0B0F14; --ink-600:#2E3A44; --ink-400:#5B6B78;
+  --line:#DDE3E8; --surface:#FFFFFF; --canvas:#F5F7F9;
+  --verdict-approved:#1E8A5F;  --verdict-approved-bg:#E6F4EE;
+  --verdict-rejected:#B3261E;  --verdict-rejected-bg:#FBE9E7;
+  --verdict-unbekannt:#B26A00; --verdict-unbekannt-bg:#FFF4E0;
+  --font-sans:"Ubuntu","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-mono:"Ubuntu Mono","SF Mono","Consolas",monospace;
+  --maxw:1120px; --radius-card:6px; --radius-badge:2px;
+  --shadow-card:0 1px 2px rgba(11,15,20,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--canvas);color:var(--ink-900);font-size:15px;line-height:1.6}
+.mono{font-family:var(--font-mono);font-size:13px;color:var(--ink-600)}
+.b{font-weight:500}
+.mut{color:var(--ink-400)}
+.cg-header{background:var(--cg-blue-900);padding:0 24px}
+.cg-header .inner{max-width:var(--maxw);margin:0 auto;min-height:96px;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:16px 0}
+.cg-header h1{font-size:32px;line-height:40px;font-weight:500;color:var(--surface)}
+.cg-header .sub{font-size:17px;color:var(--cg-blue-100);margin-top:6px}
+.cg-header .meta{font-family:var(--font-mono);font-size:13px;color:var(--cg-blue-300);margin-top:4px}
+.cg-logo-slot{width:140px;height:40px;flex:none}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:8px 24px 48px}
+.cg-section{margin-top:48px}
+.cg-section > h2{font-size:22px;line-height:30px;font-weight:500}
+.cg-section > h2::after{content:"";display:block;width:48px;height:3px;margin-top:10px;background:var(--cg-vibrant-500)}
+.note{font-size:13px;color:var(--ink-400);margin-top:12px;max-width:76ch;line-height:1.6}
+.warnbox{margin-top:24px;background:var(--verdict-rejected-bg);border:1px solid var(--verdict-rejected);border-radius:var(--radius-card);padding:16px 20px;color:var(--verdict-rejected);font-size:14px}
+.vb{display:inline-block;border-radius:var(--radius-badge);padding:2px 8px;font-size:12px;font-weight:500;
+    letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;border:1px solid transparent}
+.vb-approved{color:var(--verdict-approved);background:var(--verdict-approved-bg);border-color:rgba(30,138,95,.2)}
+.vb-rejected{color:var(--verdict-rejected);background:var(--verdict-rejected-bg);border-color:rgba(179,38,30,.2)}
+.vb-unbekannt{color:var(--verdict-unbekannt);background:var(--verdict-unbekannt-bg);border-color:rgba(178,106,0,.2)}
+.vb-skip{color:var(--ink-400);background:var(--canvas);border-color:var(--line)}
+.vb-neutral{color:var(--ink-400);background:var(--canvas);border-color:var(--line);text-transform:none;letter-spacing:0;font-style:italic}
+.kb{display:inline-block;border-radius:var(--radius-badge);padding:2px 8px;font-size:12px;font-weight:500;white-space:nowrap;border:1px solid transparent}
+.kb-ok{color:var(--verdict-approved);background:var(--verdict-approved-bg);border-color:rgba(30,138,95,.2)}
+.kb-mid{color:var(--verdict-unbekannt);background:var(--verdict-unbekannt-bg);border-color:rgba(178,106,0,.2)}
+.kb-bad{color:var(--verdict-rejected);background:var(--verdict-rejected-bg);border-color:rgba(179,38,30,.2)}
+.kb-neut{color:var(--ink-400);background:var(--canvas);border-color:var(--line)}
+.kb-warn{color:var(--verdict-unbekannt);background:var(--verdict-unbekannt-bg);border-color:var(--verdict-unbekannt);font-weight:700}
+.ph{display:inline-block;font-family:var(--font-mono);font-size:13px;font-weight:500;color:var(--ink-900);background:var(--cg-blue-050);border:1px solid var(--cg-blue-100);border-radius:var(--radius-badge);padding:1px 7px}
+.cfgcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-card);padding:32px;margin-top:16px}
+.cfg{display:grid;grid-template-columns:220px 1fr;row-gap:28px;column-gap:32px}
+.cfg dt{font-size:12px;line-height:18px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;color:var(--ink-400);padding-top:3px}
+.cfg dd{line-height:1.7}
+.gtext{max-width:76ch}
+.gtext > :last-child{margin-bottom:0}
+.gtext p{margin:0 0 12px}
+.gtext .bkopf{margin:0 0 12px;color:var(--ink-900);font-weight:500}
+.gtext .bfazit{margin:12px 0;padding:10px 16px;background:var(--cg-blue-050);border-left:3px solid var(--cg-vibrant-500);border-radius:0 var(--radius-card) var(--radius-card) 0;color:var(--ink-900)}
+.gtext ul.bl{list-style:none;margin:0 0 12px;padding:0}
+.gtext ul.bl li{position:relative;padding-left:20px;margin-bottom:5px}
+.gtext ul.bl li::before{content:"";position:absolute;left:5px;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--cg-blue-300)}
+.gtext .bkey{color:var(--ink-900);font-weight:500}
+.gtext strong{color:var(--ink-900);font-weight:500}
+.sollrow{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:center}
+.sollrow .paar{display:flex;align-items:center;gap:10px;font-weight:500;font-size:14px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-card);padding:24px;display:flex;flex-direction:column}
+.kname{font-size:17px;line-height:26px;font-weight:500}
+.ksoll{margin-top:10px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-400)}
+.kbig{font-size:40px;line-height:44px;font-weight:300;color:var(--cg-blue-500);margin:18px 0 4px}
+.ksub{font-size:13px;color:var(--ink-400);line-height:1.5;margin-bottom:16px}
+.dist{border-top:1px solid var(--line);padding-top:14px;margin-top:auto;display:flex;flex-direction:column;gap:10px}
+.drow{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px}
+.drow.sub{padding-left:16px}
+.dn{font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
+.okmark{color:var(--verdict-approved);font-weight:700}
+.badmark{color:var(--verdict-rejected);font-weight:700}
+.tblwrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-card);overflow-x:auto;margin-top:16px}
+table{border-collapse:collapse;width:100%}
+th{color:var(--cg-blue-500);font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;
+   text-align:left;padding:12px 16px;border-bottom:2px solid var(--cg-blue-500);background:var(--surface)}
+td{padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
+tr:nth-child(even) td{background:var(--cg-blue-050)}
+tr:last-child td{border-bottom:none}
+td.num,th.num{text-align:right}
+.stars{color:#E8A600;letter-spacing:.08em;white-space:nowrap}
+.stars .dim{color:var(--line)}
+details{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-card);margin-top:12px}
+summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:14px;padding:16px 24px;font-size:15px}
+summary::-webkit-details-marker{display:none}
+.chev{color:var(--cg-blue-500);transition:transform .15s;font-size:14px}
+details[open] .chev{transform:rotate(90deg)}
+details[open] summary{border-bottom:1px solid var(--line)}
+.mini{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dbody{padding:8px 24px 32px}
+.schritt{margin-top:26px}
+.skopf{display:flex;align-items:center;gap:12px;margin-bottom:12px;border-bottom:2px solid var(--cg-blue-500);padding-bottom:8px}
+.sname{font-size:15px;font-weight:500}
+.btext{background:var(--cg-blue-050);border-radius:var(--radius-card);padding:22px 26px;font-size:14px;line-height:1.7;color:var(--ink-600)}
+.btext > :first-child{margin-top:0}
+.btext > :last-child{margin-bottom:0}
+.btext p{margin:0 0 10px}
+.btext .bkopf{margin:22px 0 8px;color:var(--ink-900);font-weight:500}
+.btext .bfazit{margin:12px 0 16px;padding:10px 16px;background:var(--surface);border-left:3px solid var(--cg-vibrant-500);border-radius:0 var(--radius-card) var(--radius-card) 0;color:var(--ink-900)}
+.btext ul.bl{list-style:none;margin:0 0 12px;padding:0}
+.btext ul.bl li{position:relative;padding-left:20px;margin-bottom:5px}
+.btext ul.bl li::before{content:"";position:absolute;left:5px;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--cg-blue-300)}
+.btext .bkey{color:var(--ink-900);font-weight:500}
+.btext strong{color:var(--ink-900);font-weight:500}
+.errtext{color:var(--verdict-rejected);background:var(--verdict-rejected-bg);border-radius:var(--radius-card);padding:16px 20px;margin-top:20px;word-break:break-all}
+.judges{margin-top:30px;border-top:1px solid var(--line);padding-top:18px}
+.jt{font-size:15px;font-weight:500;margin-bottom:14px}
+.jblock{padding:14px 0;border-bottom:1px solid var(--cg-blue-050)}
+.jblock:last-child{border-bottom:none;padding-bottom:0}
+.jhead{display:flex;align-items:baseline;flex-wrap:wrap;gap:10px;margin-bottom:6px}
+.jkurz{font-family:var(--font-mono);font-size:13px;font-weight:500;color:var(--cg-blue-500)}
+.jname{font-size:14px;font-weight:500}
+.jwert{font-size:14px;font-weight:500;color:var(--ink-900);margin-left:auto}
+.jblock p{font-size:14px;line-height:1.7;color:var(--ink-600)}
+.cg-footer{background:var(--cg-blue-900);color:var(--cg-blue-300);padding:24px;font-size:12px;line-height:1.7;margin-top:48px}
+.cg-footer .inner{max-width:var(--maxw);margin:0 auto}
+.cg-footer .mono{color:var(--cg-blue-300)}
+@media(max-width:840px){
+  .kpis{grid-template-columns:1fr}
+  .cfg{grid-template-columns:1fr;row-gap:6px}
+  .cfg dt{margin-top:18px}
+  .cg-header .inner{flex-direction:column;align-items:flex-start}
+  .cg-logo-slot{display:none}
+}
+@media print{details{page-break-inside:avoid}.cg-header,.cg-footer{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body>
+<div class="cg-header"><div class="inner">
+  <div>
+    <h1>Testbericht TF-19</h1>
+    <div class="sub">Miriam Scholz · MP/4 M4 Einkommensbedingter Nichtanspruch</div>
+    <div class="meta">7.9.2026, 11:59:06 · 10 Läufe · 10 auswertbar · 0 technische Fehler</div>
+  </div>
+  <div class="cg-logo-slot"></div>
+</div></div>
+<div class="wrap">
+
+
+<section class="cg-section">
+<h2>Testfall</h2>
+<p class="note">Stammdaten und Ground Truth dieses Testfalls. Die Soll-Verdicts und der injizierte Fehler stammen aus dem Testfall-Sheet und wurden weder der Pipeline noch dem Judge mitgegeben.</p>
+<div class="cfgcard"><dl class="cfg">
+  <dt>Fall</dt>
+  <dd><span class="mono b">TF-19</span> · Miriam Scholz</dd>
+  <dt>Fehlerart</dt>
+  <dd><span class="mono b">MP / 4</span> · M4 Einkommensbedingter Nichtanspruch</dd>
+  <dt>Läufe</dt>
+  <dd>10 Durchläufe · 10 auswertbar · 0 technische Fehler</dd>
+  <dt>Soll-Verdicts</dt>
+  <dd><div class="sollrow">
+    <span class="paar"><span class="mono">KP</span> <span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span>
+    <span class="paar"><span class="mono">FP</span> <span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span>
+    <span class="paar"><span class="mono">MP</span> <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span>
+  </div></dd>
+  <dt>Ground Truth</dt>
+  <dd><div class="gtext"><p>Es liegt ein materieller Nichtanspruch aufgrund des zu hohen Einkommens vor. Miriam Scholz erzielt ein monatliches Bruttoeinkommen von 5.600,00 EUR; die Verdienstbescheinigung weist für zwölf Monate insgesamt 67.200,00 EUR brutto aus. Die Gehaltsabrechnungen bestätigen ein monatliches Nettoeinkommen von 3.470,00 EUR. Das Einkommen ist im Wohngeldantrag, in der Einkommenserklärung, in der Verdienstbescheinigung, in den Gehaltsabrechnungen und im Kontoauszug konsistent angegeben. Bei einer Haushaltsgröße von 1 und den korrekt dokumentierten Mietdaten führt dieses Einkommen rechnerisch zu keinem Wohngeldanspruch. Erwartet wird daher ein materieller Nichtanspruch aufgrund des Einkommens; es ist keine Nachforderung wegen fehlender oder widersprüchlicher Unterlagen erforderlich. Alle übrigen Angaben (Name Miriam Scholz, Geburtsdatum 12.09.1990, Adresse Rohrbachstraße 36, 60389 Frankfurt am Main, alleinige Hauptwohnung, Haushaltsgröße 1, Wohnfläche 52 qm, Kaltmiete 760,00 EUR, Gesamtmiete 920,00 EUR und Heizkosten 85,00 EUR) sind konsistent. Kein weiterer Fehler injiziert.</p></div></dd>
+</dl></div>
+</section>
+
+<section class="cg-section">
+<h2>Harte Zahlen</h2>
+<p class="note">Anteil korrekter Entscheidungen je Prüfschritt. Läufe, die eine Phase nicht erreicht haben, fließen in deren Prozentzahl nicht ein. Ausnahme Soll „NICHT ERWARTET": dort ist das Nicht-Erreichen selbst das korrekte Verhalten und wird über alle auswertbaren Läufe gemessen.</p>
+<div class="kpis">
+
+  <div class="kpi">
+    <div class="kname">Konsistenzprüfung</div>
+    <div class="ksoll">Soll-Verdict <span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+    <div class="kbig">100 %</div>
+    <div class="ksub">10 von 10 korrekt · Phase erreicht in 10/10 Läufen</div>
+    <div class="dist"><div class="drow"><span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span><span class="dn">10× <span class="okmark">✓</span></span></div><div class="drow"><span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span><span class="dn">0×</span></div></div>
+  </div>
+  <div class="kpi">
+    <div class="kname">Formelle Prüfung</div>
+    <div class="ksoll">Soll-Verdict <span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+    <div class="kbig">100 %</div>
+    <div class="ksub">10 von 10 korrekt · Phase erreicht in 10/10 Läufen</div>
+    <div class="dist"><div class="drow"><span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span><span class="dn">10× <span class="okmark">✓</span></span></div><div class="drow"><span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span><span class="dn">0×</span></div></div>
+  </div>
+  <div class="kpi">
+    <div class="kname">Materielle Prüfung</div>
+    <div class="ksoll">Soll-Verdict <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+    <div class="kbig">100 %</div>
+    <div class="ksub">10 von 10 korrekt · Phase erreicht in 10/10 Läufen</div>
+    <div class="dist"><div class="drow"><span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span><span class="dn">0×</span></div><div class="drow"><span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span><span class="dn">10× <span class="okmark">✓</span></span></div></div>
+  </div>
+</div>
+<div class="cfgcard"><dl class="cfg">
+  <dt>Exact Match</dt>
+  <dd><span class="b">100 %</span> — in 10 von 10 auswertbaren Läufen stimmten <em>alle drei</em> Phasen mit dem Soll überein.</dd>
+  <dt>Wohngeldbetrag</dt>
+  <dd>Soll <span class="b">–</span> · berechnet <span class="b">–</span> — <span class="mut">kein Soll-Betrag hinterlegt, nicht geprüft</span></dd>
+</dl></div>
+</section>
+
+<section class="cg-section">
+<h2>AI as a Judge</h2>
+<p class="note">Drei Prüffragen mit unterschiedlichen Skalen. J1 ist binär und wird als Quote ausgewiesen; 2A Groundedness und 2B logische Gültigkeit laufen auf 1–4 und werden gemittelt. Quote und Skala werden nie zu einem gemeinsamen Wert verrechnet. <b>NV Nachvollziehbarkeit</b> ist keine Judge-Ausgabe, sondern wird je Lauf als <b>Minimum</b> aus 2A und 2B berechnet — nicht als Mittelwert, damit eine gute Logik eine unbelegte Faktenbasis nicht ausgleichen kann. Der Judge sah dieselben Originaldokumente wie die Pipeline, aber nicht die Soll-Verdicts; für 2A und 2B ist die Ground Truth laut Prompt ausdrücklich unerheblich.</p>
+<div class="kpis">
+
+  <div class="kpi">
+    <div class="kname">J1 · Fehlererkennung</div>
+    <div class="kbig">0 %</div>
+    <div class="ksub">Befund in 0 von 5 auswertbaren Läufen korrekt erkannt · binäre Skala 0/1</div>
+    <div class="dist"><div class="drow"><span>Erkannt (1)</span><span class="dn">0×</span></div><div class="drow"><span>Nicht erkannt (0)</span><span class="dn">5× <span class="badmark">✗</span></span></div><div class="drow"><span class="mut">ohne gültige Bewertung</span><span class="dn">5×</span></div></div>
+  </div>
+
+  <div class="kpi">
+    <div class="kname">2A · Groundedness</div>
+    <div class="kbig">1 <span class="ksub" style="font-size:15px">/ 4</span></div>
+    <div class="ksub">Sind die Tatsachenbehauptungen in den Originaldokumenten belegt? · 5 auswertbare Läufe <span class="stars">★<span class="dim">★★★</span></span></div>
+    <div class="dist"><div class="drow"><span>4 – vollständig belegt</span><span class="dn">0×</span></div><div class="drow"><span>3 – entsch.-relevant belegt</span><span class="dn">0×</span></div><div class="drow"><span>2 – ungedeckt</span><span class="dn">0×</span></div><div class="drow"><span>1 – dokumentwidrig</span><span class="dn">5×</span></div><div class="drow"><span class="mut">ohne gültige Bewertung</span><span class="dn">5×</span></div></div>
+  </div>
+
+  <div class="kpi">
+    <div class="kname">2B · Logische Gültigkeit</div>
+    <div class="kbig">1 <span class="ksub" style="font-size:15px">/ 4</span></div>
+    <div class="ksub">Folgt die Schlussfolgerung aus den genannten Tatsachen? · 5 auswertbare Läufe <span class="stars">★<span class="dim">★★★</span></span></div>
+    <div class="dist"><div class="drow"><span>4 – zwingend</span><span class="dn">0×</span></div><div class="drow"><span>3 – tragfähig, verkürzt</span><span class="dn">0×</span></div><div class="drow"><span>2 – lückenhaft</span><span class="dn">0×</span></div><div class="drow"><span>1 – ungültig</span><span class="dn">5×</span></div><div class="drow"><span class="mut">ohne gültige Bewertung</span><span class="dn">5×</span></div></div>
+  </div>
+
+  <div class="kpi">
+    <div class="kname">NV · Nachvollziehbarkeit</div>
+    <div class="kbig">1 <span class="ksub" style="font-size:15px">/ 4</span></div>
+    <div class="ksub">Berechnet als Minimum aus 2A und 2B je Lauf · 5 auswertbare Läufe <span class="stars">★<span class="dim">★★★</span></span></div>
+    <div class="dist"><div class="drow"><span>4 – makellos</span><span class="dn">0×</span></div><div class="drow"><span>3 – akzeptabel</span><span class="dn">0×</span></div><div class="drow"><span>2 – mangelhaft</span><span class="dn">0×</span></div><div class="drow"><span>1 – kritisch</span><span class="dn">5×</span></div><div class="drow"><span class="mut">ohne gültige Bewertung</span><span class="dn">5×</span></div></div>
+  </div>
+
+  <div class="kpi">
+    <div class="kname">Eskalationskopplung</div>
+    <div class="kbig">–</div>
+    <div class="ksub">In 0 von 0 Läufen mit erkanntem Befund wurde auch tatsächlich eskaliert · Phasentreue –</div>
+    <div class="dist"><div class="drow"><span><span class="kb kb-ok">erkannt und eskaliert</span></span><span class="dn">0×</span></div><div class="drow"><span><span class="kb kb-mid">später eskaliert</span></span><span class="dn">0×</span></div><div class="drow"><span><span class="kb kb-bad">erkannt, nicht eskaliert</span></span><span class="dn">0×</span></div><div class="drow"><span><span class="kb kb-neut">nicht erkannt</span></span><span class="dn">5×</span></div></div>
+  </div>
+</div>
+</section>
+
+<section class="cg-section">
+<h2>Erkennung → Eskalation</h2>
+<p class="note">Wo hat die Pipeline den Befund benannt, und wo hat sie deswegen abgebrochen? „Erkannt in" stellt der Judge fest — maßgeblich ist die früheste Phase, die den Befund als Beanstandung behandelt, unabhängig von ihrem Verdict. „Eskaliert in" wird deterministisch aus den Verdicts berechnet (erste Phase mit REJECTED). Der kritische Fall ist <span class="kb kb-bad">erkannt, nicht eskaliert</span>: der Mangel steht in der Begründung, der Antrag läuft trotzdem durch.</p>
+
+<div class="tblwrap"><table>
+ <tr><th>Lauf</th><th>Befund</th><th>Erkannt in</th><th>Eskaliert in</th><th>Kopplung</th></tr>
+ 
+    <tr>
+      <td class="mono b">1</td>
+      <td><span class="kb kb-bad">nicht erkannt</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="kb kb-neut">nicht erkannt</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">2</td>
+      <td><span class="kb kb-bad">nicht erkannt</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="kb kb-neut">nicht erkannt</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">3</td>
+      <td><span class="kb kb-bad">nicht erkannt</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="kb kb-neut">nicht erkannt</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">4</td>
+      <td><span class="kb kb-bad">nicht erkannt</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="kb kb-neut">nicht erkannt</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">5</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="mut">–</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="vb vb-neutral">–</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">6</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="mut">–</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="vb vb-neutral">–</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">7</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="mut">–</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="vb vb-neutral">–</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">8</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="mut">–</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="vb vb-neutral">–</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">9</td>
+      <td><span class="kb kb-bad">nicht erkannt</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="kb kb-neut">nicht erkannt</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">10</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="mut">–</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="vb vb-neutral">–</span></td>
+    </tr>
+</table></div>
+</section>
+
+<section class="cg-section">
+<h2>Übersicht je Lauf</h2>
+<p class="note">Verdicts der drei Prüfschritte (KP → FP → MP), Judge-Bewertungen und Phasenzuordnung je Lauf. J1 binär 0/1; 2A und 2B auf der Skala 1–4. NV ist das Minimum aus 2A und 2B und damit in jeder Zeile nachrechenbar.</p>
+<div class="tblwrap"><table>
+ <tr><th>Lauf</th><th>Soll erfüllt</th><th>KP</th><th>FP</th><th>MP</th><th class="num">J1</th><th class="num">2A</th><th class="num">2B</th><th class="num">NV</th><th>Erkannt in</th><th>Eskaliert in</th></tr>
+ 
+    <tr>
+      <td class="mono b">1</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></td>
+      <td class="num b">0</td>
+      <td class="num">1</td>
+      <td class="num">1</td>
+      <td class="num b">1</td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">2</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></td>
+      <td class="num b">0</td>
+      <td class="num">1</td>
+      <td class="num">1</td>
+      <td class="num b">1</td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">3</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></td>
+      <td class="num b">0</td>
+      <td class="num">1</td>
+      <td class="num">1</td>
+      <td class="num b">1</td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">4</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></td>
+      <td class="num b">0</td>
+      <td class="num">1</td>
+      <td class="num">1</td>
+      <td class="num b">1</td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">5</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></td>
+      <td class="num b">–</td>
+      <td class="num">–</td>
+      <td class="num">–</td>
+      <td class="num b">–</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">6</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></td>
+      <td class="num b">–</td>
+      <td class="num">–</td>
+      <td class="num">–</td>
+      <td class="num b">–</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">7</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></td>
+      <td class="num b">–</td>
+      <td class="num">–</td>
+      <td class="num">–</td>
+      <td class="num b">–</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">8</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></td>
+      <td class="num b">–</td>
+      <td class="num">–</td>
+      <td class="num">–</td>
+      <td class="num b">–</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">9</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></td>
+      <td class="num b">0</td>
+      <td class="num">1</td>
+      <td class="num">1</td>
+      <td class="num b">1</td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">10</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></td>
+      <td class="num b">–</td>
+      <td class="num">–</td>
+      <td class="num">–</td>
+      <td class="num b">–</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+</table></div>
+</section>
+
+<section class="cg-section">
+<h2>Details</h2>
+<p class="note">Begründungen der Prüfschritte und die vier Judge-Begründungen je Lauf. NV trägt keine eigene Begründung, weil der Wert berechnet und nicht bewertet wird.</p>
+
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 1</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-neut">nicht erkannt</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Scholz, Miriam</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> Scholz, Miriam</li><li><span class="bkey">Mietbescheinigung:</span> Scholz, Miriam</li><li><span class="bkey">Mietvertrag:</span> Miriam Scholz</li><li><span class="bkey">Kontoauszug:</span> Miriam Scholz</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 12.09.1990</li><li><span class="bkey">Verdienstbescheinigung:</span> 12.09.1990</li><li><span class="bkey">Gehaltsabrechnungen:</span> 12.09.1990</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Verdienstbescheinigung:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Einkommenserklärung:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 5.600 €/Monat (Brutto)</li><li><span class="bkey">Verdienstbescheinigung:</span> 5.600 €/Monat (Brutto, alle 12 Monate)</li><li><span class="bkey">Gehaltsabrechnungen:</span> 5.600 €/Monat (Brutto, alle 6 Monate)</li><li><span class="bkey">Einkommenserklärung:</span> 5.600 €/Monat (Brutto, alle 6 Monate)</li></ul><p class="bfazit">Kein Widerspruch (Abweichung 5. Haushaltsgröße:</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1 Haushaltsmitglied (Miriam Scholz)</li><li>Keine weiteren Haushaltsmitglieder in den Dokumenten angegeben.</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> Gesamtmiete 920 €/Monat</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete 760 € + Betriebskosten (85 € Heizkosten + 25 € Wasser + 15 € Entwässerung + 20 € Müllabfuhr + 5 € Allgemeinstrom + 10 € weitere Betriebskosten) = 920 €/Monat</li><li><span class="bkey">Mietvertrag:</span> Grundmiete 760 € + Heizkosten 85 € + Frischwasserkosten 25 € + Entwässerungskosten 15 € + Müllabfuhrkosten 20 € + Allgemeinbeleuchtungskosten 5 € + weitere Betriebskosten 10 € = 920 €/Monat</li><li><span class="bkey">Kontoauszug:</span> Mietabbuchungen von 920 €/Monat</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag:</span> IBAN DE58500502010073924618 (Frankfurter Sparkasse)</li><li><span class="bkey">Kontoauszug:</span> IBAN DE58500502010073924618 (Kontoinhaber: Miriam Scholz)</li><li><span class="bkey">Gehaltsabrechnungen:</span> IBAN DE58500502010073924618 (Arbeitnehmerkonto)</li></ul><p class="bfazit">Kein Widerspruch</p><p>Fazit: Es wurden keine Widersprüche zwischen den vorhandenen Angaben festgestellt. Alle geprüften Daten sind konsistent.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> Vorhanden (Datei: Wohngeldantrag_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis:</span> Vorhanden (Dateien: Verdienstbescheinigung_Testfall19_Miriam_Scholz_ausgefuellt.json , Gehaltsabrechnungen_Testfall19_Miriam_Scholz_ausgefuellt.json , Einkommenserklaerung_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li></ul><p class="bkopf">Pflichtangaben</p><p class="bkopf">Zur Person des Antragstellers</p><ul class="bl"><li><span class="bkey">Name:</span> Scholz, Miriam (vorhanden).</li><li><span class="bkey">Geburtsdatum:</span> 12.09.1990 (vorhanden).</li><li><span class="bkey">Anschrift:</span> Rohrbachstraße 36 (vorhanden).</li><li><span class="bkey">Postleitzahl:</span> 60389 (vorhanden).</li><li><span class="bkey">Wohnort:</span> Frankfurt am Main (vorhanden).</li></ul><p class="bkopf">Zum Haushalt</p><ul class="bl"><li><span class="bkey">Haushaltsgröße:</span> 1 Person (implizit, da keine weiteren Haushaltsmitglieder angegeben sind).</li></ul><p class="bkopf">Zur Miete</p><ul class="bl"><li><span class="bkey">Gesamtmiete:</span> 920,00 € (vorhanden, &gt; 0).</li></ul><p class="bkopf">Zum Einkommen</p><ul class="bl"><li><span class="bkey">Einkommensbetrag:</span> 5.600,00 € (Brutto, vorhanden, &gt; 0).</li><li><span class="bkey">Art des Einkommens:</span> Gehalt/Lohn (vorhanden, nicht leer).</li></ul><p>Ergebnis: Alle Pflichtdokumente und Pflichtangaben liegen vollständig und bearbeitbar vor. Der Antrag ist formell vollständig .</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p>Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland und Hauptwohnsitz:</span> Die Wohnung befindet sich in Frankfurt am Main, Deutschland, und wird von Miriam Scholz bewohnt. Dies ist durch die Adressangaben in den Dokumenten (z. B. Mietvertrag, Wohngeldantrag) belegt. Erfüllt.</li><li><span class="bkey">Haushaltsgröße:</span> Es ist nur ein Haushaltsmitglied (Miriam Scholz) angegeben. Die Haushaltsgröße ist damit mindestens eine Person. Erfüllt.</li><li><span class="bkey">Monatliches Einkommen &gt; 0:</span> Miriam Scholz hat ein monatliches Bruttoeinkommen von 5.600 € (Gehalt/Lohn). Erfüllt.</li><li><span class="bkey">Monatliche Miete &gt; 0:</span> Die monatliche Bruttokaltmiete beträgt 760 € (laut Mietvertrag und Mietbescheinigung). Erfüllt.</li><li><span class="bkey">Antragsteller gehört zum Haushalt:</span> Miriam Scholz ist die Antragstellerin und Hauptmieterin der Wohnung. Erfüllt.</li></ul><p>Ausschlussgründe</p><ul class="bl"><li><span class="bkey">Bürgergeld/Leistungen nach SGB II:</span> Es gibt keine Hinweise darauf, dass Miriam Scholz Bürgergeld oder Leistungen nach dem SGB II bezieht. In der Einkommenserklärung und im Wohngeldantrag sind keine solchen Leistungen angegeben. Kein Ausschluss.</li><li><span class="bkey">Grundsicherung/Sozialhilfe:</span> Es gibt keine Hinweise auf Bezug von Grundsicherung oder Sozialhilfe. Kein Ausschluss.</li><li><span class="bkey">BAföG/Berufsausbildungsbeihilfe:</span> Es gibt keine Hinweise auf Bezug von BAföG oder Berufsausbildungsbeihilfe. Kein Ausschluss.</li><li><span class="bkey">Vermögensgrenze überschritten:</span> Miriam Scholz hat angegeben, dass ihr Vermögen nicht oberhalb der maßgeblichen Grenze liegt. Es gibt keine konkreten Angaben zu Vermögenswerten, die eine Überschreitung belegen würden. Kein Ausschluss.</li></ul><p>Tatsachenbasis</p><ul class="bl"><li><span class="bkey">Plausibilität der Miete:</span> Die Miete von 760 € Bruttokaltmiete ist in sich stimmig und wird durch den Mietvertrag, die Mietbescheinigung und den Kontoauszug (regelmäßige Abbuchungen von 920 € inkl. Nebenkosten) bestätigt. Plausibel.</li><li>Datengrundlage für Anspruchsvoraussetzungen und Ausschlussgründe:</li><li><span class="bkey">Fehlende Angaben zu Haushaltsmitgliedern:</span> In den Daten sind keine weiteren Haushaltsmitglieder angegeben. Es ist unklar, ob Miriam Scholz allein lebt oder ob weitere Personen zum Haushalt gehören, die nicht explizit aufgeführt sind. Dies ist relevant, da die Haushaltsgröße und die Einkommensverhältnisse aller Haushaltsmitglieder für die Wohngeldberechnung entscheidend sind.</li><li><span class="bkey">Fehlende Angaben zu Werbungskosten:</span> Obwohl in der Einkommenserklärung Werbungskosten von 1.230 € jährlich angegeben sind, fehlen konkrete Angaben zu den monatlichen Werbungskosten für die einzelnen Haushaltsmitglieder. Dies ist für die Berechnung des wohngeldrechtlichen Einkommens relevant.</li><li><span class="bkey">Fehlende Bestätigung der Mietangaben:</span> Die Mietbescheinigung ist zwar vorhanden, aber es gibt keine explizite Bestätigung, dass die Bruttokaltmiete von 760 € korrekt ist und keine weiteren Kosten (z. B. Heiz- oder Warmwasserkosten) in der Bruttokaltmiete enthalten sind. Dies könnte zu Unklarheiten führen.</li></ul><p>Die Datengrundlage ist nicht ausreichend, um die Anspruchsvoraussetzungen und Ausschlussgründe verlässlich zu beurteilen.</p><p>Fazit</p><p>Die Tatbestandsmerkmale sind erfüllt, und es liegen keine konkreten Ausschlussgründe vor. Allerdings ist die Tatsachenbasis nicht ausreichend, da zentrale Angaben zu Haushaltsmitgliedern, Werbungskosten und der genauen Zusammensetzung der Miete fehlen. Daher ist eine menschliche Prüfung erforderlich, um die fehlenden Daten zu klären.</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-bad">0 · nicht erkannt</span></span></div>
+        <p>Der erwartete Befund ist ein einkommensbedingter Nichtanspruch: Bei 5.600 € Brutto/Monat und Haushaltsgröße 1 führt das Einkommen rechnerisch zu keinem Wohngeldanspruch. Die Pipeline erwähnt zwar das Einkommen von 5.600 € in der MP, stellt aber nie den Zusammenhang her, dass dieses Einkommen einen Wohngeldanspruch ausschließt. Stattdessen lehnt sie mit angeblich unzureichender Datengrundlage ab (fehlende Haushaltsmitglieder-Angaben, Werbungskosten, Mietbestätigung), was fachlich falsch ist. Der zentrale Befund wurde nicht erkannt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        <p>In der MP behauptet die Pipeline mehrere dokumentwidrige Angaben: „es gibt keine explizite Bestätigung, dass die Bruttokaltmiete von 760 € korrekt ist“ – die Mietbescheinigung (Dokument 1) weist jedoch ausdrücklich grundmiete_eur_monatlich: 760.0 aus. Ebenso wird behauptet, es sei „unklar, ob Miriam Scholz allein lebt“ – alle Dokumente (Frage 06 im Wohngeldantrag: keine weiteren Haushaltsmitglieder) belegen klar Haushaltsgröße 1. Diese dokumentwidrigen Angaben sind entscheidungstragend, da sie die REJECTED-Begründung tragen.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        <p>Die MP-Begründung widerspricht sich selbst: Sie stellt fest, „Die Tatbestandsmerkmale sind erfüllt, und es liegen keine konkreten Ausschlussgründe vor“, lehnt dann aber dennoch mit REJECTED ab, angeblich wegen unzureichender Datengrundlage. Aus den eigenen Tatsachen (alle Merkmale erfüllt, kein Ausschlussgrund) folgt logisch APPROVED, nicht REJECTED. Die angeblichen Datenlücken sind zudem durch die Dokumente abgedeckt, was der Selbstwiderspruch verschärft.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="vb vb-neutral">– keine</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Materielle Prüfung">MP</span> <span class="kb kb-neut">nicht erkannt</span></span></div>
+        <p>Da Prüffrage 1 mit 0 bewertet wurde, lautet die Antwort KEINE. Die Pipeline hat den erwarteten Befund (einkommensbedingter Nichtanspruch) in keiner Phase als Beanstandung erkannt.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 2</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-neut">nicht erkannt</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Scholz, Miriam</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> Scholz, Miriam</li><li><span class="bkey">Mietbescheinigung:</span> Scholz, Miriam</li></ul><p class="bfazit">Kein Widerspruch (alle Namen stimmen überein).</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 12.09.1990</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> 12.09.1990</li><li><span class="bkey">Gehaltsabrechnungen:</span> 12.09.1990</li></ul><p class="bfazit">Kein Widerspruch (alle Geburtsdaten stimmen überein).</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch (alle Adressen stimmen überein).</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 5.600,00 € (monatlich, Brutto)</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> 5.600,00 € (monatlich, Brutto)</li><li><span class="bkey">Gehaltsabrechnungen:</span> 5.600,00 € (monatlich, Brutto)</li><li><span class="bkey">Einkommenserklärung:</span> 5.600,00 € (monatlich, Brutto)</li></ul><p class="bfazit">Kein Widerspruch (alle Einkommensangaben stimmen überein, Abweichung = 0 %).</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1 Haushaltsmitglied (Miriam Scholz)</li><li>Keine weiteren Haushaltsmitglieder in den Unterlagen angegeben.</li></ul><p class="bfazit">Kein Widerspruch (Haushaltsgröße = 1, keine abweichenden Angaben).</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> Gesamtmiete = 920,00 €/Monat</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete = 760,00 € + Betriebskosten (Heizkosten 85,00 € + Müllabfuhr 20,00 € + Entwässerung 15,00 € + Allgemeinstrom 5,00 € + weitere Betriebskosten 10,00 €) = 135,00 € → Gesamt = 895,00 €</li><li><span class="bkey">Mietvertrag:</span> Grundmiete = 760,00 € + Heizkosten 85,00 € + Frischwasserkosten 25,00 € + Entwässerungskosten 15,00 € + Müllabfuhrkosten 20,00 € + Allgemeinbeleuchtungskosten 5,00 € + weitere Betriebskosten 10,00 € = 160,00 € → Gesamt = 920,00 €</li><li><span class="bkey">Kontoauszug:</span> Mietabbuchungen von 920,00 €/Monat</li></ul><p class="bfazit">Kein Widerspruch : Die Mietangaben sind rechnerisch vereinbar . Die Mietbescheinigung weicht leicht ab (895,00 € vs. 920,00 €), da nicht alle Betriebskostenpositionen (z. B. Frischwasserkosten) in der Mietbescheinigung erfasst sind. Dies ist kein logischer Widerspruch , sondern eine unterschiedliche Detailtiefe der Dokumente.</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag (IBAN):</span> DE58500502010073924618</li><li><span class="bkey">Kontoauszug (IBAN):</span> DE58500502010073924618</li><li><span class="bkey">Gehaltsabrechnungen (IBAN):</span> DE58500502010073924618</li><li><span class="bkey">Kontoinhaber:</span> Miriam Scholz</li></ul><p class="bfazit">Kein Widerspruch (IBAN und Kontoinhaber stimmen überein).</p><p>Fazit: Es wurden keine Widersprüche zwischen den vorhandenen Angaben festgestellt. Alle geprüften Kriterien (Name, Geburtsdatum, Anschrift, Einkommen, Haushaltsgröße, Miete, Bankverbindung) sind konsistent.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> Vorhanden (Datei: Wohngeldantrag_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis:</span> Vorhanden (Dateien: Verdienstbescheinigung_Testfall19_Miriam_Scholz_ausgefuellt.json , Gehaltsabrechnungen_Testfall19_Miriam_Scholz_ausgefuellt.json , Einkommenserklaerung_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li></ul><p class="bkopf">Pflichtangaben</p><p class="bkopf">Zur Person des Antragstellers</p><ul class="bl"><li><span class="bkey">Name:</span> Scholz, Miriam (vorhanden in Wohngeldantrag und Verdienstbescheinigung ).</li><li><span class="bkey">Geburtsdatum:</span> 12.09.1990 (vorhanden in Wohngeldantrag und Verdienstbescheinigung ).</li><li><span class="bkey">Anschrift:</span> Rohrbachstraße 36, 60389 Frankfurt am Main (vorhanden in Wohngeldantrag , Verdienstbescheinigung und Mietvertrag ).</li><li><span class="bkey">Postleitzahl:</span> 60389 (vorhanden in Wohngeldantrag ).</li><li><span class="bkey">Wohnort:</span> Frankfurt am Main (vorhanden in Wohngeldantrag ).</li></ul><p class="bkopf">Zum Haushalt</p><ul class="bl"><li><span class="bkey">Haushaltsgröße:</span> 1 Person (keine weiteren Haushaltsmitglieder in frage_06_haushaltsmitglieder angegeben, daher gilt der Haushalt als 1 Person).</li></ul><p class="bkopf">Zur Miete</p><ul class="bl"><li><span class="bkey">Mietbetrag:</span> 920,00 € (Gesamtmiete, vorhanden in frage_23_gesamtmiete des Wohngeldantrags ).</li></ul><p class="bkopf">Zum Einkommen</p><ul class="bl"><li><span class="bkey">Einkommensbetrag:</span> 5.600,00 € (Brutto, vorhanden in frage_12_einnahmen des Wohngeldantrags und in der Verdienstbescheinigung ).</li><li><span class="bkey">Art des Einkommens:</span> Gehalt/Lohn (vorhanden in frage_12_einnahmen des Wohngeldantrags ).</li></ul><p>Ergebnis: Alle Pflichtdokumente und Pflichtangaben liegen vollständig und bearbeitbar vor. Der Antrag ist formell vollständig .</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p class="bkopf">Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland und Hauptwohnsitz:</span> Die Wohnung befindet sich in Frankfurt am Main (Postleitzahl 60389), was als Hauptwohnsitz in Deutschland gilt. Erfüllt.</li><li><span class="bkey">Haushaltsgröße:</span> Es ist nur die Antragstellerin Miriam Scholz als Haushaltsmitglied angegeben. Die Haushaltsgröße beträgt somit 1 Person. Erfüllt.</li><li><span class="bkey">Monatliches Einkommen:</span> Miriam Scholz hat ein monatliches Bruttoeinkommen von 5.600 € (Gehalt/Lohn). Erfüllt.</li><li><span class="bkey">Monatliche Miete:</span> Die monatliche Gesamtmiete beträgt 920 € (inkl. Heiz- und Warmwasserkosten). Erfüllt.</li><li><span class="bkey">Antragsteller gehört zum Haushalt:</span> Miriam Scholz ist die Hauptmieterin der Wohnung. Erfüllt.</li></ul><p class="bkopf">Ausschlussgründe</p><ul class="bl"><li><span class="bkey">Bürgergeld/Leistungen nach SGB II:</span> Es gibt keine Hinweise darauf, dass Miriam Scholz Bürgergeld oder Leistungen nach dem SGB II bezieht. Kein Ausschluss.</li><li><span class="bkey">Grundsicherung/Sozialhilfe:</span> Es gibt keine Hinweise darauf, dass Miriam Scholz Grundsicherung oder Sozialhilfe bezieht. Kein Ausschluss.</li><li><span class="bkey">BAföG/Berufsausbildungsbeihilfe:</span> Es gibt keine Hinweise darauf, dass Miriam Scholz BAföG oder Berufsausbildungsbeihilfe bezieht. Kein Ausschluss.</li><li><span class="bkey">Vermögensgrenze:</span> Miriam Scholz hat angegeben, dass ihr Vermögen nicht über der maßgeblichen Grenze liegt. Kein Ausschluss.</li></ul><p class="bkopf">Tatsachenbasis</p><ul class="bl"><li><span class="bkey">Plausibilität der Miete:</span> Die Miete von 920 € (inkl. Nebenkosten) für eine 52 m²-Wohnung in Frankfurt am Main ist rechnerisch plausibel und in sich stimmig. Plausibel.</li><li><span class="bkey">Datengrundlage:</span> Die Daten sind ausreichend, um die Anspruchsvoraussetzungen und Ausschlussgründe zu prüfen. Allerdings fehlen Angaben zu den Haushaltsmitgliedern (Frage 06 im Wohngeldantrag). Hier sind keine weiteren Personen angegeben, obwohl die Haushaltsgröße als 1 Person angenommen wird. Da die Haushaltsgröße jedoch durch die Antragstellerin selbst erfüllt ist, liegt hier kein Ausschlussgrund vor. Kein Klärungsfall.</li></ul><p class="bkopf">Zusammenfassung</p><p>Die Tatbestandsmerkmale sind erfüllt, und es liegen keine konkreten Ausschlussgründe vor. Allerdings ist die Haushaltsgröße nicht vollständig belegt , da die Angaben zu weiteren Haushaltsmitgliedern fehlen. Dies führt zu einer unvollständigen Tatsachenbasis , die eine menschliche Prüfung erfordert. Daher wird der Antrag als Klärungsfall eingestuft.</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-bad">0 · nicht erkannt</span></span></div>
+        <p>Der erwartete Befund ist ein einkommensbedingter Nichtanspruch (M4): Bei 5.600 € Bruttoeinkommen, Haushaltsgröße 1 und den angegebenen Mietdaten besteht rechnerisch kein Wohngeldanspruch. Die MP lehnt zwar ab (REJECTED), jedoch nicht wegen des zu hohen Einkommens, sondern mit der Begründung, die Haushaltsgröße sei „nicht vollständig belegt“ und es liege ein „Klärungsfall“ vor. Das ist sachlich falsch, da der Single-Haushalt korrekt dokumentiert ist. Der zentrale Befund – Einkommen zu hoch für Wohngeld – wurde von der Pipeline in keiner Phase erkannt oder als Ablehnungsgrund genannt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        <p>In der KP behauptet die Pipeline, die Mietbescheinigung summiere sich auf 895,00 € (760 + 135), und begründet die Abweichung zum Antrag (920 €) mit „unterschiedlicher Detailtiefe“. Tatsächlich enthält die Mietbescheinigung auch Wassergeld ohne Warmwasser (25,00 €), was die Pipeline in ihrer Addition weglässt. Korrekt gerechnet ergibt die Mietbescheinigung ebenfalls 920,00 €. Die Zahl 895,00 € ist damit dokumentwidrig.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        <p>Die MP-Begründung widerspricht sich selbst: Zuerst heißt es zur Haushaltsgröße, es liege „kein Klärungsfall“ vor, da die Antragstellerin selbst den Haushalt erfüllt. Am Ende wird genau dieser Punkt als Begründung für die Einstufung als Klärungsfall und die Ablehnung angeführt. Zudem wird das Einkommen von 5.600 € zwar als Tatsache genannt, aber nie in ein Verhältnis zu einer Anspruchsgrenze gesetzt, sodass die Ablehnung sachlich nicht getragen wird.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="vb vb-neutral">– keine</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Materielle Prüfung">MP</span> <span class="kb kb-neut">nicht erkannt</span></span></div>
+        <p>Prüffrage 1 wurde mit 0 bewertet, da die Pipeline den wahren Befund (einkommensbedingter Nichtanspruch) nicht erkannt hat. Gemäß den Vorgaben lautet die Antwort daher KEINE.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 3</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-neut">nicht erkannt</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Scholz, Miriam</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> Scholz, Miriam</li><li><span class="bkey">Mietbescheinigung:</span> Scholz, Miriam</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 12.09.1990</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> 12.09.1990</li><li><span class="bkey">Gehaltsabrechnungen:</span> 12.09.1990</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 5.600 €/Monat (Brutto)</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> 5.600 €/Monat (Brutto)</li><li><span class="bkey">Gehaltsabrechnungen:</span> 5.600 €/Monat (Brutto)</li><li><span class="bkey">Einkommenserklärung:</span> 5.600 €/Monat (Brutto)</li></ul><p class="bfazit">Kein Widerspruch (Abweichung ≤ 20%).</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1 Haushaltsmitglied (Miriam Scholz)</li><li>Keine weiteren Haushaltsmitglieder in den Dokumenten angegeben.</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> Gesamtmiete 920 €/Monat</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete 760 € + Betriebskosten (85 € Heizkosten + 25 € Wasser + 15 € Entwässerung + 20 € Müllabfuhr + 5 € Allgemeinstrom + 10 € weitere Betriebskosten) = 920 €/Monat</li><li><span class="bkey">Mietvertrag:</span> Grundmiete 760 € + 85 € Heizkosten + 25 € Wasser + 15 € Entwässerung + 20 € Müllabfuhr + 5 € Allgemeinstrom + 10 € weitere Betriebskosten = 920 €/Monat</li><li><span class="bkey">Kontoauszug:</span> Mietabbuchungen von 920 €/Monat</li></ul><p class="bfazit">Kein Widerspruch (alle Angaben rechnerisch und logisch vereinbar).</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag:</span> IBAN DE58500502010073924618 (Kontoinhaber: Miriam Scholz)</li><li><span class="bkey">Kontoauszug:</span> IBAN DE58500502010073924618 (Kontoinhaber: Miriam Scholz)</li><li><span class="bkey">Gehaltsabrechnungen:</span> IBAN DE58500502010073924618 (Kontoinhaber: Miriam Scholz)</li></ul><p class="bfazit">Kein Widerspruch.</p><p>Fazit: Es wurden keine Widersprüche zwischen den vorhandenen Angaben festgestellt. Die Konsistenzprüfung ergibt daher APPROVED .</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag :</span> Vorhanden (Datei: Wohngeldantrag_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis :</span> Vorhanden (Dateien: Verdienstbescheinigung_Testfall19_Miriam_Scholz_ausgefuellt.json , Gehaltsabrechnungen_Testfall19_Miriam_Scholz_ausgefuellt.json , Einkommenserklaerung_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li></ul><p class="bkopf">Pflichtangaben</p><p class="bkopf">Zur Person des Antragstellers</p><ul class="bl"><li><span class="bkey">Name :</span> „Scholz, Miriam“ (vorhanden in Wohngeldantrag und Verdienstbescheinigung ).</li><li><span class="bkey">Geburtsdatum :</span> „12.09.1990“ (vorhanden in Wohngeldantrag und Verdienstbescheinigung ).</li><li><span class="bkey">Anschrift :</span> „Rohrbachstraße 36“ (vorhanden in Wohngeldantrag und Mietbescheinigung ).</li><li><span class="bkey">Postleitzahl :</span> „60389“ (vorhanden in Wohngeldantrag und Mietbescheinigung ).</li><li><span class="bkey">Wohnort :</span> „Frankfurt am Main“ (vorhanden in Wohngeldantrag und Mietbescheinigung ).</li></ul><p class="bkopf">Zum Haushalt</p><ul class="bl"><li><span class="bkey">Haushaltsgröße :</span> Mindestens 1 Person (Antragstellerin selbst). Da keine weiteren Haushaltsmitglieder angegeben sind, gilt der Haushalt als 1-Personen-Haushalt (erfüllt § 5 WoGG).</li></ul><p class="bkopf">Zur Miete</p><ul class="bl"><li><span class="bkey">Mietbetrag :</span> Gesamtmiete von 920,00 €/Monat (vorhanden in Wohngeldantrag , frage_23_gesamtmiete ).</li></ul><p class="bkopf">Zum Einkommen</p><ul class="bl"><li><span class="bkey">Einkommensbetrag :</span> Bruttogehalt von 5.600,00 €/Monat (vorhanden in Wohngeldantrag , frage_12_einnahmen , und Verdienstbescheinigung ).</li><li><span class="bkey">Art des Einkommens :</span> „Gehalt/Lohn“ (vorhanden in Wohngeldantrag , frage_12_einnahmen ).</li></ul><p class="bkopf">Ergebnis</p><p>Alle Pflichtdokumente und Pflichtangaben liegen vollständig und bearbeitbar vor. Es gibt keine fehlenden oder unvollständigen Pflichtangaben. Der Antrag ist daher formell vollständig und kann weiterbearbeitet werden.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p class="bkopf">Tatbestandsmerkmale</p><ul class="bl"><li>Die Wohnung liegt in Deutschland (Frankfurt am Main) und ist der Hauptwohnsitz der Antragstellerin (§ 3 WoGG). Erfüllt.</li><li>Die Haushaltsgröße umfasst mindestens eine Person (Miriam Scholz). Erfüllt.</li><li>Es ist ein monatliches Einkommen von mehr als null angegeben (5.600 € brutto). Erfüllt.</li><li>Es ist eine monatliche Miete von mehr als null angegeben (760 € Bruttokaltmiete). Erfüllt.</li><li>Die Antragstellerin gehört zum Haushalt der Wohnung, für die Wohngeld beantragt wird. Erfüllt.</li></ul><p class="bkopf">Ausschlussgründe</p><ul class="bl"><li>Kein Bezug von Bürgergeld, Grundsicherung, Sozialhilfe oder BAföG (§ 7 Abs. 1 WoGG, § 20 Abs. 2 WoGG). Kein Ausschlussgrund.</li><li>Keine Überschreitung der Vermögensgrenze (§ 21 Nr. 3 WoGG). Kein Ausschlussgrund.</li></ul><p class="bkopf">Tatsachenbasis</p><ul class="bl"><li>Die zugrunde gelegte Miete ist rechnerisch plausibel (760 € Bruttokaltmiete + 160 € Betriebskosten = 920 € Gesamtmiete, was mit den Kontoauszügen übereinstimmt). Plausibel.</li><li><span class="bkey">Problem:</span> Die Haushaltsgröße ist nicht vollständig klar. Die Antragstellerin lebt allein, aber die Angaben zu weiteren Haushaltsmitgliedern in frage_06_haushaltsmitglieder sind leer. Es ist unklar, ob weitere Haushaltsmitglieder existieren oder nicht. Dies ist relevant für die Berechnung des Wohngelds und die Prüfung der Anspruchsvoraussetzungen.</li><li>Die Einkommensangaben sind vollständig, aber es fehlen Angaben zu Werbungskosten und pauschalen Abzügen für die Haushaltsmitglieder (falls vorhanden).</li><li>Die Mietbescheinigung und der Mietvertrag bestätigen die Mietangaben, aber die genauen Betriebskosten sind nicht vollständig aufgeschlüsselt.</li></ul><p class="bkopf">Fazit</p><p>Die Tatsachenbasis reicht nicht aus, um die Anspruchsvoraussetzungen und Ausschlussgründe verlässlich zu beurteilen, da die Haushaltsgröße nicht eindeutig geklärt ist. Dies erfordert eine menschliche Prüfung.</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-bad">0 · nicht erkannt</span></span></div>
+        <p>Der erwartete Befund ist ein einkommensbedingter Nichtanspruch (M4): Bei einem Bruttoeinkommen von 5.600 EUR/Monat und einem Haushalt von 1 Person besteht rechnerisch kein Wohngeldanspruch. Die Pipeline erwähnt das Einkommen lediglich als erfülltes Tatbestandsmerkmal (Einkommen &gt; 0) und lehnt den Antrag stattdessen wegen angeblich unklarer Haushaltsgröße und unzureichender Tatsachenbasis ab. Den zentralen Befund – das Einkommen führt zum Nichtanspruch – hat die Pipeline nicht erkannt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        <p>In der MP behauptet die Pipeline: „die genauen Betriebskosten sind nicht vollständig aufgeschlüsselt“ – dies ist dokumentwidrig, da sowohl die Mietbescheinigung als auch der Mietvertrag alle Betriebskosten vollständig ausweisen (85 € Heizung, 25 € Wasser, 15 € Entwässerung, 20 € Müll, 5 € Strom, 10 € sonstige). Zudem wird behauptet, es fehlten Angaben zu Werbungskosten, obwohl die Einkommenserklärung 1.230 € jährliche Werbungskosten ausweist.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        <p>Die MP-Begründung widerspricht sich selbst: Einerseits stellt die Pipeline fest „Die Antragstellerin lebt allein“, andererseits folgert sie „Es ist unklar, ob weitere Haushaltsmitglieder existieren oder nicht.“ Wenn die Antragstellerin allein lebt, ist die Haushaltsgröße eindeutig 1 und der Schluss auf Unklarheit ist selbstwidersprüchlich. Die genannten Tatsachen stützen somit nicht das REJECTED-Ergebnis.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="vb vb-neutral">– keine</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Materielle Prüfung">MP</span> <span class="kb kb-neut">nicht erkannt</span></span></div>
+        <p>Prüffrage 1 wurde mit 0 bewertet, da die Pipeline den einkommensbedingten Nichtanspruch nicht erkannt hat. Die Antwort lautet daher KEINE.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 4</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-neut">nicht erkannt</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Scholz, Miriam</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> Scholz, Miriam</li><li><span class="bkey">Mietbescheinigung:</span> Scholz, Miriam</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 12.09.1990</li><li><span class="bkey">Verdienstbescheinigung:</span> 12.09.1990</li><li><span class="bkey">Gehaltsabrechnungen:</span> 12.09.1990</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Verdienstbescheinigung:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 5.600 €/Monat (Brutto)</li><li><span class="bkey">Verdienstbescheinigung:</span> 5.600 €/Monat (Brutto, alle 12 Monate)</li><li><span class="bkey">Gehaltsabrechnungen:</span> 5.600 €/Monat (Brutto, alle 6 Monate)</li><li><span class="bkey">Einkommenserklärung:</span> 5.600 €/Monat (Brutto, alle 6 Monate)</li></ul><p class="bfazit">Kein Widerspruch (Abweichung ≤ 20 %).</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1 Haushaltsmitglied (Miriam Scholz)</li><li>Keine weiteren Haushaltsmitglieder in den Unterlagen genannt.</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> Gesamtmiete 920 €/Monat</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete 760 € + Betriebskosten (85 € Heizung + 25 € Wasser + 15 € Entwässerung + 20 € Müllabfuhr + 5 € Allgemeinstrom + 10 € Sonstige) = 920 €</li><li><span class="bkey">Mietvertrag:</span> Grundmiete 760 € + Betriebskosten (85 € Heizung + 25 € Wasser + 15 € Entwässerung + 20 € Müllabfuhr + 5 € Allgemeinstrom + 10 € Sonstige) = 920 €</li><li><span class="bkey">Kontoauszug:</span> Mietabbuchungen von 920 €/Monat</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag:</span> IBAN DE58500502010073924618 (Miriam Scholz, Frankfurter Sparkasse)</li><li><span class="bkey">Kontoauszug:</span> IBAN DE58500502010073924618 (Kontoinhaber: Miriam Scholz)</li><li><span class="bkey">Gehaltsabrechnungen:</span> IBAN DE58500502010073924618 (Miriam Scholz)</li></ul><p class="bfazit">Kein Widerspruch.</p><p>Fazit: Es wurden keine Widersprüche zwischen den vorhandenen Angaben festgestellt. Alle geprüften Daten sind konsistent.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> Vorhanden (Datei: Wohngeldantrag_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis:</span> Vorhanden (Dateien: Verdienstbescheinigung_Testfall19_Miriam_Scholz_ausgefuellt.json , Gehaltsabrechnungen_Testfall19_Miriam_Scholz_ausgefuellt.json , Einkommenserklaerung_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li></ul><p class="bkopf">Pflichtangaben</p><p class="bkopf">Zur Person des Antragstellers</p><ul class="bl"><li><span class="bkey">Name:</span> Scholz, Miriam (vorhanden).</li><li><span class="bkey">Geburtsdatum:</span> 12.09.1990 (vorhanden).</li><li><span class="bkey">Anschrift:</span> Rohrbachstraße 36 (vorhanden).</li><li><span class="bkey">Postleitzahl:</span> 60389 (vorhanden).</li><li><span class="bkey">Wohnort:</span> Frankfurt am Main (vorhanden).</li></ul><p class="bkopf">Zum Haushalt</p><ul class="bl"><li><span class="bkey">Haushaltsgröße:</span> 1 Person (implizit, da keine weiteren Haushaltsmitglieder angegeben sind).</li></ul><p class="bkopf">Zur Miete</p><ul class="bl"><li><span class="bkey">Gesamtmiete:</span> 920,00 € (vorhanden, &gt; 0).</li></ul><p class="bkopf">Zum Einkommen</p><ul class="bl"><li><span class="bkey">Einkommensbetrag:</span> 5.600,00 € (Brutto, vorhanden, &gt; 0).</li><li><span class="bkey">Art des Einkommens:</span> Gehalt/Lohn (vorhanden, nicht leer).</li></ul><p>Ergebnis: Alle Pflichtdokumente und Pflichtangaben liegen vollständig und bearbeitbar vor. Der Antrag ist formell vollständig .</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p class="bkopf">Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland und Hauptwohnsitz:</span> Die Wohnung befindet sich in Frankfurt am Main (Postleitzahl 60389), was als Hauptwohnsitz in Deutschland gilt. Erfüllt.</li><li><span class="bkey">Haushaltsgröße:</span> Es ist nur die Antragstellerin Miriam Scholz als Haushaltsmitglied angegeben. Die Haushaltsgröße beträgt somit 1 Person. Erfüllt.</li><li><span class="bkey">Monatliches Einkommen:</span> Miriam Scholz hat ein monatliches Bruttoeinkommen von 5.600 € (Gehalt/Lohn). Erfüllt.</li><li><span class="bkey">Monatliche Miete:</span> Die monatliche Gesamtmiete beträgt 920 € (inkl. Heizkosten und weiterer Nebenkosten). Erfüllt.</li><li><span class="bkey">Antragsteller gehört zum Haushalt:</span> Miriam Scholz ist die Antragstellerin und Hauptmieterin der Wohnung. Erfüllt.</li></ul><p class="bkopf">Ausschlussgründe</p><ul class="bl"><li><span class="bkey">Bürgergeld/Leistungen nach SGB II:</span> Es gibt keine Hinweise darauf, dass Miriam Scholz Bürgergeld oder Leistungen nach dem SGB II bezieht. Kein Ausschluss.</li><li><span class="bkey">Grundsicherung/Sozialhilfe:</span> Es gibt keine Hinweise darauf, dass Miriam Scholz Grundsicherung oder Sozialhilfe bezieht. Kein Ausschluss.</li><li><span class="bkey">BAföG/Berufsausbildungsbeihilfe:</span> Es gibt keine Hinweise darauf, dass Miriam Scholz BAföG oder Berufsausbildungsbeihilfe bezieht. Kein Ausschluss.</li><li><span class="bkey">Vermögensgrenze:</span> Miriam Scholz hat angegeben, dass ihr Vermögen nicht über der maßgeblichen Grenze liegt. Kein Ausschluss.</li></ul><p class="bkopf">Tatsachenbasis</p><ul class="bl"><li><span class="bkey">Plausibilität der Miete:</span> Die Miete von 920 € (inkl. Nebenkosten) ist in sich stimmig und wird durch den Mietvertrag, die Mietbescheinigung und den Kontoauszug bestätigt. Plausibel.</li><li>Datengrundlage:</li><li>Die Haushaltsgröße ist nicht vollständig klar. Es ist unklar, ob Miriam Scholz allein im Haushalt lebt oder ob weitere Haushaltsmitglieder vorhanden sind, die nicht explizit angegeben wurden. Die Felder für Haushaltsmitglieder 1-4 sind leer, aber es gibt keine klare Bestätigung, dass sie allein lebt.</li><li>Es fehlen Angaben zu den Werbungskosten für die Haushaltsmitglieder. Obwohl Miriam Scholz Werbungskosten von 1.230 € pro Jahr angibt, ist unklar, ob diese für alle Haushaltsmitglieder gelten oder nur für sie selbst.</li><li>Es fehlen Angaben zu den Steuer- und Sozialversicherungsbeiträgen für die Haushaltsmitglieder. Obwohl Miriam Scholz angibt, Steuern und Sozialversicherungsbeiträge zu zahlen, ist unklar, ob dies für alle Haushaltsmitglieder gilt.</li><li>Es fehlen Angaben zu den Einkommensverhältnissen der Haushaltsmitglieder. Die Felder für Haushaltsmitglieder 1-4 sind leer, obwohl die Haushaltsgröße nicht eindeutig geklärt ist.</li></ul><p>Die Datengrundlage ist nicht ausreichend, um die Anspruchsvoraussetzungen und Ausschlussgründe verlässlich zu beurteilen.</p><p class="bkopf">Fazit</p><p>Die Tatbestandsmerkmale sind grundsätzlich erfüllt, und es liegen keine konkreten Ausschlussgründe vor. Allerdings ist die Tatsachenbasis unvollständig, insbesondere in Bezug auf die Haushaltsgröße und die Einkommensverhältnisse der Haushaltsmitglieder. Daher ist eine menschliche Klärung erforderlich.</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-bad">0 · nicht erkannt</span></span></div>
+        <p>Der erwartete Befund ist ein materieller Nichtanspruch aufgrund zu hohen Einkommens (5.600 EUR Brutto/Monat). Die Pipeline hat diesen Befund nicht erkannt. In der MP wird das Einkommen zwar als Fakt genannt, aber nicht als Grund für einen Nichtanspruch ausgewertet. Stattdessen lehnt die MP aus einem falschen Grund ab: Sie behauptet, die Haushaltsgröße sei unklar und Angaben zu Haushaltsmitgliedern fehlten, obwohl die Dokumente eindeutig einen Einpersonenhaushalt ausweisen. Der Kern des Problems – einkommensbedingter Nichtanspruch – wurde verfehlt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        <p>In der MP behauptet die Pipeline: &#039;Die Haushaltsgröße ist nicht vollständig klar&#039; und &#039;es gibt keine klare Bestätigung, dass sie allein lebt&#039;. Dies widerspricht den Dokumenten: Frage 07 des Antrags sagt &#039;weitere_personen_wohnen_in_der_wohnung: false&#039;, alle Haushaltsmitglieder-Felder (1–4) sind leer, und die KP selbst stellte &#039;Haushaltsgröße: 1&#039; fest. Die Behauptung, Haushaltsmitgliederdaten fehlten, ist ebenfalls dokumentwidrig, da keine weiteren Haushaltsmitglieder existieren.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        <p>Die MP-Begründung widerspricht sich selbst: Unter &#039;Tatbestandsmerkmale&#039; heißt es &#039;Haushaltsgröße: 1 Person. Erfüllt&#039;, unter &#039;Tatsachenbasis&#039; dann &#039;Die Haushaltsgröße ist nicht vollständig klar&#039;. Zuerst wird der Haushalt als geklärt bewertet, dann als unklar, um das REJECTED zu begründen. Diese interne Widersprüchlichkeit macht die Schlussfolgerung ungültig.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="vb vb-neutral">– keine</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Materielle Prüfung">MP</span> <span class="kb kb-neut">nicht erkannt</span></span></div>
+        <p>Da Prüffrage 1 mit 0 bewertet wurde (der erwartete Befund wurde nicht erkannt), entfällt die Phasenfeststellung.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 5</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Konsistenzprüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">Geprüfte Kriterien</p><p>1. Name: Der Name „Scholz, Miriam“ stimmt in allen Dokumenten (Wohngeldantrag, Mietbescheinigung, Verdienstbescheinigung, Einkommenserkennung, Kontoauszug) überein. → Kein Widerspruch.</p><p>2. Geburtsdatum: Das Geburtsdatum „12.09.1990“ ist in allen relevanten Dokumenten (Wohngeldantrag, Verdienstbescheinigung, Gehaltsabrechnungen) identisch. → Kein Widerspruch.</p><p>3. Anschrift: Die Adresse „Rohrbachstraße 36, 60389 Frankfurt am Main“ ist in allen Dokumenten (Wohngeldantrag, Mietbescheinigung, Verdienstbescheinigung, Mietvertrag, Einkommenserkennung) konsistent. → Kein Widerspruch.</p><p>4. Einkommen: Das im Antrag angegebene Einkommen (5.600 € brutto/monatlich) stimmt mit den Angaben in der Verdienstbescheinigung, den Gehaltsabrechnungen und der Einkommenserkennung überein. → Kein Widerspruch.</p><p>5. Haushaltsgröße: Im Wohngeldantrag ist nur Miriam Scholz als Haushaltsmitglied angegeben. Es gibt keine weiteren Haushaltsmitglieder, und die Angaben sind konsistent. → Kein Widerspruch.</p><p>6. Miete: Die Gesamtmiete von 920 €/Monat im Antrag stimmt mit den Mietangaben im Kontoauszug (Mietabbuchungen von 920 €) und der Mietbescheinigung (Grundmiete 760 € + Betriebskosten 160 € = 920 €) überein. → Kein Widerspruch.</p><p>7. Bankverbindung: Die IBAN „DE58500502010073924618“ im Wohngeldantrag gehört laut Kontoauszug zu Miriam Scholz. → Kein Widerspruch.</p><p>Ergebnis: Es wurden keine Widersprüche zwischen den vorhandenen Angaben festgestellt. Alle geprüften Kriterien sind konsistent.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> Vorhanden (Datei: Wohngeldantrag_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis:</span> Vorhanden (Dateien: Verdienstbescheinigung_Testfall19_Miriam_Scholz_ausgefuellt.json , Gehaltsabrechnungen_Testfall19_Miriam_Scholz_ausgefuellt.json , Einkommenserklaerung_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li></ul><p class="bkopf">Pflichtangaben</p><p class="bkopf">Zur Person des Antragstellers</p><ul class="bl"><li><span class="bkey">Name:</span> Scholz, Miriam (vorhanden).</li><li><span class="bkey">Geburtsdatum:</span> 12.09.1990 (vorhanden).</li><li><span class="bkey">Anschrift:</span> Rohrbachstraße 36 (vorhanden).</li><li><span class="bkey">Postleitzahl:</span> 60389 (vorhanden).</li><li><span class="bkey">Wohnort:</span> Frankfurt am Main (vorhanden).</li></ul><p class="bkopf">Zum Haushalt</p><ul class="bl"><li><span class="bkey">Haushaltsgröße:</span> 1 Person (implizit, da keine weiteren Haushaltsmitglieder angegeben sind).</li></ul><p class="bkopf">Zur Miete</p><ul class="bl"><li><span class="bkey">Gesamtmiete:</span> 920,00 € (vorhanden, &gt; 0).</li></ul><p class="bkopf">Zum Einkommen</p><ul class="bl"><li><span class="bkey">Einkommensbetrag:</span> 5.600,00 € (Brutto, vorhanden, &gt; 0).</li><li><span class="bkey">Art des Einkommens:</span> Gehalt/Lohn (vorhanden, nicht leer).</li></ul><p>Ergebnis: Alle Pflichtdokumente und Pflichtangaben liegen vollständig und bearbeitbar vor. Der Antrag ist formell vollständig .</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p class="bkopf">Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland und Hauptwohnsitz:</span> Die Wohnung befindet sich in Frankfurt am Main, Deutschland, und wird von Miriam Scholz bewohnt (Mietvertrag und Mietbescheinigung). Dies ist erfüllt.</li><li><span class="bkey">Haushaltsgröße:</span> Es ist nur ein Haushaltsmitglied (Miriam Scholz) angegeben. Dies ist erfüllt.</li><li><span class="bkey">Monatliches Einkommen:</span> Miriam Scholz hat ein monatliches Bruttoeinkommen von 5.600 € (Verdienstbescheinigung und Gehaltsabrechnungen). Dies ist erfüllt.</li><li><span class="bkey">Monatliche Miete:</span> Die monatliche Gesamtmiete beträgt 920 € (Mietvertrag und Mietbescheinigung). Dies ist erfüllt.</li><li><span class="bkey">Antragsteller gehört zum Haushalt:</span> Miriam Scholz ist die Antragstellerin und Hauptmieterin der Wohnung. Dies ist erfüllt.</li></ul><p class="bkopf">Ausschlussgründe</p><ul class="bl"><li><span class="bkey">Bürgergeld/Leistungen nach SGB II:</span> Es gibt keine Hinweise darauf, dass Miriam Scholz Bürgergeld oder Leistungen nach dem SGB II bezieht (Frage 10 des Wohngeldantrags: transferleistung_erhalten_beantragt_sanktioniert_weggefallen_oder_kuerzlich_abgelehnt: false ).</li><li><span class="bkey">Grundsicherung/Sozialhilfe:</span> Es gibt keine Hinweise darauf, dass Miriam Scholz Grundsicherung oder Sozialhilfe bezieht (Frage 10 des Wohngeldantrags: keine Angaben zu solchen Leistungen).</li><li><span class="bkey">BAföG/Berufsausbildungsbeihilfe:</span> Es gibt keine Hinweise darauf, dass Miriam Scholz BAföG oder Berufsausbildungsbeihilfe bezieht (Frage 10 des Wohngeldantrags: keine Angaben zu solchen Leistungen).</li><li><span class="bkey">Vermögensgrenze:</span> Miriam Scholz hat angegeben, dass ihr Vermögen nicht über der maßgeblichen Grenze liegt (Frage 20 des Wohngeldantrags: vermoegen_oberhalb_der_massgeblichen_grenze: false ).</li></ul><p class="bkopf">Tatsachenbasis</p><ul class="bl"><li><span class="bkey">Plausibilität der Miete:</span> Die Miete von 920 € ist in sich stimmig und wird durch den Mietvertrag, die Mietbescheinigung und die Kontoauszüge bestätigt. Die Bruttokaltmiete beträgt 760 € (Mietvertrag: monatliche_miete_eur: 760.0 ), während die Gesamtmiete inklusive Nebenkosten 920 € beträgt. Dies ist plausibel.</li><li><span class="bkey">Datengrundlage:</span> Die Daten sind ausreichend, um die Anspruchsvoraussetzungen und Ausschlussgründe zu beurteilen. Allerdings fehlen Angaben zu den Haushaltsmitgliedern . In Frage 06 des Wohngeldantrags sind keine Haushaltsmitglieder angegeben, obwohl die Haushaltsgröße mindestens eine Person betragen muss. Hier ist unklar, ob Miriam Scholz allein im Haushalt lebt oder ob weitere Haushaltsmitglieder nicht erfasst wurden. Dies ist ein Klärungsfall , da die Haushaltszusammensetzung nicht eindeutig belegt ist.</li></ul><p class="bkopf">Fazit</p><p>Die Tatsachenbasis reicht nicht aus, um die Haushaltszusammensetzung eindeutig zu beurteilen. Daher liegt ein Klärungsfall vor, der eine menschliche Prüfung erfordert.</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div><p class="mut">Keine Judge-Bewertung vorhanden.</p></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 6</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Scholz, Miriam</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> Scholz, Miriam</li><li><span class="bkey">Mietbescheinigung:</span> Scholz, Miriam</li><li><span class="bkey">Mietvertrag:</span> Miriam Scholz</li><li><span class="bkey">Kontoauszug:</span> Miriam Scholz</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 12.09.1990</li><li><span class="bkey">Verdienstbescheinigung:</span> 12.09.1990</li><li><span class="bkey">Gehaltsabrechnungen:</span> 12.09.1990</li><li><span class="bkey">Einkommenserklärung:</span> Keine Angabe, aber Name und Anschrift stimmen überein.</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Verdienstbescheinigung:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Einkommenserklärung:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 5.600 € (monatlich, Brutto)</li><li><span class="bkey">Verdienstbescheinigung:</span> 5.600 € (monatlich, Brutto)</li><li><span class="bkey">Gehaltsabrechnungen:</span> 5.600 € (monatlich, Brutto)</li><li><span class="bkey">Einkommenserklärung:</span> 5.600 € (monatlich, Brutto)</li></ul><p class="bfazit">Kein Widerspruch (keine Abweichung von mehr als 20 %)</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1 Haushaltsmitglied (Miriam Scholz)</li><li>Keine weiteren Haushaltsmitglieder in den Dokumenten angegeben.</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> Gesamtmiete: 920 €/Monat</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete: 760 € + Betriebskosten (Heizkosten 85 € + Müllabfuhr 20 € + Entwässerung 15 € + Allgemeinstrom 5 € + weitere Betriebskosten 10 €) = 760 € + 135 € = 895 €</li><li><span class="bkey">Mietvertrag:</span> Grundmiete: 760 € + Heizkosten 85 € + Frischwasserkosten 25 € + Entwässerungskosten 15 € + Müllabfuhrkosten 20 € + Allgemeinbeleuchtungskosten 5 € + weitere Betriebskosten 10 € = 760 € + 160 € = 920 €</li><li><span class="bkey">Kontoauszug:</span> Mietzahlungen von 920 €/Monat</li></ul><p class="bfazit">Kein Widerspruch (die Mietangaben sind rechnerisch und logisch vereinbar)</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag:</span> IBAN: DE58500502010073924618, Kontoinhaber: Miriam Scholz</li><li><span class="bkey">Kontoauszug:</span> IBAN: DE58500502010073924618, Kontoinhaber: Miriam Scholz</li><li><span class="bkey">Gehaltsabrechnungen:</span> IBAN: DE58500502010073924618</li></ul><p class="bfazit">Kein Widerspruch</p><p>Fazit: Es wurden keine Widersprüche zwischen den vorhandenen Angaben festgestellt. Alle geprüften Daten sind konsistent.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> Vorhanden (Datei: Wohngeldantrag_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis:</span> Vorhanden (Dateien: Verdienstbescheinigung_Testfall19_Miriam_Scholz_ausgefuellt.json , Gehaltsabrechnungen_Testfall19_Miriam_Scholz_ausgefuellt.json , Einkommenserklaerung_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li></ul><p class="bkopf">Pflichtangaben</p><p class="bkopf">Zur Person des Antragstellers</p><ul class="bl"><li><span class="bkey">Name:</span> Scholz, Miriam (vorhanden).</li><li><span class="bkey">Geburtsdatum:</span> 12.09.1990 (vorhanden).</li><li><span class="bkey">Anschrift:</span> Rohrbachstraße 36 (vorhanden).</li><li><span class="bkey">Postleitzahl:</span> 60389 (vorhanden).</li><li><span class="bkey">Wohnort:</span> Frankfurt am Main (vorhanden).</li></ul><p class="bkopf">Zum Haushalt</p><ul class="bl"><li><span class="bkey">Haushaltsgröße:</span> 1 Person (implizit, da keine weiteren Haushaltsmitglieder angegeben sind).</li></ul><p class="bkopf">Zur Miete</p><ul class="bl"><li><span class="bkey">Gesamtmiete:</span> 920,00 € (vorhanden und &gt; 0).</li></ul><p class="bkopf">Zum Einkommen</p><ul class="bl"><li><span class="bkey">Einkommensbetrag:</span> 5.600,00 € (Brutto, vorhanden und &gt; 0).</li><li><span class="bkey">Art des Einkommens:</span> Gehalt/Lohn (vorhanden und nicht leer).</li></ul><p>Fazit: Alle Pflichtdokumente und Pflichtangaben sind vollständig und bearbeitbar. Der Antrag kann formell weiterbearbeitet werden.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p class="bkopf">Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland und Hauptwohnsitz:</span> Die Wohnung befindet sich in Frankfurt am Main, Deutschland, und wird von Miriam Scholz bewohnt ( wohnung_wird_bewohnt: true , Adresse in den Dokumenten bestätigt). Erfüllt.</li><li><span class="bkey">Haushaltsgröße:</span> Es ist nur ein Haushaltsmitglied (Miriam Scholz) angegeben. Die Haushaltsgröße beträgt mindestens eine Person. Erfüllt.</li><li><span class="bkey">Monatliches Einkommen &gt; 0:</span> Miriam Scholz hat ein monatliches Bruttoeinkommen von 5.600 € ( brutto_eur: 5600.0 ). Erfüllt.</li><li><span class="bkey">Monatliche Miete &gt; 0:</span> Die monatliche Bruttokaltmiete beträgt 760 € ( grundmiete_eur_monatlich: 760.0 ), die Gesamtmiete 920 € ( gesamtmiete_eur_pro_monat: 920.0 ). Erfüllt.</li><li><span class="bkey">Antragsteller gehört zum Haushalt:</span> Miriam Scholz ist die Antragstellerin und Hauptmieterin der Wohnung. Erfüllt.</li></ul><p class="bkopf">Ausschlussgründe</p><ul class="bl"><li><span class="bkey">Bürgergeld/Leistungen nach SGB II:</span> Es gibt keine Hinweise darauf, dass Miriam Scholz Bürgergeld oder Leistungen nach dem SGB II bezieht ( transferleistung_erhalten_beantragt_sanktioniert_weggefallen_oder_kuerzlich_abgelehnt: false ). Kein Ausschluss.</li><li><span class="bkey">Grundsicherung/Sozialhilfe:</span> Es gibt keine Hinweise auf Bezug von Grundsicherung oder Sozialhilfe ( sozialhilfe.betrag_eur: 0.0 ). Kein Ausschluss.</li><li><span class="bkey">BAföG/Berufsausbildungsbeihilfe:</span> Es gibt keine Hinweise auf Bezug von BAföG oder Berufsausbildungsbeihilfe ( bafoeg.betrag_eur: 0.0 ). Kein Ausschluss.</li><li><span class="bkey">Vermögensgrenze überschritten:</span> Es gibt keine Hinweise darauf, dass die Vermögensgrenze überschritten ist ( vermoegen_oberhalb_der_massgeblichen_grenze: false ). Kein Ausschluss.</li></ul><p class="bkopf">Tatsachenbasis</p><ul class="bl"><li><span class="bkey">Plausibilität der Miete:</span> Die Mietangaben sind in sich stimmig: Die Bruttokaltmiete beträgt 760 €, die Gesamtmiete 920 €, wobei die Nebenkosten (Heizung, Warmwasser, Müllabfuhr, Entwässerung, Allgemeinstrom, weitere Betriebskosten) plausibel aufgeschlüsselt sind. Plausibel.</li><li><span class="bkey">Ausreichende Datengrundlage:</span> Nicht erfüllt. Es fehlen entscheidende Angaben zu den Haushaltsmitgliedern (z. B. ob weitere Personen im Haushalt leben, die nicht explizit genannt sind). Obwohl Miriam Scholz als alleinige Antragstellerin auftritt, ist unklar, ob der Haushalt tatsächlich nur aus ihr besteht. Die Felder für Haushaltsmitglieder 1–4 sind leer, aber es gibt keine explizite Bestätigung, dass keine weiteren Haushaltsmitglieder vorhanden sind. Zudem fehlen Angaben zu Werbungskosten und pauschalen Abzügen für die Einkommensberechnung, die für die materielle Prüfung relevant sind. Ohne diese Informationen kann nicht sicher beurteilt werden, ob alle Tatbestandsmerkmale erfüllt sind oder Ausschlussgründe vorliegen.</li></ul><p>Fazit: Die Tatsachenbasis ist nicht ausreichend, um eine abschließende Bewertung vorzunehmen. Es handelt sich um einen Klärungsfall , da fehlende Daten eine sichere Bewertung verhindern.</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div><p class="mut">Keine Judge-Bewertung vorhanden.</p></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 7</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Scholz, Miriam</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> Scholz, Miriam</li><li><span class="bkey">Mietbescheinigung:</span> Scholz, Miriam</li><li><span class="bkey">Mietvertrag:</span> Miriam Scholz</li><li><span class="bkey">Kontoauszug:</span> Miriam Scholz</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 12.09.1990</li><li><span class="bkey">Verdienstbescheinigung:</span> 12.09.1990</li><li><span class="bkey">Gehaltsabrechnungen:</span> 12.09.1990</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Verdienstbescheinigung:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Kontoauszug:</span> Keine Angabe zur Anschrift, aber Kontoinhaber stimmt überein.</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 5.600 € (monatlich, Brutto)</li><li><span class="bkey">Verdienstbescheinigung:</span> 5.600 € (monatlich, Brutto)</li><li><span class="bkey">Gehaltsabrechnungen:</span> 5.600 € (monatlich, Brutto)</li><li><span class="bkey">Einkommenserklärung:</span> 5.600 € (monatlich, Brutto)</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1 Haushaltsmitglied (Miriam Scholz)</li><li>Keine weiteren Haushaltsmitglieder in den Dokumenten angegeben.</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> Gesamtmiete: 920 €/Monat</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete: 760 € + Betriebskosten (Heizkosten: 85 €, Müllabfuhr: 20 €, Entwässerung: 15 €, Allgemeinstrom: 5 €, weitere Betriebskosten: 10 €) = 760 € + 135 € = 895 €</li><li><span class="bkey">Mietvertrag:</span> Grundmiete: 760 € + Heizkosten: 85 € + Frischwasserkosten: 25 € + Entwässerungskosten: 15 € + Müllabfuhrkosten: 20 € + Allgemeinbeleuchtungskosten: 5 € + weitere Betriebskosten: 10 € = 760 € + 160 € = 920 €</li><li><span class="bkey">Kontoauszug:</span> Mietzahlungen von 920 €/Monat</li></ul><p class="bfazit">Kein Widerspruch</p><p>Hinweis: Die Mietbescheinigung weicht in der Summe der Betriebskosten leicht ab (895 € vs. 920 € im Mietvertrag und Antrag). Allerdings sind die Angaben im Mietvertrag und Antrag konsistent (920 €). Die Mietbescheinigung enthält keine vollständige Summe der Betriebskosten, sondern nur Teilbeträge. Daher liegt kein Widerspruch vor, da die Mietbescheinigung keine abschließende Gesamtmiete angibt.</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag:</span> IBAN: DE58500502010073924618, Kontoinhaber: Miriam Scholz</li><li><span class="bkey">Kontoauszug:</span> IBAN: DE58500502010073924618, Kontoinhaber: Miriam Scholz</li><li><span class="bkey">Gehaltsabrechnungen:</span> IBAN: DE58500502010073924618</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">Fazit</p><p>Es wurden keine Widersprüche zwischen den vorhandenen Angaben festgestellt. Alle geprüften Daten (Name, Geburtsdatum, Anschrift, Einkommen, Haushaltsgröße, Miete, Bankverbindung) sind konsistent. Fehlende optionale Angaben (z. B. Haushaltsmitglieder) sind nicht Gegenstand dieser Prüfung.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> Vorhanden (Datei: Wohngeldantrag_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis:</span> Vorhanden (Dateien: Verdienstbescheinigung_Testfall19_Miriam_Scholz_ausgefuellt.json , Gehaltsabrechnungen_Testfall19_Miriam_Scholz_ausgefuellt.json , Einkommenserklaerung_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li></ul><p class="bkopf">Pflichtangaben</p><p class="bkopf">Zur Person des Antragstellers</p><ul class="bl"><li><span class="bkey">Name:</span> Scholz, Miriam (vorhanden in frage_01_persoenliche_angaben ).</li><li><span class="bkey">Geburtsdatum:</span> 12.09.1990 (vorhanden in frage_01_persoenliche_angaben ).</li><li><span class="bkey">Anschrift:</span> Rohrbachstraße 36 (vorhanden in frage_02_anschrift_der_wohnung ).</li><li><span class="bkey">Postleitzahl:</span> 60389 (vorhanden in frage_02_anschrift_der_wohnung ).</li><li><span class="bkey">Wohnort:</span> Frankfurt am Main (vorhanden in frage_02_anschrift_der_wohnung ).</li></ul><p class="bkopf">Zum Haushalt</p><ul class="bl"><li><span class="bkey">Haushaltsgröße:</span> 1 Person (keine weiteren Haushaltsmitglieder in frage_06_haushaltsmitglieder angegeben, daher gilt der Haushalt als 1 Person).</li></ul><p class="bkopf">Zur Miete</p><ul class="bl"><li><span class="bkey">Gesamtmiete:</span> 920,00 € (vorhanden in frage_23_gesamtmiete ).</li></ul><p class="bkopf">Zum Einkommen</p><ul class="bl"><li><span class="bkey">Einkommensbetrag:</span> 5.600,00 € (Brutto, vorhanden in frage_12_einnahmen und Verdienstbescheinigung ).</li><li><span class="bkey">Art des Einkommens:</span> Gehalt/Lohn (vorhanden in frage_12_einnahmen ).</li></ul><p>Ergebnis: Alle Pflichtdokumente und Pflichtangaben sind vollständig und bearbeitbar. Der Antrag kann formell weiterbearbeitet werden.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p class="bkopf">Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland und Hauptwohnsitz:</span> Die Wohnung befindet sich in Frankfurt am Main, Deutschland, und wird von Miriam Scholz bewohnt ( wohnung_wird_bewohnt: true , Adresse in den Dokumenten bestätigt). Erfüllt.</li><li><span class="bkey">Haushaltsgröße:</span> Es ist nur ein Haushaltsmitglied (Miriam Scholz) angegeben. Die Haushaltsgröße beträgt mindestens eine Person. Erfüllt.</li><li><span class="bkey">Monatliches Einkommen &gt; 0:</span> Miriam Scholz hat ein monatliches Bruttoeinkommen von 5.600 € ( brutto_eur: 5600.0 ). Erfüllt.</li><li><span class="bkey">Monatliche Miete &gt; 0:</span> Die monatliche Bruttokaltmiete beträgt 760 € ( grundmiete_eur_monatlich: 760.0 ), die Gesamtmiete 920 € ( gesamtmiete_eur_pro_monat: 920.0 ). Erfüllt.</li><li><span class="bkey">Antragsteller gehört zum Haushalt:</span> Miriam Scholz ist die Antragstellerin und Hauptmieterin der Wohnung. Erfüllt.</li></ul><p class="bkopf">Ausschlussgründe</p><ul class="bl"><li><span class="bkey">Bürgergeld/Leistungen nach SGB II:</span> Es gibt keine Hinweise darauf, dass Miriam Scholz Bürgergeld oder Leistungen nach dem SGB II bezieht ( transferleistung_erhalten_beantragt_sanktioniert_weggefallen_oder_kuerzlich_abgelehnt: false ). Kein Ausschluss.</li><li><span class="bkey">Grundsicherung/Sozialhilfe:</span> Es gibt keine Hinweise auf Bezug von Grundsicherung oder Sozialhilfe ( sozialhilfe.betrag_eur: 0.0 ). Kein Ausschluss.</li><li><span class="bkey">BAföG/Berufsausbildungsbeihilfe:</span> Es gibt keine Hinweise auf Bezug von BAföG oder Berufsausbildungsbeihilfe ( bafoeg.betrag_eur: 0.0 ). Kein Ausschluss.</li><li><span class="bkey">Vermögensgrenze überschritten:</span> Es gibt keine Hinweise darauf, dass die Vermögensgrenze überschritten ist ( vermoegen_oberhalb_der_massgeblichen_grenze: false ). Kein Ausschluss.</li></ul><p class="bkopf">Tatsachenbasis</p><ul class="bl"><li><span class="bkey">Plausibilität der Miete:</span> Die Miete ist in sich stimmig: Die Bruttokaltmiete beträgt 760 €, die Gesamtmiete 920 €, wobei die Nebenkosten (Heizung, Warmwasser, Müllabfuhr, etc.) plausibel aufgeschlüsselt sind. Plausibel.</li><li><span class="bkey">Datengrundlage:</span> Die Daten sind ausreichend, um die Anspruchsvoraussetzungen und Ausschlussgründe zu prüfen. Allerdings fehlen Angaben zu den Haushaltsmitgliedern (z. B. ob weitere Personen im Haushalt leben, die nicht explizit genannt sind). Dies ist entscheidend, da die Haushaltsgröße und die Einkommensverhältnisse aller Haushaltsmitglieder für die Wohngeldberechnung relevant sind. Nicht ausreichend.</li></ul><p class="bkopf">Fazit</p><p>Die Tatbestandsmerkmale sind erfüllt, und es liegen keine konkreten Ausschlussgründe vor. Allerdings ist die Tatsachenbasis unvollständig , da die Haushaltszusammensetzung nicht vollständig geklärt ist. Dies erfordert eine menschliche Prüfung, um sicherzustellen, dass alle relevanten Daten vorliegen.</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div><p class="mut">Keine Judge-Bewertung vorhanden.</p></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 8</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Scholz, Miriam</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> Scholz, Miriam</li><li><span class="bkey">Mietbescheinigung:</span> Scholz, Miriam</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 12.09.1990</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> 12.09.1990</li><li><span class="bkey">Gehaltsabrechnungen:</span> 12.09.1990</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 5.600 € (monatlich, Brutto)</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> 5.600 € (monatlich, Brutto)</li><li><span class="bkey">Gehaltsabrechnungen:</span> 5.600 € (monatlich, Brutto)</li><li><span class="bkey">Einkommenserklärung:</span> 5.600 € (monatlich, Brutto)</li></ul><p class="bfazit">Kein Widerspruch (Abweichung ≤ 20 %)</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1 Haushaltsmitglied (Miriam Scholz)</li><li>Keine weiteren Haushaltsmitglieder in den Dokumenten genannt.</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> Gesamtmiete 920 €/Monat</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete 760 € + Betriebskosten (85 € Heizkosten + 25 € Wasser + 15 € Entwässerung + 20 € Müllabfuhr + 5 € Allgemeinstrom + 10 € weitere Betriebskosten) = 920 €</li><li><span class="bkey">Mietvertrag:</span> Grundmiete 760 € + Heiz- und Warmwasserkosten 85 € + Frischwasserkosten 25 € + Entwässerungskosten 15 € + Müllabfuhrkosten 20 € + Allgemeinbeleuchtungskosten 5 € + weitere Betriebskosten 10 € = 920 €</li><li><span class="bkey">Kontoauszug:</span> Mietabbuchungen von 920 €/Monat</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag:</span> IBAN DE58500502010073924618 (Kontoinhaber: Miriam Scholz)</li><li><span class="bkey">Kontoauszug:</span> IBAN DE58500502010073924618 (Kontoinhaber: Miriam Scholz)</li><li><span class="bkey">Gehaltsabrechnungen:</span> IBAN DE58500502010073924618 (Arbeitnehmerkonto: Miriam Scholz)</li></ul><p class="bfazit">Kein Widerspruch</p><p>Fazit: Es wurden keine Widersprüche zwischen den vorhandenen Angaben festgestellt. Alle geprüften Daten sind konsistent.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> Vorhanden (Datei: Wohngeldantrag_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis:</span> Vorhanden (Dateien: Verdienstbescheinigung_Testfall19_Miriam_Scholz_ausgefuellt.json , Gehaltsabrechnungen_Testfall19_Miriam_Scholz_ausgefuellt.json , Einkommenserklaerung_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li></ul><p class="bkopf">Pflichtangaben</p><p class="bkopf">Zur Person des Antragstellers</p><ul class="bl"><li><span class="bkey">Name:</span> Scholz, Miriam (vorhanden).</li><li><span class="bkey">Geburtsdatum:</span> 12.09.1990 (vorhanden).</li><li><span class="bkey">Anschrift:</span> Rohrbachstraße 36 (vorhanden).</li><li><span class="bkey">Postleitzahl:</span> 60389 (vorhanden).</li><li><span class="bkey">Wohnort:</span> Frankfurt am Main (vorhanden).</li></ul><p class="bkopf">Zum Haushalt</p><ul class="bl"><li><span class="bkey">Haushaltsgröße:</span> 1 Person (implizit, da keine weiteren Haushaltsmitglieder angegeben sind).</li></ul><p class="bkopf">Zur Miete</p><ul class="bl"><li><span class="bkey">Gesamtmiete:</span> 920,00 € (vorhanden, &gt; 0).</li></ul><p class="bkopf">Zum Einkommen</p><ul class="bl"><li><span class="bkey">Einkommensbetrag:</span> 5.600,00 € (Brutto, vorhanden, &gt; 0).</li><li><span class="bkey">Art des Einkommens:</span> Gehalt/Lohn (vorhanden, nicht leer).</li></ul><p>Ergebnis: Alle Pflichtdokumente und Pflichtangaben liegen vollständig und bearbeitbar vor. Der Antrag ist formell vollständig .</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p class="bkopf">Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland und Hauptwohnsitz:</span> Die Wohnung befindet sich in Frankfurt am Main (Postleitzahl 60389), was als Hauptwohnsitz in Deutschland gilt. Erfüllt.</li><li><span class="bkey">Haushaltsgröße:</span> Es ist nur die Antragstellerin Miriam Scholz als Haushaltsmitglied angegeben. Die Haushaltsgröße beträgt somit 1 Person. Erfüllt.</li><li><span class="bkey">Monatliches Einkommen:</span> Die Antragstellerin gibt ein monatliches Bruttoeinkommen von 5.600 € an. Erfüllt.</li><li><span class="bkey">Monatliche Miete:</span> Die monatliche Gesamtmiete beträgt 920 € (Bruttokaltmiete: 760 € + Betriebskosten). Erfüllt.</li><li><span class="bkey">Antragsteller gehört zum Haushalt:</span> Miriam Scholz ist die Hauptmieterin der Wohnung. Erfüllt.</li></ul><p class="bkopf">Ausschlussgründe</p><ul class="bl"><li><span class="bkey">Bürgergeld/Leistungen nach SGB II:</span> Es gibt keine Hinweise darauf, dass die Antragstellerin Bürgergeld oder Leistungen nach dem SGB II bezieht. Kein Ausschluss.</li><li><span class="bkey">Grundsicherung/Sozialhilfe:</span> Es gibt keine Hinweise darauf, dass die Antragstellerin Grundsicherung oder Sozialhilfe bezieht. Kein Ausschluss.</li><li><span class="bkey">BAföG/Berufsausbildungsbeihilfe:</span> Es gibt keine Hinweise darauf, dass die Antragstellerin BAföG oder Berufsausbildungsbeihilfe bezieht. Kein Ausschluss.</li><li><span class="bkey">Vermögensgrenze:</span> Die Antragstellerin gibt an, dass ihr Vermögen nicht über der maßgeblichen Grenze liegt. Kein Ausschluss.</li></ul><p class="bkopf">Tatsachenbasis</p><ul class="bl"><li><span class="bkey">Plausibilität der Miete:</span> Die Miete von 920 € (Bruttokaltmiete: 760 € + Betriebskosten) ist in sich stimmig und wird durch den Mietvertrag und die Mietbescheinigung bestätigt. Plausibel.</li><li><span class="bkey">Datengrundlage:</span> Die Haushaltsgröße ist unvollständig. Obwohl die Antragstellerin als einziges Haushaltsmitglied angegeben ist, fehlen Angaben zu weiteren Haushaltsmitgliedern (z. B. ob weitere Personen im Haushalt leben). Dies ist relevant, da die Haushaltsgröße für die Wohngeldberechnung entscheidend ist. Zudem sind die Angaben zu den Haushaltsmitgliedern in den Fragen 06 und 12 unvollständig (keine Daten zu weiteren Haushaltsmitgliedern, obwohl die Struktur für bis zu 4 Haushaltsmitglieder vorliegt). Nicht ausreichend.</li></ul><p>Fazit: Die Tatsachenbasis reicht nicht aus, um die Anspruchsvoraussetzungen und Ausschlussgründe verlässlich zu beurteilen, da die Haushaltsgröße nicht eindeutig geklärt ist. Es handelt sich daher um einen Klärungsfall .</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div><p class="mut">Keine Judge-Bewertung vorhanden.</p></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 9</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-neut">nicht erkannt</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Scholz, Miriam</li><li>Einkommensnachweis (Verdienstbescheinigung/Gehaltsabrechnungen): Scholz, Miriam</li><li><span class="bkey">Mietbescheinigung:</span> Scholz, Miriam</li><li><span class="bkey">Mietvertrag:</span> Miriam Scholz</li><li><span class="bkey">Kontoauszug:</span> Miriam Scholz</li></ul><p class="bfazit">Kein Widerspruch (alle Namen stimmen überein).</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 12.09.1990</li><li><span class="bkey">Verdienstbescheinigung:</span> 12.09.1990</li><li><span class="bkey">Gehaltsabrechnungen:</span> 12.09.1990</li></ul><p class="bfazit">Kein Widerspruch (alle Geburtsdaten stimmen überein).</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Verdienstbescheinigung:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Kontoauszug:</span> Keine Abweichung (Bankdaten, aber Anschrift des Kontoinhabers nicht explizit angegeben)</li></ul><p class="bfazit">Kein Widerspruch (alle Anschriften stimmen überein).</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 5.600 €/Monat (Brutto)</li><li><span class="bkey">Verdienstbescheinigung:</span> 5.600 €/Monat (Brutto, für alle 12 Monate)</li><li><span class="bkey">Gehaltsabrechnungen:</span> 5.600 €/Monat (Brutto, für alle 6 Monate)</li><li><span class="bkey">Einkommenserklärung:</span> 5.600 €/Monat (Brutto, für alle 6 Monate)</li></ul><p class="bfazit">Kein Widerspruch (Einkommen stimmt überein, Abweichung 5. Haushaltsgröße:</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1 Haushaltsmitglied (Miriam Scholz, keine weiteren Haushaltsmitglieder angegeben)</li><li><span class="bkey">Mietbescheinigung:</span> Keine Angabe zu Haushaltsmitgliedern, aber Mieterin ist Miriam Scholz</li><li><span class="bkey">Mietvertrag:</span> Mieterin ist Miriam Scholz (keine weiteren Mieter genannt)</li></ul><p class="bfazit">Kein Widerspruch (Haushaltsgröße von 1 ist konsistent mit den Angaben).</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> Gesamtmiete: 920 €/Monat</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete: 760 € + Betriebskosten (Heizung 85 € + Müllabfuhr 20 € + Entwässerung 15 € + Wasser 25 € + Allgemeinstrom 5 € + weitere Betriebskosten 10 €) = 760 € + 160 € = 920 €</li><li><span class="bkey">Mietvertrag:</span> Monatliche Miete: 760 € + Heizung/Warmwasser 85 € + Frischwasser 25 € + Entwässerung 15 € + Müllabfuhr 20 € + Allgemeinbeleuchtung 5 € + weitere Betriebskosten 10 € = 760 € + 160 € = 920 €</li><li><span class="bkey">Kontoauszug:</span> Mietabbuchungen: 920 €/Monat (für Mai, Juni, Juli 2026)</li></ul><p class="bfazit">Kein Widerspruch (alle Mietangaben sind konsistent und rechnerisch vereinbar).</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag:</span> IBAN: DE58500502010073924618 (Kontoinhaber: Miriam Scholz)</li><li><span class="bkey">Kontoauszug:</span> IBAN: DE58500502010073924618 (Kontoinhaber: Miriam Scholz)</li><li><span class="bkey">Gehaltsabrechnungen:</span> IBAN: DE58500502010073924618 (Arbeitnehmerkonto: Miriam Scholz)</li></ul><p class="bfazit">Kein Widerspruch (IBAN gehört zum Antragsteller).</p><p class="bkopf">Fazit</p><p>Es wurden keine Widersprüche zwischen den vorhandenen Angaben festgestellt. Alle geprüften Punkte (Name, Geburtsdatum, Anschrift, Einkommen, Haushaltsgröße, Miete, Bankverbindung) sind konsistent. Fehlende optionale Angaben (z. B. weitere Haushaltsmitglieder) sind nicht Gegenstand dieser Prüfung.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> Vorhanden (Datei: Wohngeldantrag_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis:</span> Vorhanden (Datei: Verdienstbescheinigung_Testfall19_Miriam_Scholz_ausgefuellt.json und Einkommenserklaerung_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li></ul><p class="bkopf">Pflichtangaben</p><p class="bkopf">Zur Person des Antragstellers</p><ul class="bl"><li><span class="bkey">Name:</span> Scholz, Miriam (vorhanden in Wohngeldantrag und Verdienstbescheinigung ).</li><li><span class="bkey">Geburtsdatum:</span> 12.09.1990 (vorhanden in Wohngeldantrag und Verdienstbescheinigung ).</li><li><span class="bkey">Anschrift:</span> Rohrbachstraße 36, 60389 Frankfurt am Main (vorhanden in Wohngeldantrag , Verdienstbescheinigung und Mietbescheinigung ).</li><li><span class="bkey">Postleitzahl:</span> 60389 (vorhanden in Wohngeldantrag und Mietbescheinigung ).</li><li><span class="bkey">Wohnort:</span> Frankfurt am Main (vorhanden in Wohngeldantrag und Mietbescheinigung ).</li></ul><p class="bkopf">Zum Haushalt</p><ul class="bl"><li><span class="bkey">Haushaltsgröße:</span> 1 Person (keine weiteren Haushaltsmitglieder in frage_06_haushaltsmitglieder des Wohngeldantrags angegeben).</li></ul><p class="bkopf">Zur Miete</p><ul class="bl"><li><span class="bkey">Gesamtmiete:</span> 920,00 € (vorhanden in frage_23_gesamtmiete des Wohngeldantrags ).</li></ul><p class="bkopf">Zum Einkommen</p><ul class="bl"><li><span class="bkey">Einkommensbetrag:</span> 5.600,00 € (Brutto, vorhanden in frage_12_einnahmen des Wohngeldantrags und Verdienstbescheinigung ).</li><li><span class="bkey">Art des Einkommens:</span> Gehalt/Lohn (vorhanden in frage_12_einnahmen des Wohngeldantrags ).</li></ul><p>Fazit: Alle Pflichtdokumente und Pflichtangaben liegen vollständig und bearbeitbar vor. Es gibt keine formellen Mängel.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p class="bkopf">Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland und Hauptwohnsitz:</span> Die Wohnung befindet sich in Frankfurt am Main, Deutschland, und wird von Miriam Scholz bewohnt. Dies ist erfüllt.</li><li><span class="bkey">Haushaltsgröße:</span> Es ist nur ein Haushaltsmitglied (Miriam Scholz) angegeben. Dies ist erfüllt, da mindestens eine Person vorhanden ist.</li><li><span class="bkey">Monatliches Einkommen:</span> Miriam Scholz hat ein monatliches Bruttoeinkommen von 5.600 €. Dies ist erfüllt.</li><li><span class="bkey">Monatliche Miete:</span> Die monatliche Miete beträgt 920 € (inkl. Nebenkosten). Die Bruttokaltmiete beträgt 760 €. Dies ist erfüllt.</li><li><span class="bkey">Antragsteller gehört zum Haushalt:</span> Miriam Scholz ist die Antragstellerin und wohnt in der Wohnung. Dies ist erfüllt.</li></ul><p class="bkopf">Ausschlussgründe</p><ul class="bl"><li><span class="bkey">Bürgergeld/Leistungen nach SGB II:</span> Es gibt keine Hinweise darauf, dass Miriam Scholz Bürgergeld oder Leistungen nach SGB II bezieht. Die Frage 10 des Wohngeldantrags bestätigt, dass keine Transferleistungen bezogen werden.</li><li><span class="bkey">Grundsicherung/Sozialhilfe:</span> Es gibt keine Hinweise darauf, dass Miriam Scholz Grundsicherung oder Sozialhilfe bezieht.</li><li><span class="bkey">BAföG/Berufsausbildungsbeihilfe:</span> Es gibt keine Hinweise darauf, dass Miriam Scholz BAföG oder Berufsausbildungsbeihilfe bezieht.</li><li><span class="bkey">Vermögensgrenze:</span> Miriam Scholz hat angegeben, dass ihr Vermögen nicht über der maßgeblichen Grenze liegt. Dies ist nicht als Ausschlussgrund zu werten.</li></ul><p class="bkopf">Tatsachenbasis</p><ul class="bl"><li><span class="bkey">Plausibilität der Miete:</span> Die Miete von 920 € (inkl. Nebenkosten) und die Bruttokaltmiete von 760 € sind in sich stimmig und durch den Mietvertrag sowie die Mietbescheinigung belegt. Die Nebenkosten sind detailliert aufgeschlüsselt (Heizkosten: 85 €, Warmwasser: inklusive, Müllabfuhr: 20 €, Entwässerung: 15 €, Allgemeinstrom: 5 €, weitere Betriebskosten: 10 €). Dies ist plausibel.</li><li><span class="bkey">Datengrundlage:</span> Die Haushaltsgröße ist nicht vollständig geklärt. Obwohl Miriam Scholz als alleinige Haushaltsmitglied angegeben ist, fehlen Angaben zu weiteren Haushaltsmitgliedern in den Fragen 06 und 07 des Wohngeldantrags. Dies könnte darauf hindeuten, dass die Haushaltsgröße nicht korrekt erfasst wurde. Zudem ist unklar, ob weitere Personen im Haushalt leben, die nicht explizit angegeben wurden. Dies ist ein Klärungsfall , da die Daten nicht ausreichen, um die Haushaltsgröße eindeutig zu bestimmen.</li></ul><p class="bkopf">Fazit</p><p>Die Tatbestandsmerkmale sind grundsätzlich erfüllt, und es liegen keine konkreten Ausschlussgründe vor. Allerdings ist die Tatsachenbasis nicht ausreichend , da die Haushaltsgröße nicht eindeutig geklärt ist. Dies erfordert eine menschliche Prüfung, um sicherzustellen, dass alle Haushaltsmitglieder korrekt erfasst wurden.</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-bad">0 · nicht erkannt</span></span></div>
+        <p>Der erwartete Befund ist ein einkommensbedingter Nichtanspruch (5.600 EUR Brutto/Monat bei Haushaltsgröße 1). Die MP erwähnt das Einkommen zwar, leitet daraus aber keinen Nichtanspruch ab. Stattdessen erfindet sie ein Problem mit der Haushaltsgröße, das in den Dokumenten nicht existiert (Frage 07 sagt explizit: keine weiteren Personen). Der zentrale Befund wurde nicht erkannt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        <p>In der MP behauptet die Pipeline, die Haushaltsgröße sei „nicht vollständig geklärt“ und es „fehlen Angaben zu weiteren Haushaltsmitgliedern in den Fragen 06 und 07“. Frage 07 des Wohngeldantrags gibt jedoch explizit an: „weitere_personen_wohnen_in_der_wohnung: false“. Diese dokumentwidrige Angabe ist entscheidungstragend, da das REJECTED-Verdict allein darauf beruht.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        <p>Die MP-Begründung widerspricht sich selbst: Sie gibt an, Miriam Scholz sei „als alleinige Haushaltsmitglied angegeben“, folgert aber im selben Absatz, die Haushaltsgröße sei „nicht vollständig geklärt“. Wenn sie als alleiniges Mitglied angegeben ist, ist die Haushaltsgröße 1 und damit geklärt. Die genannten Tatsachen stützen das Gegenteil des REJECTED-Verdicts.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="vb vb-neutral">– keine</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Materielle Prüfung">MP</span> <span class="kb kb-neut">nicht erkannt</span></span></div>
+        <p>Prüffrage 1 wurde mit 0 bewertet, daher entfällt die Phasenfeststellung.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 10</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Scholz, Miriam</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> Scholz, Miriam</li><li><span class="bkey">Mietbescheinigung:</span> Scholz, Miriam</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 12.09.1990</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> 12.09.1990</li><li><span class="bkey">Gehaltsabrechnungen:</span> 12.09.1990</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Rohrbachstraße 36, 60389 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 5.600,00 € (monatlich, Brutto)</li><li><span class="bkey">Einkommensnachweis (Verdienstbescheinigung):</span> 5.600,00 € (monatlich, Brutto)</li><li><span class="bkey">Gehaltsabrechnungen:</span> 5.600,00 € (monatlich, Brutto)</li><li><span class="bkey">Einkommenserklärung:</span> 5.600,00 € (monatlich, Brutto)</li></ul><p class="bfazit">Kein Widerspruch (Abweichung ≤ 20 %).</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1 Haushaltsmitglied (Miriam Scholz)</li><li>Keine weiteren Haushaltsmitglieder in den Dokumenten genannt.</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> Gesamtmiete 920,00 €/Monat</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete 760,00 € + Betriebskosten (85,00 € Heizkosten + 25,00 € Wassergeld + 15,00 € Entwässerung + 20,00 € Müllabfuhr + 5,00 € Allgemeinstrom + 10,00 € weitere Betriebskosten) = 920,00 €</li><li><span class="bkey">Mietvertrag:</span> Grundmiete 760,00 € + Heizungs- und Warmwasserkosten 85,00 € + Frischwasserkosten 25,00 € + Entwässerungskosten 15,00 € + Müllabfuhrkosten 20,00 € + Allgemeinbeleuchtungskosten 5,00 € + weitere Betriebskosten 10,00 € = 920,00 €</li><li><span class="bkey">Kontoauszug:</span> Mietabbuchungen von 920,00 €/Monat</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag:</span> IBAN DE58500502010073924618 (Miriam Scholz, Frankfurter Sparkasse)</li><li><span class="bkey">Kontoauszug:</span> IBAN DE58500502010073924618 (Kontoinhaber: Miriam Scholz)</li><li><span class="bkey">Gehaltsabrechnungen:</span> IBAN DE58500502010073924618 (Arbeitnehmerkonto: Miriam Scholz)</li></ul><p class="bfazit">Kein Widerspruch.</p><p>Fazit: Es liegen keine Widersprüche zwischen den geprüften Angaben vor. Die Konsistenzprüfung ergibt daher APPROVED .</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung des Wohngeldantrags (Testfall 19 – Miriam Scholz)</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> Vorhanden (Datei: Wohngeldantrag_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis:</span> Vorhanden (Dateien: Verdienstbescheinigung_Testfall19_Miriam_Scholz_ausgefuellt.json , Gehaltsabrechnungen_Testfall19_Miriam_Scholz_ausgefuellt.json , Einkommenserklaerung_Testfall19_Miriam_Scholz_ausgefuellt.json ).</li></ul><p class="bkopf">Pflichtangaben</p><p class="bkopf">Zur Person des Antragstellers</p><ul class="bl"><li><span class="bkey">Name:</span> Scholz, Miriam (vorhanden in Wohngeldantrag und Verdienstbescheinigung ).</li><li><span class="bkey">Geburtsdatum:</span> 12.09.1990 (vorhanden in Wohngeldantrag und Verdienstbescheinigung ).</li><li><span class="bkey">Anschrift:</span> Rohrbachstraße 36, 60389 Frankfurt am Main (vorhanden in Wohngeldantrag , Verdienstbescheinigung und Mietbescheinigung ).</li><li><span class="bkey">Postleitzahl:</span> 60389 (vorhanden in Wohngeldantrag und Mietbescheinigung ).</li><li><span class="bkey">Wohnort:</span> Frankfurt am Main (vorhanden in Wohngeldantrag und Mietbescheinigung ).</li></ul><p class="bkopf">Zum Haushalt</p><ul class="bl"><li><span class="bkey">Haushaltsgröße:</span> 1 Person (keine weiteren Haushaltsmitglieder in frage_06_haushaltsmitglieder angegeben, daher gilt der Haushalt als 1 Person).</li></ul><p class="bkopf">Zur Miete</p><ul class="bl"><li><span class="bkey">Mietbetrag:</span> 920,00 € (Gesamtmiete, vorhanden in Wohngeldantrag unter frage_23_gesamtmiete ).</li></ul><p class="bkopf">Zum Einkommen</p><ul class="bl"><li><span class="bkey">Einkommensbetrag:</span> 5.600,00 € (Brutto, vorhanden in Wohngeldantrag unter frage_12_einnahmen und Verdienstbescheinigung ).</li><li><span class="bkey">Art des Einkommens:</span> Gehalt/Lohn (vorhanden in Wohngeldantrag unter frage_12_einnahmen ).</li></ul><p>Ergebnis: Alle Pflichtdokumente und Pflichtangaben sind vollständig und bearbeitbar. Der Antrag kann formell weiterbearbeitet werden.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p class="bkopf">Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland und Hauptwohnsitz:</span> Die Wohnung befindet sich in Frankfurt am Main, Deutschland, und wird von Miriam Scholz bewohnt ( wohnung_wird_bewohnt: true , Adresse: Rohrbachstraße 36, 60389 Frankfurt am Main). Dies ist erfüllt.</li><li><span class="bkey">Haushaltsgröße:</span> Es ist nur ein Haushaltsmitglied (Miriam Scholz) angegeben. Die Haushaltsgröße ist damit mindestens eine Person. Dies ist erfüllt.</li><li><span class="bkey">Monatliches Einkommen:</span> Miriam Scholz hat ein monatliches Bruttoeinkommen von 5.600,00 € (Gehalt/Lohn). Dies ist erfüllt.</li><li><span class="bkey">Monatliche Miete:</span> Die monatliche Gesamtmiete beträgt 920,00 € (inkl. Heizkosten, Warmwasserkosten, etc.). Dies ist erfüllt.</li><li><span class="bkey">Antragsteller gehört zum Haushalt:</span> Miriam Scholz ist die Antragstellerin und Hauptmieterin der Wohnung. Dies ist erfüllt.</li></ul><p class="bkopf">Ausschlussgründe</p><ul class="bl"><li><span class="bkey">Bürgergeld/Leistungen nach SGB II:</span> Es gibt keine Hinweise darauf, dass Miriam Scholz Bürgergeld oder Leistungen nach dem SGB II bezieht ( transferleistung_erhalten_beantragt_sanktioniert_weggefallen_oder_kuerzlich_abgelehnt: false ).</li><li><span class="bkey">Grundsicherung/Sozialhilfe:</span> Es gibt keine Hinweise darauf, dass Miriam Scholz Grundsicherung oder Sozialhilfe bezieht ( sozialhilfe.betrag_eur: 0.0 ).</li><li><span class="bkey">BAföG/Berufsausbildungsbeihilfe:</span> Es gibt keine Hinweise darauf, dass Miriam Scholz BAföG oder Berufsausbildungsbeihilfe bezieht ( bafoeg.betrag_eur: 0.0 ).</li><li><span class="bkey">Vermögensgrenze:</span> Es gibt keine Hinweise darauf, dass das Vermögen von Miriam Scholz die maßgebliche Grenze überschreitet ( vermoegen_oberhalb_der_massgeblichen_grenze: false ).</li></ul><p class="bkopf">Tatsachenbasis</p><ul class="bl"><li><span class="bkey">Plausibilität der Miete:</span> Die Miete von 920,00 € ist in sich stimmig und wird durch die Mietbescheinigung, den Mietvertrag und die Kontoauszüge bestätigt. Die Bruttokaltmiete beträgt 760,00 € (laut Mietvertrag und Mietbescheinigung), während die Gesamtmiete inkl. Nebenkosten 920,00 € beträgt. Dies ist plausibel.</li><li><span class="bkey">Datengrundlage:</span> Die Daten sind ausreichend, um die Anspruchsvoraussetzungen und Ausschlussgründe zu bewerten. Allerdings fehlen konkrete Angaben zu den Haushaltsmitgliedern . In der Mietbescheinigung und im Wohngeldantrag sind die Felder für weitere Haushaltsmitglieder leer ( haushaltsmitglied_1 bis haushaltsmitglied_4: null ). Dies bedeutet, dass nicht eindeutig geklärt ist, ob Miriam Scholz allein im Haushalt lebt oder ob weitere Personen zum Haushalt gehören, die nicht explizit angegeben sind.</li></ul><p class="bkopf">Fazit</p><p>Die Tatsachenbasis reicht nicht aus, um die Haushaltsgröße eindeutig zu bestimmen. Da die Haushaltsgröße ein zentrales Tatbestandsmerkmal ist und nicht zweifelsfrei geklärt werden kann, ob weitere Haushaltsmitglieder vorhanden sind, die nicht explizit angegeben wurden, liegt ein Klärungsfall vor. Es muss menschlich geprüft werden, ob Miriam Scholz tatsächlich allein im Haushalt lebt oder ob weitere Personen zum Haushalt gehören, die nicht erfasst wurden.</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div><p class="mut">Keine Judge-Bewertung vorhanden.</p></div>
+      </div>
+    </details>
+</section>
+</div>
+<div class="cg-footer"><div class="inner">
+  Automatisiert erzeugtes Prüfergebnis · bedarf der Bestätigung durch einen menschlichen Prüfer ·
+  <span class="mono">Testlauf TL-2026-09-07T11-59-06-475Z · erstellt 7.9.2026, 11:59:06</span>
+</div></div>
+<script type="application/json" id="testfall-daten">{"testlaufId":"TL-2026-09-07T11-59-06-475Z","zeitpunkt":"2026-09-07T11:59:06.475Z","fallId":"TF-19","fallName":"Miriam Scholz","art":"MP","kategorie":4,"kategorieName":"M4 Einkommensbedingter Nichtanspruch","istFehlerfall":true,"soll":{"kp":"APPROVED","fp":"APPROVED","mp":"REJECTED"},"laeufeGesamt":10,"auswertbar":10,"technischeFehler":0,"exactMatch":10,"exactMatchPct":100,"betrag":{"soll":null,"istWerte":[],"korrekt":null,"geprueft":0},"phasen":{"kp":{"modus":"verdict","reached":10,"correct":10,"basis":10,"pct":100,"soll":"APPROVED","verteilung":{"APPROVED":10}},"fp":{"modus":"verdict","reached":10,"correct":10,"basis":10,"pct":100,"soll":"APPROVED","verteilung":{"APPROVED":10}},"mp":{"modus":"verdict","reached":10,"correct":10,"basis":10,"pct":100,"soll":"REJECTED","verteilung":{"REJECTED":10}}},"judge":{"j1":{"n":5,"pass":0,"fail":5,"quote":0,"dist":[5,0],"ohne":5},"j2g":{"n":5,"mean":1,"dist":[5,0,0,0],"ohne":5},"j2l":{"n":5,"mean":1,"dist":[5,0,0,0],"ohne":5},"j2":{"n":5,"mean":1,"dist":[5,0,0,0],"ohne":5}},"kopplung":{"verteilung":{"nicht_erkannt":5},"erkannt":0,"eskaliertBeiErkannt":0,"phasentreu":0,"unplausibel":0},"laeufe":[{"runIndex":1,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","istBetrag":null,"berechnungStatus":"NICHT_BERECHENBAR","betragKorrekt":null,"j1":0,"j2g":1,"j2l":1,"j2":1,"erkanntIn":"KEINE","eskaliertIn":"MP","kopplung":"nicht_erkannt"},{"runIndex":2,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","istBetrag":null,"berechnungStatus":"NICHT_BERECHENBAR","betragKorrekt":null,"j1":0,"j2g":1,"j2l":1,"j2":1,"erkanntIn":"KEINE","eskaliertIn":"MP","kopplung":"nicht_erkannt"},{"runIndex":3,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","istBetrag":null,"berechnungStatus":"NICHT_BERECHENBAR","betragKorrekt":null,"j1":0,"j2g":1,"j2l":1,"j2":1,"erkanntIn":"KEINE","eskaliertIn":"MP","kopplung":"nicht_erkannt"},{"runIndex":4,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","istBetrag":null,"berechnungStatus":"NICHT_BERECHENBAR","betragKorrekt":null,"j1":0,"j2g":1,"j2l":1,"j2":1,"erkanntIn":"KEINE","eskaliertIn":"MP","kopplung":"nicht_erkannt"},{"runIndex":5,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","istBetrag":null,"berechnungStatus":"NICHT_BERECHENBAR","betragKorrekt":null,"j1":null,"j2g":null,"j2l":null,"j2":null,"erkanntIn":null,"eskaliertIn":"MP","kopplung":null},{"runIndex":6,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","istBetrag":null,"berechnungStatus":"NICHT_BERECHENBAR","betragKorrekt":null,"j1":null,"j2g":null,"j2l":null,"j2":null,"erkanntIn":null,"eskaliertIn":"MP","kopplung":null},{"runIndex":7,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","istBetrag":null,"berechnungStatus":"NICHT_BERECHENBAR","betragKorrekt":null,"j1":null,"j2g":null,"j2l":null,"j2":null,"erkanntIn":null,"eskaliertIn":"MP","kopplung":null},{"runIndex":8,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","istBetrag":null,"berechnungStatus":"NICHT_BERECHENBAR","betragKorrekt":null,"j1":null,"j2g":null,"j2l":null,"j2":null,"erkanntIn":null,"eskaliertIn":"MP","kopplung":null},{"runIndex":9,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","istBetrag":null,"berechnungStatus":"NICHT_BERECHENBAR","betragKorrekt":null,"j1":0,"j2g":1,"j2l":1,"j2":1,"erkanntIn":"KEINE","eskaliertIn":"MP","kopplung":"nicht_erkannt"},{"runIndex":10,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","istBetrag":null,"berechnungStatus":"NICHT_BERECHENBAR","betragKorrekt":null,"j1":null,"j2g":null,"j2l":null,"j2":null,"erkanntIn":null,"eskaliertIn":"MP","kopplung":null}]}</script>
+</body></html>
