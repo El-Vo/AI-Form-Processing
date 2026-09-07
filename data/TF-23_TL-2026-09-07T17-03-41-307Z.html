@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Testbericht TF-23</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&family=Ubuntu+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cg-blue-900:#003A5C; --cg-blue-700:#005587; --cg-blue-500:#0070AD;
+  --cg-blue-300:#66A6CC; --cg-blue-100:#D9EBF4; --cg-blue-050:#EFF6FA;
+  --cg-vibrant-600:#0E8CB3; --cg-vibrant-500:#12ABDB; --cg-vibrant-100:#D8F0F9;
+  --ink-900:#0B0F14; --ink-600:#2E3A44; --ink-400:#5B6B78;
+  --line:#DDE3E8; --surface:#FFFFFF; --canvas:#F5F7F9;
+  --verdict-approved:#1E8A5F;  --verdict-approved-bg:#E6F4EE;
+  --verdict-rejected:#B3261E;  --verdict-rejected-bg:#FBE9E7;
+  --verdict-unbekannt:#B26A00; --verdict-unbekannt-bg:#FFF4E0;
+  --font-sans:"Ubuntu","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-mono:"Ubuntu Mono","SF Mono","Consolas",monospace;
+  --maxw:1120px; --radius-card:6px; --radius-badge:2px;
+  --shadow-card:0 1px 2px rgba(11,15,20,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--canvas);color:var(--ink-900);font-size:15px;line-height:1.6}
+.mono{font-family:var(--font-mono);font-size:13px;color:var(--ink-600)}
+.b{font-weight:500}
+.mut{color:var(--ink-400)}
+.cg-header{background:var(--cg-blue-900);padding:0 24px}
+.cg-header .inner{max-width:var(--maxw);margin:0 auto;min-height:96px;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:16px 0}
+.cg-header h1{font-size:32px;line-height:40px;font-weight:500;color:var(--surface)}
+.cg-header .sub{font-size:17px;color:var(--cg-blue-100);margin-top:6px}
+.cg-header .meta{font-family:var(--font-mono);font-size:13px;color:var(--cg-blue-300);margin-top:4px}
+.cg-logo-slot{width:140px;height:40px;flex:none}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:8px 24px 48px}
+.cg-section{margin-top:48px}
+.cg-section > h2{font-size:22px;line-height:30px;font-weight:500}
+.cg-section > h2::after{content:"";display:block;width:48px;height:3px;margin-top:10px;background:var(--cg-vibrant-500)}
+.note{font-size:13px;color:var(--ink-400);margin-top:12px;max-width:76ch;line-height:1.6}
+.warnbox{margin-top:24px;background:var(--verdict-rejected-bg);border:1px solid var(--verdict-rejected);border-radius:var(--radius-card);padding:16px 20px;color:var(--verdict-rejected);font-size:14px}
+.vb{display:inline-block;border-radius:var(--radius-badge);padding:2px 8px;font-size:12px;font-weight:500;
+    letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;border:1px solid transparent}
+.vb-approved{color:var(--verdict-approved);background:var(--verdict-approved-bg);border-color:rgba(30,138,95,.2)}
+.vb-rejected{color:var(--verdict-rejected);background:var(--verdict-rejected-bg);border-color:rgba(179,38,30,.2)}
+.vb-unbekannt{color:var(--verdict-unbekannt);background:var(--verdict-unbekannt-bg);border-color:rgba(178,106,0,.2)}
+.vb-skip{color:var(--ink-400);background:var(--canvas);border-color:var(--line)}
+.vb-neutral{color:var(--ink-400);background:var(--canvas);border-color:var(--line);text-transform:none;letter-spacing:0;font-style:italic}
+.kb{display:inline-block;border-radius:var(--radius-badge);padding:2px 8px;font-size:12px;font-weight:500;white-space:nowrap;border:1px solid transparent}
+.kb-ok{color:var(--verdict-approved);background:var(--verdict-approved-bg);border-color:rgba(30,138,95,.2)}
+.kb-mid{color:var(--verdict-unbekannt);background:var(--verdict-unbekannt-bg);border-color:rgba(178,106,0,.2)}
+.kb-bad{color:var(--verdict-rejected);background:var(--verdict-rejected-bg);border-color:rgba(179,38,30,.2)}
+.kb-neut{color:var(--ink-400);background:var(--canvas);border-color:var(--line)}
+.kb-warn{color:var(--verdict-unbekannt);background:var(--verdict-unbekannt-bg);border-color:var(--verdict-unbekannt);font-weight:700}
+.ph{display:inline-block;font-family:var(--font-mono);font-size:13px;font-weight:500;color:var(--ink-900);background:var(--cg-blue-050);border:1px solid var(--cg-blue-100);border-radius:var(--radius-badge);padding:1px 7px}
+.cfgcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-card);padding:32px;margin-top:16px}
+.cfg{display:grid;grid-template-columns:220px 1fr;row-gap:28px;column-gap:32px}
+.cfg dt{font-size:12px;line-height:18px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;color:var(--ink-400);padding-top:3px}
+.cfg dd{line-height:1.7}
+.gtext{max-width:76ch}
+.gtext > :last-child{margin-bottom:0}
+.gtext p{margin:0 0 12px}
+.gtext .bkopf{margin:0 0 12px;color:var(--ink-900);font-weight:500}
+.gtext .bfazit{margin:12px 0;padding:10px 16px;background:var(--cg-blue-050);border-left:3px solid var(--cg-vibrant-500);border-radius:0 var(--radius-card) var(--radius-card) 0;color:var(--ink-900)}
+.gtext ul.bl{list-style:none;margin:0 0 12px;padding:0}
+.gtext ul.bl li{position:relative;padding-left:20px;margin-bottom:5px}
+.gtext ul.bl li::before{content:"";position:absolute;left:5px;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--cg-blue-300)}
+.gtext .bkey{color:var(--ink-900);font-weight:500}
+.gtext strong{color:var(--ink-900);font-weight:500}
+.sollrow{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:center}
+.sollrow .paar{display:flex;align-items:center;gap:10px;font-weight:500;font-size:14px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-card);padding:24px;display:flex;flex-direction:column}
+.kname{font-size:17px;line-height:26px;font-weight:500}
+.ksoll{margin-top:10px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-400)}
+.kbig{font-size:40px;line-height:44px;font-weight:300;color:var(--cg-blue-500);margin:18px 0 4px}
+.ksub{font-size:13px;color:var(--ink-400);line-height:1.5;margin-bottom:16px}
+.dist{border-top:1px solid var(--line);padding-top:14px;margin-top:auto;display:flex;flex-direction:column;gap:10px}
+.drow{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px}
+.drow.sub{padding-left:16px}
+.dn{font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
+.okmark{color:var(--verdict-approved);font-weight:700}
+.badmark{color:var(--verdict-rejected);font-weight:700}
+.tblwrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-card);overflow-x:auto;margin-top:16px}
+table{border-collapse:collapse;width:100%}
+th{color:var(--cg-blue-500);font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;
+   text-align:left;padding:12px 16px;border-bottom:2px solid var(--cg-blue-500);background:var(--surface)}
+td{padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
+tr:nth-child(even) td{background:var(--cg-blue-050)}
+tr:last-child td{border-bottom:none}
+td.num,th.num{text-align:right}
+.stars{color:#E8A600;letter-spacing:.08em;white-space:nowrap}
+.stars .dim{color:var(--line)}
+details{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-card);margin-top:12px}
+summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:14px;padding:16px 24px;font-size:15px}
+summary::-webkit-details-marker{display:none}
+.chev{color:var(--cg-blue-500);transition:transform .15s;font-size:14px}
+details[open] .chev{transform:rotate(90deg)}
+details[open] summary{border-bottom:1px solid var(--line)}
+.mini{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dbody{padding:8px 24px 32px}
+.schritt{margin-top:26px}
+.skopf{display:flex;align-items:center;gap:12px;margin-bottom:12px;border-bottom:2px solid var(--cg-blue-500);padding-bottom:8px}
+.sname{font-size:15px;font-weight:500}
+.btext{background:var(--cg-blue-050);border-radius:var(--radius-card);padding:22px 26px;font-size:14px;line-height:1.7;color:var(--ink-600)}
+.btext > :first-child{margin-top:0}
+.btext > :last-child{margin-bottom:0}
+.btext p{margin:0 0 10px}
+.btext .bkopf{margin:22px 0 8px;color:var(--ink-900);font-weight:500}
+.btext .bfazit{margin:12px 0 16px;padding:10px 16px;background:var(--surface);border-left:3px solid var(--cg-vibrant-500);border-radius:0 var(--radius-card) var(--radius-card) 0;color:var(--ink-900)}
+.btext ul.bl{list-style:none;margin:0 0 12px;padding:0}
+.btext ul.bl li{position:relative;padding-left:20px;margin-bottom:5px}
+.btext ul.bl li::before{content:"";position:absolute;left:5px;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--cg-blue-300)}
+.btext .bkey{color:var(--ink-900);font-weight:500}
+.btext strong{color:var(--ink-900);font-weight:500}
+.errtext{color:var(--verdict-rejected);background:var(--verdict-rejected-bg);border-radius:var(--radius-card);padding:16px 20px;margin-top:20px;word-break:break-all}
+.judges{margin-top:30px;border-top:1px solid var(--line);padding-top:18px}
+.jt{font-size:15px;font-weight:500;margin-bottom:14px}
+.jblock{padding:14px 0;border-bottom:1px solid var(--cg-blue-050)}
+.jblock:last-child{border-bottom:none;padding-bottom:0}
+.jhead{display:flex;align-items:baseline;flex-wrap:wrap;gap:10px;margin-bottom:6px}
+.jkurz{font-family:var(--font-mono);font-size:13px;font-weight:500;color:var(--cg-blue-500)}
+.jname{font-size:14px;font-weight:500}
+.jwert{font-size:14px;font-weight:500;color:var(--ink-900);margin-left:auto}
+.jblock p{font-size:14px;line-height:1.7;color:var(--ink-600)}
+.cg-footer{background:var(--cg-blue-900);color:var(--cg-blue-300);padding:24px;font-size:12px;line-height:1.7;margin-top:48px}
+.cg-footer .inner{max-width:var(--maxw);margin:0 auto}
+.cg-footer .mono{color:var(--cg-blue-300)}
+@media(max-width:840px){
+  .kpis{grid-template-columns:1fr}
+  .cfg{grid-template-columns:1fr;row-gap:6px}
+  .cfg dt{margin-top:18px}
+  .cg-header .inner{flex-direction:column;align-items:flex-start}
+  .cg-logo-slot{display:none}
+}
+@media print{details{page-break-inside:avoid}.cg-header,.cg-footer{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body>
+<div class="cg-header"><div class="inner">
+  <div>
+    <h1>Testbericht TF-23</h1>
+    <div class="sub">Aylin Demir · fehlerfrei</div>
+    <div class="meta">7.9.2026, 17:03:41 · 12 Läufe · 12 auswertbar · 0 technische Fehler</div>
+  </div>
+  <div class="cg-logo-slot"></div>
+</div></div>
+<div class="wrap">
+
+
+<section class="cg-section">
+<h2>Testfall</h2>
+<p class="note">Stammdaten und Ground Truth dieses Testfalls. Die Soll-Verdicts und der injizierte Fehler stammen aus dem Testfall-Sheet und wurden weder der Pipeline noch dem Judge mitgegeben.</p>
+<div class="cfgcard"><dl class="cfg">
+  <dt>Fall</dt>
+  <dd><span class="mono b">TF-23</span> · Aylin Demir</dd>
+  <dt>Fehlerart</dt>
+  <dd><span class="mut">kein Fehler injiziert (fehlerfreier Fall)</span></dd>
+  <dt>Läufe</dt>
+  <dd>12 Durchläufe · 12 auswertbar · 0 technische Fehler</dd>
+  <dt>Soll-Verdicts</dt>
+  <dd><div class="sollrow">
+    <span class="paar"><span class="mono">KP</span> <span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span>
+    <span class="paar"><span class="mono">FP</span> <span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span>
+    <span class="paar"><span class="mono">MP</span> <span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span>
+  </div></dd>
+  <dt>Ground Truth</dt>
+  <dd><div class="gtext"><p class="bkopf">23 Ground Truth - Aylin Demir</p><p>Positivfall ohne injizierte Fehler. Alle eingereichten Unterlagen beziehen sich konsistent auf Aylin Demir, geboren am 08.11.1997, wohnhaft in der Eckenheimer Landstraße 88, 60318 Frankfurt am Main. Es handelt sich um einen 1-Personen-Haushalt. Weitere Haushaltsmitglieder, Transferleistungen, Unterhaltsansprüche, relevante Vermögensüberschreitungen oder angekündigte Änderungen von Haushalt, Einkommen oder Miete liegen nicht vor.</p><p>Die Einkommensangaben sind dokumentenübergreifend konsistent: monatliches Bruttoeinkommen 2.150,00 EUR aus nichtselbständiger Beschäftigung bei der RheinMain Service GmbH. Die Verdienstbescheinigung weist für August 2025 bis Juli 2026 durchgehend 2.150,00 EUR brutto aus (Jahressumme 25.800,00 EUR). Die Einkommenserklärung und die Gehaltsabrechnungen Februar bis Juli 2026 bestätigen ebenfalls 2.150,00 EUR brutto. Die Gehaltsabrechnungen weisen 1.565,00 EUR netto bzw. Auszahlungsbetrag aus; die Kontoauszüge enthalten korrespondierende Gehaltseingänge von 1.565,00 EUR.</p><p>Die Wohn- und Mietangaben sind ebenfalls konsistent: Hauptmietverhältnis seit 01.06.2024, 48 m², 2 Zimmer, Gesamtmiete 820,00 EUR monatlich. Die Zusammensetzung beträgt 680,00 EUR Grundmiete zuzüglich 140,00 EUR Nebenkosten, darunter 75,00 EUR Heizungs- und Warmwasserkosten. Die Kontoauszüge weisen monatliche Mietzahlungen von 820,00 EUR an die Hausverwaltung Mainblick GmbH aus.</p><p>Erwartetes Workflow-Ergebnis: formell vollständig und materiell wohngeldberechtigt; Entscheidung = Bewilligung / Wohngeldanspruch größer 0 EUR. Unter Zugrundelegung eines 1-Personen-Haushalts in Frankfurt am Main, des angegebenen Einkommens und der berücksichtigungsfähigen Mietdaten liegt der erwartete Wohngeldbetrag in einer Größenordnung von rund 105 EUR monatlich. Kein Fehler und keine Inkonsistenz soll erkannt bzw. als Nachforderung ausgegeben werden.</p></div></dd>
+</dl></div>
+</section>
+
+<section class="cg-section">
+<h2>Harte Zahlen</h2>
+<p class="note">Anteil korrekter Entscheidungen je Prüfschritt. Läufe, die eine Phase nicht erreicht haben, fließen in deren Prozentzahl nicht ein. Ausnahme Soll „NICHT ERWARTET": dort ist das Nicht-Erreichen selbst das korrekte Verhalten und wird über alle auswertbaren Läufe gemessen.</p>
+<div class="kpis">
+
+  <div class="kpi">
+    <div class="kname">Konsistenzprüfung</div>
+    <div class="ksoll">Soll-Verdict <span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+    <div class="kbig">100 %</div>
+    <div class="ksub">12 von 12 korrekt · Phase erreicht in 12/12 Läufen</div>
+    <div class="dist"><div class="drow"><span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span><span class="dn">12× <span class="okmark">✓</span></span></div><div class="drow"><span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span><span class="dn">0×</span></div></div>
+  </div>
+  <div class="kpi">
+    <div class="kname">Formelle Prüfung</div>
+    <div class="ksoll">Soll-Verdict <span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+    <div class="kbig">75 %</div>
+    <div class="ksub">9 von 12 korrekt · Phase erreicht in 12/12 Läufen</div>
+    <div class="dist"><div class="drow"><span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span><span class="dn">9× <span class="okmark">✓</span></span></div><div class="drow"><span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span><span class="dn">3× <span class="badmark">✗</span></span></div></div>
+  </div>
+  <div class="kpi">
+    <div class="kname">Materielle Prüfung</div>
+    <div class="ksoll">Soll-Verdict <span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+    <div class="kbig">100 %</div>
+    <div class="ksub">9 von 9 korrekt · Phase erreicht in 9/12 Läufen</div>
+    <div class="dist"><div class="drow"><span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span><span class="dn">9× <span class="okmark">✓</span></span></div><div class="drow"><span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span><span class="dn">0×</span></div><div class="drow"><span class="mut">Phase nicht erreicht</span><span class="dn">3×</span></div></div>
+  </div>
+</div>
+<div class="cfgcard"><dl class="cfg">
+  <dt>Exact Match</dt>
+  <dd><span class="b">75 %</span> — in 9 von 12 auswertbaren Läufen stimmten <em>alle drei</em> Phasen mit dem Soll überein.</dd>
+  <dt>Wohngeldbetrag</dt>
+  <dd>Soll <span class="b">105,00 €</span> · berechnet <span class="b">105,00 €</span> — <span class="badmark">✗</span> korrekt in 9 von 12 Läufen</dd>
+</dl></div>
+</section>
+
+<section class="cg-section">
+<h2>AI as a Judge</h2>
+<p class="note">Drei Prüffragen mit unterschiedlichen Skalen. J1 ist binär und wird als Quote ausgewiesen; 2A Groundedness und 2B logische Gültigkeit laufen auf 1–4 und werden gemittelt. Quote und Skala werden nie zu einem gemeinsamen Wert verrechnet. <b>NV Nachvollziehbarkeit</b> ist keine Judge-Ausgabe, sondern wird je Lauf als <b>Minimum</b> aus 2A und 2B berechnet — nicht als Mittelwert, damit eine gute Logik eine unbelegte Faktenbasis nicht ausgleichen kann. Der Judge sah dieselben Originaldokumente wie die Pipeline, aber nicht die Soll-Verdicts; für 2A und 2B ist die Ground Truth laut Prompt ausdrücklich unerheblich.</p>
+<div class="kpis">
+
+  <div class="kpi">
+    <div class="kname">J1 · Fehlererkennung</div>
+    <div class="kbig">100 %</div>
+    <div class="ksub">Fehlerfreier Fall: in 2 von 2 Läufen korrekt kein Mangel behauptet · binäre Skala 0/1</div>
+    <div class="dist"><div class="drow"><span>Kein Fehlalarm (1)</span><span class="dn">2× <span class="okmark">✓</span></span></div><div class="drow"><span>Fehlalarm (0)</span><span class="dn">0×</span></div><div class="drow"><span class="mut">ohne gültige Bewertung</span><span class="dn">10×</span></div></div>
+  </div>
+
+  <div class="kpi">
+    <div class="kname">2A · Groundedness</div>
+    <div class="kbig">4 <span class="ksub" style="font-size:15px">/ 4</span></div>
+    <div class="ksub">Sind die Tatsachenbehauptungen in den Originaldokumenten belegt? · 2 auswertbare Läufe <span class="stars">★★★★<span class="dim"></span></span></div>
+    <div class="dist"><div class="drow"><span>4 – vollständig belegt</span><span class="dn">2×</span></div><div class="drow"><span>3 – entsch.-relevant belegt</span><span class="dn">0×</span></div><div class="drow"><span>2 – ungedeckt</span><span class="dn">0×</span></div><div class="drow"><span>1 – dokumentwidrig</span><span class="dn">0×</span></div><div class="drow"><span class="mut">ohne gültige Bewertung</span><span class="dn">10×</span></div></div>
+  </div>
+
+  <div class="kpi">
+    <div class="kname">2B · Logische Gültigkeit</div>
+    <div class="kbig">4 <span class="ksub" style="font-size:15px">/ 4</span></div>
+    <div class="ksub">Folgt die Schlussfolgerung aus den genannten Tatsachen? · 2 auswertbare Läufe <span class="stars">★★★★<span class="dim"></span></span></div>
+    <div class="dist"><div class="drow"><span>4 – zwingend</span><span class="dn">2×</span></div><div class="drow"><span>3 – tragfähig, verkürzt</span><span class="dn">0×</span></div><div class="drow"><span>2 – lückenhaft</span><span class="dn">0×</span></div><div class="drow"><span>1 – ungültig</span><span class="dn">0×</span></div><div class="drow"><span class="mut">ohne gültige Bewertung</span><span class="dn">10×</span></div></div>
+  </div>
+
+  <div class="kpi">
+    <div class="kname">NV · Nachvollziehbarkeit</div>
+    <div class="kbig">4 <span class="ksub" style="font-size:15px">/ 4</span></div>
+    <div class="ksub">Berechnet als Minimum aus 2A und 2B je Lauf · 2 auswertbare Läufe <span class="stars">★★★★<span class="dim"></span></span></div>
+    <div class="dist"><div class="drow"><span>4 – makellos</span><span class="dn">2×</span></div><div class="drow"><span>3 – akzeptabel</span><span class="dn">0×</span></div><div class="drow"><span>2 – mangelhaft</span><span class="dn">0×</span></div><div class="drow"><span>1 – kritisch</span><span class="dn">0×</span></div><div class="drow"><span class="mut">ohne gültige Bewertung</span><span class="dn">10×</span></div></div>
+  </div>
+
+  <div class="kpi">
+    <div class="kname">Eskalationskopplung</div>
+    <div class="kbig">–</div>
+    <div class="ksub">Fehlerfreier Fall: es gibt keinen Befund, der erkannt oder eskaliert werden könnte. Die Kopplung ist hier nicht definiert und wird nicht als 0 verrechnet.</div>
+    
+  </div>
+</div>
+</section>
+
+<section class="cg-section">
+<h2>Erkennung → Eskalation</h2>
+<p class="note">Fehlerfreier Fall. Gemessen wird hier nur, ob die Pipeline fälschlich einen Mangel behauptet. Eine Kopplung Erkennung→Eskalation gibt es nicht, weil es keinen Befund gibt.</p>
+
+<div class="tblwrap"><table>
+ <tr><th>Lauf</th><th>Fehlalarm</th><th>Erkannt in</th><th>Eskaliert in</th><th>Kopplung</th></tr>
+ 
+    <tr>
+      <td class="mono b">1</td>
+      <td><span class="kb kb-ok">kein Fehlalarm</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="kb kb-neut">entfällt (fehlerfreier Fall)</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">2</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="mut">–</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="vb vb-neutral">–</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">3</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="mut">–</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="vb vb-neutral">–</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">4</td>
+      <td><span class="kb kb-ok">kein Fehlalarm</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="kb kb-neut">entfällt (fehlerfreier Fall)</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">5</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="mut">–</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="vb vb-neutral">–</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">6</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="mut">–</span></td>
+      <td><span class="ph" title="Formelle Prüfung">FP</span></td>
+      <td><span class="vb vb-neutral">–</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">7</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="mut">–</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="vb vb-neutral">–</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">8</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="mut">–</span></td>
+      <td><span class="ph" title="Formelle Prüfung">FP</span></td>
+      <td><span class="vb vb-neutral">–</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">9</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="mut">–</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="vb vb-neutral">–</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">10</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="mut">–</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="vb vb-neutral">–</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">11</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="mut">–</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="vb vb-neutral">–</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">12</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="mut">–</span></td>
+      <td><span class="ph" title="Formelle Prüfung">FP</span></td>
+      <td><span class="vb vb-neutral">–</span></td>
+    </tr>
+</table></div>
+</section>
+
+<section class="cg-section">
+<h2>Übersicht je Lauf</h2>
+<p class="note">Verdicts der drei Prüfschritte (KP → FP → MP), Judge-Bewertungen und Phasenzuordnung je Lauf. J1 binär 0/1; 2A und 2B auf der Skala 1–4. NV ist das Minimum aus 2A und 2B und damit in jeder Zeile nachrechenbar.</p>
+<div class="tblwrap"><table>
+ <tr><th>Lauf</th><th>Soll erfüllt</th><th>KP</th><th>FP</th><th>MP</th><th class="num">J1</th><th class="num">2A</th><th class="num">2B</th><th class="num">NV</th><th>Erkannt in</th><th>Eskaliert in</th></tr>
+ 
+    <tr>
+      <td class="mono b">1</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td class="num b">1</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">2</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td class="num b">–</td>
+      <td class="num">–</td>
+      <td class="num">–</td>
+      <td class="num b">–</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">3</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td class="num b">–</td>
+      <td class="num">–</td>
+      <td class="num">–</td>
+      <td class="num b">–</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">4</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td class="num b">1</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">5</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td class="num b">–</td>
+      <td class="num">–</td>
+      <td class="num">–</td>
+      <td class="num b">–</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">6</td>
+      <td><span class="vb vb-rejected">✕ ABWEICHUNG</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></td>
+      <td><span class="vb vb-neutral">– nicht erreicht</span></td>
+      <td class="num b">–</td>
+      <td class="num">–</td>
+      <td class="num">–</td>
+      <td class="num b">–</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="ph" title="Formelle Prüfung">FP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">7</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td class="num b">–</td>
+      <td class="num">–</td>
+      <td class="num">–</td>
+      <td class="num b">–</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">8</td>
+      <td><span class="vb vb-rejected">✕ ABWEICHUNG</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></td>
+      <td><span class="vb vb-neutral">– nicht erreicht</span></td>
+      <td class="num b">–</td>
+      <td class="num">–</td>
+      <td class="num">–</td>
+      <td class="num b">–</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="ph" title="Formelle Prüfung">FP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">9</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td class="num b">–</td>
+      <td class="num">–</td>
+      <td class="num">–</td>
+      <td class="num b">–</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">10</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td class="num b">–</td>
+      <td class="num">–</td>
+      <td class="num">–</td>
+      <td class="num b">–</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">11</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td class="num b">–</td>
+      <td class="num">–</td>
+      <td class="num">–</td>
+      <td class="num b">–</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">12</td>
+      <td><span class="vb vb-rejected">✕ ABWEICHUNG</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></td>
+      <td><span class="vb vb-neutral">– nicht erreicht</span></td>
+      <td class="num b">–</td>
+      <td class="num">–</td>
+      <td class="num">–</td>
+      <td class="num b">–</td>
+      <td><span class="mut">–</span></td>
+      <td><span class="ph" title="Formelle Prüfung">FP</span></td>
+    </tr>
+</table></div>
+</section>
+
+<section class="cg-section">
+<h2>Details</h2>
+<p class="note">Begründungen der Prüfschritte und die vier Judge-Begründungen je Lauf. NV trägt keine eigene Begründung, weil der Wert berechnet und nicht bewertet wird.</p>
+
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 1</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span> <span class="kb kb-neut">entfällt (fehlerfreier Fall)</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 23 - Aylin Demir)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Demir, Aylin</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> Demir, Aylin</li><li><span class="bkey">Mietbescheinigung:</span> Demir, Aylin</li><li><span class="bkey">Verdienstbescheinigung:</span> Demir, Aylin</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 08.11.1997</li><li><span class="bkey">Gehaltsabrechnung:</span> 08.11.1997</li><li><span class="bkey">Verdienstbescheinigung:</span> 08.11.1997</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Verdienstbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Gehaltsabrechnung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Verdienstbescheinigung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Einkommenserklärung:</span> 2.150,00 € (Brutto, monatlich)</li></ul><p class="bfazit">Kein Widerspruch (keine Abweichung von mehr als 20%)</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1-Personen-Haushalt (nur Aylin Demir)</li><li><span class="bkey">Einkommenserklärung:</span> Haushaltshinweis: 1-Personen-Haushalt</li><li>Keine weiteren Haushaltsmitglieder in den Dokumenten angegeben.</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> Gesamtmiete: 820,00 €/Monat</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete: 680,00 € + Betriebskosten (75,00 € Heizkosten + 20,00 € Wassergeld + 15,00 € Entwässerung + 15,00 € Müllabfuhr + 5,00 € Allgemeinstrom + 10,00 € weitere Betriebskosten) = 820,00 €</li><li><span class="bkey">Mietvertrag:</span> Monatliche Miete: 680,00 € + Nebenkosten (75,00 € Heizkosten + 20,00 € Frischwasser + 15,00 € Entwässerung + 15,00 € Müllabfuhr + 5,00 € Allgemeinbeleuchtung + 10,00 € weitere Betriebskosten) = 820,00 €</li><li><span class="bkey">Kontoauszug:</span> Mietzahlungen von 820,00 €/Monat (z. B. &quot;Miete Mainblick 05/26: 820,00 €&quot;)</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag (IBAN):</span> DE44500502010024681357</li><li><span class="bkey">Kontoauszug (IBAN):</span> DE44500502010024681357</li><li><span class="bkey">Gehaltsabrechnung (IBAN):</span> DE44500502010024681357</li><li><span class="bkey">Kontoinhaber (Kontoauszug):</span> Aylin Demir</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">Zusammenfassung</p><p>Es wurden keine Widersprüche zwischen den vorhandenen Angaben festgestellt. Alle geprüften Daten (Name, Geburtsdatum, Anschrift, Einkommen, Haushaltsgröße, Miete, Bankverbindung) sind konsistent.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung des Wohngeldantrags (Testfall TF-23, Aylin Demir)</p><p class="bkopf">1. Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> Vorhanden (Datei: Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis:</span> Vorhanden (Dateien: Gehaltsabrechnungen_Testfall23_Aylin_Demir_ausgefuellt.json , Verdienstbescheinigung_Testfall23_Aylin_Demir_ausgefuellt.json , Einkommenserklaerung_Testfall23_Aylin_Demir_ausgefuellt.json ).</li></ul><p class="bkopf">2. Pflichtangaben</p><p class="bkopf">Zur Person des Antragstellers</p><ul class="bl"><li><span class="bkey">Name:</span> &quot;Demir, Aylin&quot; (vorhanden in Wohngeldantrag und Einkommenserklaerung ).</li><li><span class="bkey">Geburtsdatum:</span> &quot;08.11.1997&quot; (vorhanden in Wohngeldantrag , Gehaltsabrechnungen , Verdienstbescheinigung ).</li><li><span class="bkey">Anschrift:</span> &quot;Eckenheimer Landstraße 88, 60318 Frankfurt am Main&quot; (vorhanden in Wohngeldantrag , Einkommenserklaerung , Verdienstbescheinigung ).</li><li><span class="bkey">Postleitzahl:</span> &quot;60318&quot; (vorhanden in Wohngeldantrag ).</li><li><span class="bkey">Wohnort:</span> &quot;Frankfurt am Main&quot; (vorhanden in Wohngeldantrag ).</li></ul><p class="bkopf">Zum Haushalt</p><ul class="bl"><li><span class="bkey">Haushaltsgröße:</span> 1 Person (Hinweis in Einkommenserklaerung : &quot;Haushalt: 1-Personen-Haushalt&quot;). Da keine weiteren Haushaltsmitglieder angegeben sind, gilt der Haushalt als 1-Personen-Haushalt.</li></ul><p class="bkopf">Zur Miete</p><ul class="bl"><li><span class="bkey">Gesamtmiete:</span> 820,00 € (vorhanden in Wohngeldantrag , Mietvertrag und Kontoauszug ).</li></ul><p class="bkopf">Zum Einkommen</p><ul class="bl"><li><span class="bkey">Einkommensbetrag:</span> 2.150,00 € (Brutto, vorhanden in Gehaltsabrechnungen , Verdienstbescheinigung und Einkommenserklaerung ).</li><li><span class="bkey">Art des Einkommens:</span> &quot;Gehalt/Lohn&quot; (vorhanden in Wohngeldantrag und Einkommenserklaerung ).</li></ul><p>Fazit: Alle Pflichtdokumente und Pflichtangaben liegen vollständig und bearbeitbar vor. Es gibt keine fehlenden oder unklaren Angaben. Der Antrag ist daher formell vollständig und kann weiterbearbeitet werden.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnsitz in Deutschland:</span> Die Wohnung befindet sich in Frankfurt am Main (Postleitzahl 60318), was als Hauptwohnsitz in Deutschland gilt (§ 3 WoGG).</li><li><span class="bkey">Haushaltsgröße:</span> Es handelt sich um einen 1-Personen-Haushalt (Aylin Demir), was den Anforderungen des § 5 WoGG entspricht.</li><li><span class="bkey">Monatliches Einkommen:</span> Das monatliche Bruttoeinkommen von 2.150 € ist angegeben und liegt über null (§ 13 WoGG).</li><li><span class="bkey">Monatliche Miete:</span> Die monatliche Bruttokaltmiete beträgt 680 € (Grundmiete) bzw. 820 € (Gesamtmiete inkl. Nebenkosten). Beide Werte sind über null (§ 9 WoGG).</li><li><span class="bkey">Zugehörigkeit zum Haushalt:</span> Aylin Demir ist die Antragstellerin und Hauptmieterin der Wohnung, für die Wohngeld beantragt wird (§ 5 WoGG).</li></ul><p>Ausschlussgründe</p><p class="bkopf">Es liegen keine konkreten Ausschlussgründe vor</p><ul class="bl"><li><span class="bkey">Bürgergeld/Leistungen nach SGB II:</span> Es gibt keine Hinweise darauf, dass Aylin Demir Bürgergeld oder Leistungen nach dem SGB II bezieht (§ 7 Abs. 1 WoGG).</li><li><span class="bkey">Grundsicherung/Sozialhilfe:</span> Es gibt keine Hinweise auf den Bezug von Grundsicherung oder Sozialhilfe (§ 7 Abs. 1 WoGG).</li><li><span class="bkey">BAföG/Berufsausbildungsbeihilfe:</span> Es gibt keine Hinweise auf Leistungen nach dem BAföG oder Berufsausbildungsbeihilfe (§ 20 Abs. 2 WoGG).</li><li><span class="bkey">Vermögensgrenze:</span> Es gibt keine Hinweise darauf, dass die Vermögensgrenze überschritten ist (§ 21 Nr. 3 WoGG).</li></ul><p>Tatsachenbasis</p><p class="bkopf">Die Daten sind in sich stimmig und reichen für eine materielle Bewertung aus</p><ul class="bl"><li>Die Mietangaben (680 € Bruttokaltmiete + 140 € Nebenkosten = 820 € Gesamtmiete) sind plausibel und durch den Mietvertrag sowie die Mietbescheinigung belegt.</li><li>Das Einkommen (2.150 € Brutto) ist durch Gehaltsabrechnungen und Verdienstbescheinigungen belegt.</li><li>Es gibt keine offensichtlichen Widersprüche in den Daten.</li></ul><p>Fazit</p><p>Alle Tatbestandsmerkmale sind erfüllt, und es liegen keine konkreten Ausschlussgründe vor. Die Datenbasis ist ausreichend für eine weitere Prüfung. Daher wird der Antrag für die nächste Stufe (Rechenschritt) freigegeben.</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-ok">1 · kein Fehlalarm</span></span></div>
+        <p>Der Testfall TF-23 ist ein fehlerfreier Positivfall. Die Pipeline hat in allen drei Phasen (KP, FP, MP) korrekterweise keine Widersprüche, keinen fehlenden Nachweis und keinen Mangel festgestellt. Alle drei Phasen endeten mit APPROVED, was dem erwarteten Befund einer fehlerfreien Bewilligung entspricht.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle Tatsachenbehauptungen der Pipeline lassen sich in den Originaldokumenten belegen: Name, Geburtsdatum, Anschrift, Einkommen (2.150,00 EUR), Haushaltsgröße (1 Person), Gesamtmiete (820,00 EUR), IBAN und Mietbestandteile sind in den Dokumenten korrekt wiedergegeben. Die Nebenkostenaufschlüsselung (680 + 140 = 820) stimmt mit Mietbescheinigung und Mietvertrag überein. Es sind keine unbelegten oder dokumentwidrigen Angaben festzustellen.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>In jeder Phase folgt das APPROVED-Verdict zwingend aus den genannten Tatsachen: Die KP stellt keine Widersprüche fest und genehmigt; die FP bestätigt, dass alle Pflichtdokumente und Pflichtangaben vorliegen, und genehmigt; die MP stellt fest, dass alle Tatbestandsmerkmale erfüllt und keine Ausschlussgründe vorhanden sind, und genehmigt. Jeder Schritt der Ableitung ist in der Begründung explizit dargestellt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="vb vb-neutral">– keine</span> <span class="mut">· eskaliert in</span> <span class="vb vb-neutral">– keine</span> <span class="kb kb-neut">entfällt (fehlerfreier Fall)</span></span></div>
+        <p>Es wurde kein Fehler injiziert (fehlerfreier Fall), daher ist keine Beanstandung zu erwarten. Die Tatsachenfeststellung der Erkennungsphase entfällt.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 2</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 23 – Aylin Demir)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Demir, Aylin</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> Demir, Aylin</li><li><span class="bkey">Kontoauszug:</span> Aylin Demir</li></ul><p class="bfazit">Kein Widerspruch (Namensangaben stimmen überein).</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 08.11.1997</li><li><span class="bkey">Gehaltsabrechnung:</span> 08.11.1997</li><li><span class="bkey">Verdienstbescheinigung:</span> 08.11.1997</li></ul><p class="bfazit">Kein Widerspruch (Geburtsdaten stimmen überein).</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch (Adressen stimmen überein).</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Gehaltsabrechnung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Verdienstbescheinigung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Kontoauszug:</span> 1.565,00 € (Netto, monatlich, Gehaltszahlung)</li></ul><p class="bfazit">Kein Widerspruch (Bruttoeinkommen stimmt überein; Nettoeinkommen ist konsistent mit den Abzügen in den Gehaltsabrechnungen).</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1-Personen-Haushalt (nur Aylin Demir)</li><li><span class="bkey">Einkommensnachweis:</span> Keine weiteren Haushaltsmitglieder genannt</li></ul><p class="bfazit">Kein Widerspruch (Haushaltsgröße stimmt mit den Angaben überein).</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> Gesamtmiete: 820,00 €/Monat</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete: 680,00 € + Betriebskosten (75,00 € Heizkosten + 20,00 € Wassergeld + 15,00 € Entwässerung + 15,00 € Müllabfuhr + 5,00 € Allgemeinstrom + 10,00 € weitere Betriebskosten) = 820,00 €</li><li><span class="bkey">Mietvertrag:</span> Monatliche Miete: 680,00 € + Nebenkosten (75,00 € Heizkosten + 20,00 € Frischwasser + 15,00 € Entwässerung + 15,00 € Müllabfuhr + 5,00 € Allgemeinbeleuchtung + 10,00 € weitere Betriebskosten) = 820,00 €</li><li><span class="bkey">Kontoauszug:</span> Mietzahlungen von 820,00 €/Monat an Hausverwaltung Mainblick GmbH</li></ul><p class="bfazit">Kein Widerspruch (Mietangaben sind konsistent).</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag:</span> IBAN: DE44500502010024681357 (Frankfurter Sparkasse)</li><li><span class="bkey">Kontoauszug:</span> IBAN: DE44500502010024681357 (Kontoinhaber: Aylin Demir)</li><li><span class="bkey">Gehaltsabrechnung:</span> IBAN: DE44500502010024681357</li></ul><p class="bfazit">Kein Widerspruch (IBAN gehört zum Antragsteller).</p><p>Fazit: Es wurden keine Widersprüche zwischen den vorhandenen Angaben festgestellt. Alle geprüften Daten sind konsistent.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung des Wohngeldantrags</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> Vorhanden (Datei: Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis:</span> Vorhanden (Dateien: Gehaltsabrechnungen_Testfall23_Aylin_Demir_ausgefuellt.json , Verdienstbescheinigung_Testfall23_Aylin_Demir_ausgefuellt.json , Einkommenserklaerung_Testfall23_Aylin_Demir_ausgefuellt.json ).</li></ul><p class="bkopf">Pflichtangaben</p><ul class="bl"><li>Zur Person des Antragstellers:</li><li><span class="bkey">Name:</span> Demir, Aylin (vorhanden).</li><li><span class="bkey">Geburtsdatum:</span> 08.11.1997 (vorhanden).</li><li><span class="bkey">Anschrift:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main (vorhanden).</li><li><span class="bkey">Postleitzahl:</span> 60318 (vorhanden).</li><li><span class="bkey">Wohnort:</span> Frankfurt am Main (vorhanden).</li><li>Zum Haushalt:</li><li><span class="bkey">Haushaltsgröße:</span> 1 Person (implizit, da keine weiteren Haushaltsmitglieder angegeben sind).</li><li>Zur Miete:</li><li><span class="bkey">Gesamtmiete:</span> 820,00 € (vorhanden und größer als null).</li><li>Zum Einkommen:</li><li><span class="bkey">Einkommensbetrag:</span> 2.150,00 € (Brutto) (vorhanden und größer als null).</li><li><span class="bkey">Art des Einkommens:</span> Gehalt/Lohn (vorhanden und nicht leer).</li></ul><p>Fazit: Alle Pflichtdokumente und Pflichtangaben liegen vollständig und bearbeitbar vor. Der Antrag ist formell in Ordnung.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Materielle Vorprüfung des Wohngeldantrags (Testfall 23 – Aylin Demir)</p><p>1. Tatbestandsmerkmale (§§ 3, 5, 9, 13 WoGG)</p><ul class="bl"><li><span class="bkey">Wohnsitz in Deutschland:</span> Die Wohnung befindet sich in Frankfurt am Main (PLZ 60318) und ist der Hauptwohnsitz der Antragstellerin (Mietvertrag, Mietbescheinigung, Wohngeldantrag). Erfüllt.</li><li><span class="bkey">Haushaltsgröße:</span> Es handelt sich um einen 1-Personen-Haushalt (Einkommenserklärung, Wohngeldantrag). Erfüllt.</li><li><span class="bkey">Monatliches Einkommen &gt; 0:</span> Die Antragstellerin bezieht ein monatliches Bruttoeinkommen von 2.150 € (Gehaltsabrechnungen, Verdienstbescheinigung, Einkommenserklärung). Erfüllt.</li><li><span class="bkey">Monatliche Miete &gt; 0:</span> Die Bruttokaltmiete beträgt 680 € (Mietvertrag, Mietbescheinigung). Die Gesamtmiete inkl. Betriebskosten liegt bei 820 € (Kontoauszug, Wohngeldantrag). Erfüllt.</li><li><span class="bkey">Antragstellerin gehört zum Haushalt:</span> Die Antragstellerin ist Hauptmieterin der Wohnung (Mietvertrag, Mietbescheinigung). Erfüllt.</li></ul><p>2. Ausschlussgründe (§§ 7, 20, 21 WoGG)</p><ul class="bl"><li><span class="bkey">Leistungen nach SGB II/ XII:</span> Keine Angaben zu Bürgergeld, Grundsicherung oder Sozialhilfe (Einkommenserklärung: alle Beträge = 0 €). Kein Ausschluss.</li><li><span class="bkey">BAföG/Berufsausbildungsbeihilfe:</span> Keine Angaben zu BAföG (Einkommenserklärung: Betrag = 0 €). Kein Ausschluss.</li><li><span class="bkey">Vermögensgrenze überschritten:</span> Die Antragstellerin erklärt, dass ihr Vermögen nicht über der maßgeblichen Grenze liegt (Wohngeldantrag, Frage 20). Kein Ausschluss.</li></ul><p>3. Tatsachenbasis (§ 24 VwVfG)</p><ul class="bl"><li><span class="bkey">Plausibilität der Miete:</span> Die Bruttokaltmiete (680 €) und die Gesamtmiete (820 €) sind konsistent mit den Angaben im Mietvertrag, der Mietbescheinigung und den Kontoauszügen. Plausibel.</li><li><span class="bkey">Datengrundlage:</span> Alle für die materielle Prüfung erforderlichen Daten (Wohnsitz, Haushaltsgröße, Einkommen, Miete) sind vorhanden und stimmig. Ausreichend.</li></ul><p>Ergebnis</p><p>Alle Tatbestandsmerkmale sind erfüllt, und es liegen keine konkreten Ausschlussgründe vor. Die Tatsachenbasis ist ausreichend für eine weitere Bearbeitung.</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div><p class="mut">Keine Judge-Bewertung vorhanden.</p></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 3</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 23 – Aylin Demir)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Demir, Aylin</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> Demir, Aylin</li><li><span class="bkey">Kontoauszug:</span> Aylin Demir</li><li><span class="bkey">Mietbescheinigung:</span> Demir, Aylin</li><li><span class="bkey">Mietvertrag:</span> Aylin Demir</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 08.11.1997</li><li><span class="bkey">Gehaltsabrechnung:</span> 08.11.1997</li><li><span class="bkey">Verdienstbescheinigung:</span> 08.11.1997</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Verdienstbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Gehaltsabrechnung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Verdienstbescheinigung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Kontoauszug:</span> 1.565,00 € (Netto, monatlich, Gehaltseingang)</li></ul><p class="bfazit">Kein Widerspruch (Netto- und Bruttoangaben sind konsistent mit den Abzügen in den Gehaltsabrechnungen).</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1-Personen-Haushalt (nur Aylin Demir)</li><li><span class="bkey">Einkommensnachweis:</span> Nur Aylin Demir als Arbeitnehmerin genannt</li><li><span class="bkey">Mietvertrag:</span> Aylin Demir als Mieterin</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> 820,00 € (Gesamtmiete)</li><li><span class="bkey">Mietbescheinigung:</span> 680,00 € (Grundmiete) + 75,00 € (Heizkosten) + 20,00 € (Wassergeld) + 15,00 € (Entwässerung) + 15,00 € (Müllabfuhr) + 5,00 € (Allgemeinstrom) + 10,00 € (weitere Betriebskosten) = 810,00 €</li><li><span class="bkey">Mietvertrag:</span> 680,00 € (Grundmiete) + 75,00 € (Heizkosten) + 20,00 € (Wassergeld) + 15,00 € (Entwässerung) + 15,00 € (Müllabfuhr) + 5,00 € (Allgemeinstrom) + 10,00 € (weitere Betriebskosten) = 810,00 €</li><li><span class="bkey">Kontoauszug:</span> 820,00 € (monatliche Mietabbuchung)</li></ul><p class="bfazit">Kein Widerspruch (Die Abweichung zwischen 810,00 € und 820,00 € ist minimal und könnte auf Rundungen oder zusätzliche Kosten zurückzuführen sein. Da keine logische Unvereinbarkeit vorliegt, wird dies nicht als Widerspruch gewertet.)</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag:</span> IBAN: DE44500502010024681357 (Kontoinhaber: Aylin Demir)</li><li><span class="bkey">Kontoauszug:</span> IBAN: DE44500502010024681357 (Kontoinhaber: Aylin Demir)</li><li><span class="bkey">Gehaltsabrechnung:</span> IBAN: DE44500502010024681357 (Arbeitnehmerkonto: Aylin Demir)</li></ul><p class="bfazit">Kein Widerspruch</p><p>Fazit: Es wurden keine Widersprüche zwischen den vorhandenen Angaben festgestellt. Alle geprüften Daten sind konsistent.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung des Wohngeldantrags</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> Vorhanden (Datei: Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis:</span> Vorhanden (Dateien: Gehaltsabrechnungen_Testfall23_Aylin_Demir_ausgefuellt.json , Verdienstbescheinigung_Testfall23_Aylin_Demir_ausgefuellt.json , Einkommenserklaerung_Testfall23_Aylin_Demir_ausgefuellt.json ).</li></ul><p class="bkopf">Pflichtangaben</p><p class="bkopf">Zur Person des Antragstellers</p><ul class="bl"><li><span class="bkey">Name:</span> Demir, Aylin (vorhanden in Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json ).</li><li><span class="bkey">Geburtsdatum:</span> 08.11.1997 (vorhanden in Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json und Verdienstbescheinigung_Testfall23_Aylin_Demir_ausgefuellt.json ).</li><li><span class="bkey">Anschrift:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main (vorhanden in Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json ).</li><li><span class="bkey">Postleitzahl:</span> 60318 (vorhanden in Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json ).</li><li><span class="bkey">Wohnort:</span> Frankfurt am Main (vorhanden in Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json ).</li></ul><p class="bkopf">Zum Haushalt</p><ul class="bl"><li><span class="bkey">Haushaltsgröße:</span> 1-Personen-Haushalt (vorhanden in Einkommenserklaerung_Testfall23_Aylin_Demir_ausgefuellt.json und Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json ).</li></ul><p class="bkopf">Zur Miete</p><ul class="bl"><li><span class="bkey">Gesamtmiete:</span> 820,00 € (vorhanden in Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json und Mietvertrag_Testfall23_Aylin_Demir_ausgefuellt.json ).</li></ul><p class="bkopf">Zum Einkommen</p><ul class="bl"><li><span class="bkey">Einkommensbetrag:</span> 2.150,00 € (Brutto) (vorhanden in Gehaltsabrechnungen_Testfall23_Aylin_Demir_ausgefuellt.json und Verdienstbescheinigung_Testfall23_Aylin_Demir_ausgefuellt.json ).</li><li><span class="bkey">Art des Einkommens:</span> Gehalt/Lohn (vorhanden in Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json ).</li></ul><p>Ergebnis: Alle Pflichtdokumente und Pflichtangaben liegen vollständig und bearbeitbar vor. Der Antrag ist formell vollständig.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnsitz in Deutschland:</span> Die Wohnung befindet sich in Frankfurt am Main (Postleitzahl 60318), was als Hauptwohnsitz in Deutschland gilt (§ 3 WoGG).</li><li><span class="bkey">Haushaltsgröße:</span> Es handelt sich um einen 1-Personen-Haushalt (Aylin Demir), was den Anforderungen des § 5 WoGG entspricht.</li><li><span class="bkey">Monatliches Einkommen:</span> Aylin Demir hat ein monatliches Bruttoeinkommen von 2.150 € (Gehalt/Lohn), was deutlich über null liegt (§ 13 WoGG).</li><li><span class="bkey">Monatliche Miete:</span> Die monatliche Bruttokaltmiete beträgt 680 € (Grundmiete), und die Gesamtmiete inklusive Nebenkosten beträgt 820 €. Beide Werte liegen über null (§ 9 WoGG).</li><li><span class="bkey">Zugehörigkeit zum Haushalt:</span> Aylin Demir ist die Antragstellerin und Hauptmieterin der Wohnung, für die Wohngeld beantragt wird (§ 5 WoGG).</li></ul><p>Ausschlussgründe</p><p class="bkopf">Es liegen keine konkreten Ausschlussgründe vor</p><ul class="bl"><li><span class="bkey">Bürgergeld/Leistungen nach SGB II:</span> Es gibt keine Hinweise darauf, dass Aylin Demir Bürgergeld oder Leistungen nach dem SGB II bezieht. In der Einkommenserklärung und im Wohngeldantrag sind keine solchen Leistungen angegeben.</li><li><span class="bkey">Grundsicherung/Sozialhilfe:</span> Es gibt keine Hinweise auf Bezug von Grundsicherung oder Sozialhilfe.</li><li><span class="bkey">BAföG/Berufsausbildungsbeihilfe:</span> Es gibt keine Hinweise auf Bezug von BAföG oder Berufsausbildungsbeihilfe.</li><li><span class="bkey">Vermögensgrenze:</span> Aylin Demir hat angegeben, dass ihr Vermögen nicht über der maßgeblichen Grenze liegt. Es gibt keine konkreten Daten, die eine Überschreitung belegen.</li></ul><p>Tatsachenbasis</p><p class="bkopf">Die Daten sind ausreichend und plausibel</p><ul class="bl"><li><span class="bkey">Mietangaben:</span> Die Mietangaben (Grundmiete 680 €, Gesamtmiete 820 €) sind konsistent mit den Angaben im Mietvertrag und der Mietbescheinigung. Die Nebenkosten (Heizung, Warmwasser, Müllabfuhr, Entwässerung, Allgemeinstrom, Hausreinigung) sind detailliert aufgeführt und summieren sich plausibel.</li><li><span class="bkey">Einkommensangaben:</span> Die Einkommensangaben (2.150 € Bruttoeinkommen) sind durch Gehaltsabrechnungen und Verdienstbescheinigungen belegt.</li><li><span class="bkey">Haushaltsgröße:</span> Die Haushaltsgröße (1 Person) ist klar angegeben und durch die Einkommenserklärung bestätigt.</li></ul><p>Fazit: Alle Tatbestandsmerkmale sind erfüllt, und es liegen keine konkreten Ausschlussgründe vor. Die Datenbasis ist ausreichend für eine materielle Bewertung.</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div><p class="mut">Keine Judge-Bewertung vorhanden.</p></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 4</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span> <span class="kb kb-neut">entfällt (fehlerfreier Fall)</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 23 – Aylin Demir)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Demir, Aylin</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnungen):</span> Demir, Aylin</li><li><span class="bkey">Kontoauszug:</span> Aylin Demir</li><li><span class="bkey">Mietbescheinigung:</span> Demir, Aylin</li><li><span class="bkey">Verdienstbescheinigung:</span> Demir, Aylin</li><li><span class="bkey">Mietvertrag:</span> Aylin Demir</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 08.11.1997</li><li><span class="bkey">Gehaltsabrechnungen:</span> 08.11.1997</li><li><span class="bkey">Verdienstbescheinigung:</span> 08.11.1997</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnungen):</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Verdienstbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Gehaltsabrechnungen:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Verdienstbescheinigung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Einkommenserkärung:</span> 2.150,00 € (Brutto, monatlich)</li></ul><p class="bfazit">Kein Widerspruch (keine Abweichung &gt; 20 %)</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1-Personen-Haushalt</li><li><span class="bkey">Einkommenserkärung:</span> Haushalt: 1-Personen-Haushalt</li><li>Keine weiteren Haushaltsmitglieder in den Dokumenten angegeben.</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> Gesamtmiete: 820,00 €/Monat</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete: 680,00 € + Betriebskosten (75,00 € Heizkosten + 20,00 € Wassergeld + 15,00 € Entwässerung + 15,00 € Müllabfuhr + 5,00 € Allgemeinstrom + 10,00 € weitere Betriebskosten) = 820,00 €</li><li><span class="bkey">Mietvertrag:</span> Monatliche Miete: 680,00 € + Nebenkosten (75,00 € Heizkosten + 20,00 € Frischwasser + 15,00 € Entwässerung + 15,00 € Müllabfuhr + 5,00 € Allgemeinbeleuchtung + 10,00 € weitere Betriebskosten) = 820,00 €</li><li><span class="bkey">Kontoauszug:</span> Mietabbuchungen: 820,00 €/Monat</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag:</span> IBAN: DE44500502010024681357 (Kontoinhaber: Aylin Demir)</li><li><span class="bkey">Kontoauszug:</span> IBAN: DE44500502010024681357 (Kontoinhaber: Aylin Demir)</li><li><span class="bkey">Gehaltsabrechnungen:</span> IBAN: DE44500502010024681357 (Arbeitnehmerkonto: Aylin Demir)</li></ul><p class="bfazit">Kein Widerspruch</p><p>Fazit: Es liegen keine Widersprüche zwischen den geprüften Angaben vor. Alle relevanten Daten sind konsistent.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Formelle Prüfung des Wohngeldantrags (Testfall TF-23, Aylin Demir)</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> Vorhanden (Datei: Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis:</span> Vorhanden (Dateien: Gehaltsabrechnungen_Testfall23_Aylin_Demir_ausgefuellt.json , Verdienstbescheinigung_Testfall23_Aylin_Demir_ausgefuellt.json , Einkommenserklaerung_Testfall23_Aylin_Demir_ausgefuellt.json ).</li></ul><p class="bkopf">Pflichtangaben</p><p class="bkopf">Zur Person des Antragstellers</p><ul class="bl"><li><span class="bkey">Name:</span> &quot;Demir, Aylin&quot; (vorhanden in Wohngeldantrag und Einkommenserklaerung ).</li><li><span class="bkey">Geburtsdatum:</span> &quot;08.11.1997&quot; (vorhanden in Wohngeldantrag , Gehaltsabrechnungen , Verdienstbescheinigung ).</li><li><span class="bkey">Anschrift:</span> &quot;Eckenheimer Landstraße 88, 60318 Frankfurt am Main&quot; (vorhanden in Wohngeldantrag , Einkommenserklaerung , Verdienstbescheinigung ).</li><li><span class="bkey">Postleitzahl:</span> &quot;60318&quot; (vorhanden in Wohngeldantrag ).</li><li><span class="bkey">Wohnort:</span> &quot;Frankfurt am Main&quot; (vorhanden in Wohngeldantrag ).</li></ul><p class="bkopf">Zum Haushalt</p><ul class="bl"><li><span class="bkey">Haushaltsgröße:</span> 1 Person (implizit durch fehlende weitere Haushaltsmitglieder in frage_06_haushaltsmitglieder des Wohngeldantrags und Hinweis &quot;Haushalt: 1-Personen-Haushalt&quot; in Einkommenserklaerung ).</li></ul><p class="bkopf">Zur Miete</p><ul class="bl"><li><span class="bkey">Mietbetrag:</span> Gesamtmiete von 820,00 €/Monat (vorhanden in frage_23_gesamtmiete des Wohngeldantrags und Mietvertrag ).</li></ul><p class="bkopf">Zum Einkommen</p><ul class="bl"><li><span class="bkey">Einkommensbetrag:</span> Bruttoeinkommen von 2.150,00 €/Monat (vorhanden in Gehaltsabrechnungen , Verdienstbescheinigung und frage_12_einnahmen des Wohngeldantrags ).</li><li><span class="bkey">Art des Einkommens:</span> &quot;Gehalt/Lohn&quot; (vorhanden in frage_12_einnahmen des Wohngeldantrags und Gehaltsabrechnungen ).</li></ul><p class="bkopf">Ergebnis</p><p>Alle Pflichtdokumente und Pflichtangaben liegen vollständig und bearbeitbar vor. Der Antrag ist formell vollständig und kann weiterbearbeitet werden.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Materielle Vorprüfung des Wohngeldantrags (Testfall 23 – Aylin Demir)</p><p>1. Tatbestandsmerkmale (§§ 3, 5, 9, 13 WoGG)</p><ul class="bl"><li><span class="bkey">Wohnsitz in Deutschland:</span> Die Wohnung befindet sich in Frankfurt am Main (PLZ 60318) und ist der Hauptwohnsitz der Antragstellerin (Mietvertrag, Mietbescheinigung, Antragsangaben). Erfüllt.</li><li><span class="bkey">Haushaltsgröße:</span> Es handelt sich um einen 1-Personen-Haushalt (Einkommenserklärung, Antragsangaben). Erfüllt.</li><li><span class="bkey">Monatliches Einkommen &gt; 0:</span> Die Antragstellerin bezieht ein monatliches Bruttoeinkommen von 2.150 € (Gehaltsabrechnungen, Verdienstbescheinigung, Einkommenserklärung). Erfüllt.</li><li><span class="bkey">Monatliche Miete &gt; 0:</span> Die Bruttokaltmiete beträgt 680 € (Mietvertrag, Mietbescheinigung). Die Gesamtmiete inkl. Betriebskosten liegt bei 820 € (Kontoauszüge, Antragsangaben). Erfüllt.</li><li><span class="bkey">Zugehörigkeit zum Haushalt:</span> Die Antragstellerin ist Hauptmieterin der Wohnung (Mietvertrag, Mietbescheinigung). Erfüllt.</li></ul><p>2. Ausschlussgründe (§§ 7, 20, 21 WoGG)</p><ul class="bl"><li><span class="bkey">Leistungen nach SGB II/II oder Sozialhilfe:</span> Keine Angaben zu Bürgergeld, Grundsicherung oder Sozialhilfe in der Einkommenserklärung oder im Antrag. Kein Ausschluss.</li><li><span class="bkey">BAföG/Berufsausbildungsbeihilfe:</span> Keine entsprechenden Leistungen angegeben. Kein Ausschluss.</li><li><span class="bkey">Vermögensgrenze überschritten:</span> Die Antragstellerin erklärt, dass ihr Vermögen nicht über der maßgeblichen Grenze liegt (Frage 20 des Antrags). Kein Ausschluss.</li><li><span class="bkey">Fehlende Kernmerkmale:</span> Alle Pflichtangaben (Wohnsitz, Einkommen, Miete) sind vorhanden und plausibel. Kein Ausschluss.</li></ul><p>3. Tatsachenbasis (§ 24 VwVfG, § 9 WoGG)</p><ul class="bl"><li><span class="bkey">Plausibilität der Miete:</span> Die Bruttokaltmiete von 680 € ist konsistent mit den Angaben im Mietvertrag, der Mietbescheinigung und den Kontoauszügen (820 € inkl. Betriebskosten). Plausibel.</li><li><span class="bkey">Datengrundlage:</span> Alle relevanten Daten (Wohnsitz, Haushaltsgröße, Einkommen, Miete) sind vollständig und widerspruchsfrei vorhanden. Ausreichend.</li></ul><p>Fazit</p><p>Alle Tatbestandsmerkmale sind erfüllt, und es liegt kein konkreter Ausschlussgrund vor. Die Datenbasis ist ausreichend für eine materielle Bewertung. Der Antrag kann im weiteren Verfahren bearbeitet werden.</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-ok">1 · kein Fehlalarm</span></span></div>
+        <p>Es handelt sich um einen fehlerfreien Fall (kein injizierter Fehler). Die Pipeline hat in allen drei Phasen korrekterweise keinen Mangel, keinen Widerspruch und keinen fehlenden Nachweis behauptet. KP, FP und MP endeten jeweils mit APPROVED. Es wurde kein Fehlalarm ausgelöst.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle Tatsachenbehauptungen der Pipeline lassen sich in den Originaldokumenten belegen: Name, Geburtsdatum und Anschrift stimmen across allen Dokumenten überein; Bruttoeinkommen 2.150,00 EUR ist in Gehaltsabrechnungen, Verdienstbescheinigung, Einkommenserklärung und Antrag belegt; Gesamtmiete 820,00 EUR (680 Grundmiete + 140 Nebenkosten) ist im Mietvertrag, der Mietbescheinigung, dem Antrag und den Kontoauszügen nachvollziehbar; IBAN, Haushaltsgröße und alle weiteren Angaben sind dokumentenübergreifend korrekt wiedergegeben. Keine Angabe widerspricht den Dokumenten und keine entscheidungstragende Angabe ist unbelegt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>In jeder Phase folgt das APPROVED-Verdict schlüssig aus den genannten Tatsachen. Die KP stellt konsistent übereinstimmende Daten fest und schließt auf keine Widersprüche. Die FP listet alle Pflichtdokumente und Pflichtangaben als vorhanden und schließt auf formelle Vollständigkeit. Die MP prüft Tatbestandsmerkmale (alle erfüllt), Ausschlussgründe (keine vorhanden) und Tatsachenbasis (ausreichend) und schließt daraus auf eine positive Entscheidung. Jeder Schritt der Ableitung ist explizit dargelegt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="vb vb-neutral">– keine</span> <span class="mut">· eskaliert in</span> <span class="vb vb-neutral">– keine</span> <span class="kb kb-neut">entfällt (fehlerfreier Fall)</span></span></div>
+        <p>Es wurde kein Fehler injiziert (fehlerfreier Fall). Daher ist keine Phase als Erkennung eines erwarteten Befunds zu bewerten; die Feststellung entfällt.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 5</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 23 – Aylin Demir)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Demir, Aylin</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> Demir, Aylin</li><li><span class="bkey">Verdienstbescheinigung:</span> Demir, Aylin</li><li><span class="bkey">Kontoauszug:</span> Aylin Demir</li></ul><p class="bfazit">Kein Widerspruch (alle Namen stimmen überein).</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 08.11.1997</li><li><span class="bkey">Gehaltsabrechnung:</span> 08.11.1997</li><li><span class="bkey">Verdienstbescheinigung:</span> 08.11.1997</li></ul><p class="bfazit">Kein Widerspruch (alle Daten stimmen überein).</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Verdienstbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch (alle Adressen stimmen überein).</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Gehaltsabrechnung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Verdienstbescheinigung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Kontoauszug:</span> 1.565,00 € (Netto, monatlich, Gehaltseingang)</li></ul><p class="bfazit">Kein Widerspruch (Bruttoeinkommen stimmt überein; Nettoeinkommen ist konsistent mit den Abzügen in den Gehaltsabrechnungen).</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1-Personen-Haushalt (keine weiteren Haushaltsmitglieder angegeben)</li><li><span class="bkey">Einkommensnachweis:</span> Keine weiteren Personen genannt</li></ul><p class="bfazit">Kein Widerspruch (Haushaltsgröße passt zu den Angaben).</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> 820,00 € (Gesamtmiete pro Monat)</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete 680,00 € + Betriebskosten (75,00 € Heizkosten + 20,00 € Wassergeld + 15,00 € Entwässerung + 15,00 € Müllabfuhr + 5,00 € Allgemeinstrom + 10,00 € weitere Betriebskosten) = 820,00 €</li><li><span class="bkey">Mietvertrag:</span> 680,00 € (Grundmiete) + 75,00 € (Heizkosten) + 20,00 € (Wassergeld) + 15,00 € (Entwässerung) + 15,00 € (Müllabfuhr) + 5,00 € (Allgemeinstrom) + 10,00 € (weitere Betriebskosten) = 820,00 €</li><li><span class="bkey">Kontoauszug:</span> 820,00 € (monatliche Mietabbuchung)</li></ul><p class="bfazit">Kein Widerspruch (alle Mietangaben sind rechnerisch und logisch konsistent).</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag:</span> IBAN: DE44500502010024681357 (Kontoinhaber: Aylin Demir)</li><li><span class="bkey">Kontoauszug:</span> IBAN: DE44500502010024681357 (Kontoinhaber: Aylin Demir)</li><li><span class="bkey">Gehaltsabrechnung:</span> IBAN: DE44500502010024681357 (Arbeitnehmerkonto: Aylin Demir)</li></ul><p class="bfazit">Kein Widerspruch (IBAN gehört zum Antragsteller).</p><p>Fazit: Es wurden keine Widersprüche zwischen den vorhandenen Angaben festgestellt. Alle geprüften Daten sind konsistent.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung des Wohngeldantrags (Testfall TF-23, Aylin Demir)</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> Vorhanden (Datei: Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis:</span> Vorhanden (Dateien: Gehaltsabrechnungen_Testfall23_Aylin_Demir_ausgefuellt.json , Verdienstbescheinigung_Testfall23_Aylin_Demir_ausgefuellt.json , Einkommenserklaerung_Testfall23_Aylin_Demir_ausgefuellt.json ).</li></ul><p class="bkopf">Pflichtangaben</p><p class="bkopf">Zur Person des Antragstellers</p><ul class="bl"><li><span class="bkey">Name:</span> &quot;Demir, Aylin&quot; (vorhanden in Wohngeldantrag, Frage 01).</li><li><span class="bkey">Geburtsdatum:</span> &quot;08.11.1997&quot; (vorhanden in Wohngeldantrag, Frage 01).</li><li><span class="bkey">Anschrift:</span> &quot;Eckenheimer Landstraße 88&quot; (vorhanden in Wohngeldantrag, Frage 02).</li><li><span class="bkey">Postleitzahl:</span> &quot;60318&quot; (vorhanden in Wohngeldantrag, Frage 02).</li><li><span class="bkey">Wohnort:</span> &quot;Frankfurt am Main&quot; (vorhanden in Wohngeldantrag, Frage 02).</li></ul><p class="bkopf">Zum Haushalt</p><ul class="bl"><li><span class="bkey">Haushaltsgröße:</span> 1 Person (implizit durch fehlende weitere Haushaltsmitglieder in Frage 06 des Wohngeldantrags).</li></ul><p class="bkopf">Zur Miete</p><ul class="bl"><li><span class="bkey">Gesamtmiete:</span> 820,00 € (vorhanden in Wohngeldantrag, Frage 23).</li></ul><p class="bkopf">Zum Einkommen</p><ul class="bl"><li><span class="bkey">Einkommensbetrag:</span> 2.150,00 € (Brutto, vorhanden in Wohngeldantrag, Frage 12, sowie in Gehaltsabrechnungen und Verdienstbescheinigung).</li><li><span class="bkey">Art des Einkommens:</span> &quot;Gehalt/Lohn&quot; (vorhanden in Wohngeldantrag, Frage 12).</li></ul><p>Ergebnis: Alle Pflichtdokumente und Pflichtangaben sind vollständig und bearbeitbar. Der Antrag wird formell als vollständig bewertet .</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">1. Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland und Hauptwohnsitz:</span> Die Wohnung befindet sich in Frankfurt am Main (Postleitzahl 60318), was durch die Mietbescheinigung, den Mietvertrag und den Wohngeldantrag belegt ist. Der Antragsteller wohnt dort seit dem 01.06.2024 ( Mietvertrag: § 2 Mietzeit ).</li><li><span class="bkey">Haushaltsgröße:</span> Es handelt sich um einen 1-Personen-Haushalt ( Einkommenserklärung: Haushaltshinweis ). Dies erfüllt die Mindestanforderung von einer Person.</li><li><span class="bkey">Monatliches Einkommen:</span> Der Antragsteller hat ein monatliches Bruttoeinkommen von 2.150 € aus nichtselbstständiger Arbeit ( Gehaltsabrechnungen, Verdienstbescheinigung, Wohngeldantrag: Frage 12 ). Dies ist mehr als null.</li><li><span class="bkey">Monatliche Miete:</span> Die monatliche Bruttokaltmiete beträgt 680 € ( Mietvertrag: § 3 Miete , Mietbescheinigung: grundmiete_eur_monatlich ). Die Gesamtmiete inkl. Betriebskosten beträgt 820 € ( Kontoauszug: Miete Mainblick 05/26, 06/26, 07/26 ). Beide Werte sind mehr als null.</li><li><span class="bkey">Antragsteller gehört zum Haushalt:</span> Der Antragsteller ist Hauptmieter der Wohnung ( Mietbescheinigung: nutzungsverhaeltnis_hauptmieter = true , Wohngeldantrag: Frage 21 ).</li></ul><p class="bkopf">2. Ausschlussgründe</p><ul class="bl"><li><span class="bkey">Bürgergeld/Leistungen nach SGB II:</span> Es gibt keine Hinweise darauf, dass der Antragsteller Bürgergeld oder Leistungen nach dem SGB II bezieht ( Einkommenserklärung: Abschnitt 03, Wohngeldantrag: Frage 10 ).</li><li><span class="bkey">Grundsicherung/Sozialhilfe:</span> Es gibt keine Hinweise darauf, dass der Antragsteller Grundsicherung oder Sozialhilfe bezieht ( Einkommenserklärung: Abschnitt 03 ).</li><li><span class="bkey">BAföG/Berufsausbildungsbeihilfe:</span> Es gibt keine Hinweise darauf, dass der Antragsteller BAföG oder Berufsausbildungsbeihilfe bezieht ( Einkommenserklärung: Abschnitt 03 ).</li><li><span class="bkey">Vermögensgrenze überschritten:</span> Der Antragsteller hat erklärt, dass kein Vermögen oberhalb der maßgeblichen Grenze vorhanden ist ( Wohngeldantrag: Frage 20 ).</li></ul><p class="bkopf">3. Tatsachenbasis</p><ul class="bl"><li><span class="bkey">Die Miete ist rechnerisch plausibel:</span> Die Bruttokaltmiete von 680 € wird durch den Mietvertrag und die Mietbescheinigung bestätigt. Die Gesamtmiete von 820 € (inkl. Betriebskosten) wird durch die Kontoauszüge belegt.</li><li>Die Datengrundlage ist ausreichend, um die Anspruchsvoraussetzungen und Ausschlussgründe verlässlich zu beurteilen. Alle relevanten Daten (Wohnsitz, Haushaltsgröße, Einkommen, Miete) sind vorhanden und konsistent.</li></ul></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div><p class="mut">Keine Judge-Bewertung vorhanden.</p></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 6</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 23 – Aylin Demir)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Demir, Aylin</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> Demir, Aylin</li><li><span class="bkey">Kontoauszug:</span> Aylin Demir</li></ul><p class="bfazit">Kein Widerspruch (Namen stimmen überein).</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 08.11.1997</li><li><span class="bkey">Gehaltsabrechnung:</span> 08.11.1997</li><li><span class="bkey">Verdienstbescheinigung:</span> 08.11.1997</li></ul><p class="bfazit">Kein Widerspruch (Daten stimmen überein).</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Verdienstbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch (Adressen stimmen überein).</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 2.150 € (Brutto, monatlich)</li><li><span class="bkey">Gehaltsabrechnung:</span> 2.150 € (Brutto, monatlich)</li><li><span class="bkey">Verdienstbescheinigung:</span> 2.150 € (Brutto, monatlich)</li><li><span class="bkey">Kontoauszug:</span> 1.565 € (Netto, monatlich, Gehaltseingang)</li></ul><p class="bfazit">Kein Widerspruch (Bruttoeinkommen stimmt überein; Nettoeinkommen ist konsistent mit den Abzügen in den Gehaltsabrechnungen).</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1-Personen-Haushalt</li><li><span class="bkey">Einkommensnachweis:</span> Keine weiteren Haushaltsmitglieder genannt</li><li><span class="bkey">Mietvertrag:</span> Mieter: Aylin Demir (keine weiteren Mieter)</li></ul><p class="bfazit">Kein Widerspruch (Haushaltsgröße von 1 Person ist konsistent).</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> Gesamtmiete: 820 €/Monat</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete: 680 € + Betriebskosten (Heizung 75 € + Wasser 20 € + Entwässerung 15 € + Müllabfuhr 15 € + Allgemeinstrom 5 € + weitere Betriebskosten 10 €) = 820 €</li><li><span class="bkey">Mietvertrag:</span> Monatliche Miete: 680 € + Heizung/Warmwasser 75 € + Frischwasser 20 € + Entwässerung 15 € + Müllabfuhr 15 € + Allgemeinbeleuchtung 5 € + weitere Betriebskosten 10 € = 820 €</li><li><span class="bkey">Kontoauszug:</span> Mietabbuchung: 820 €/Monat</li></ul><p class="bfazit">Kein Widerspruch (Mietangaben sind rechnerisch und logisch konsistent).</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag:</span> IBAN: DE44500502010024681357 (Kontoinhaber: Aylin Demir)</li><li><span class="bkey">Kontoauszug:</span> IBAN: DE44500502010024681357 (Kontoinhaber: Aylin Demir)</li><li><span class="bkey">Gehaltsabrechnung:</span> IBAN: DE44500502010024681357</li></ul><p class="bfazit">Kein Widerspruch (IBAN gehört zum Antragsteller).</p><p>Fazit: Es wurden keine Widersprüche zwischen den vorhandenen Angaben festgestellt. Alle geprüften Daten sind konsistent.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p class="bkopf">Fehlende Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> vorhanden (Datei: Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json)</li><li><span class="bkey">Einkommensnachweis:</span> fehlend .</li></ul><p>Hinweis: Die vorliegenden Dokumente (Gehaltsabrechnungen, Verdienstbescheinigung, Einkommenserklärung, Kontoauszug) sind keine Einkommensnachweise im Sinne der formellen Prüfung. Ein Einkommensnachweis (z. B. ein amtlicher Nachweis wie ein Bescheid oder eine Bestätigung des Arbeitgebers) ist nicht enthalten.</p><p class="bkopf">Fehlende Pflichtangaben</p><ul class="bl"><li>Keine fehlenden Pflichtangaben festgestellt. Alle erforderlichen Angaben (Name, Geburtsdatum, Anschrift, Postleitzahl, Wohnort, Haushaltsgröße, Mietbetrag, Einkommensbetrag und Einkommensart) sind vorhanden und gültig.</li></ul><p class="bkopf">Zusammenfassung</p><p>Der Antrag ist nicht formell vollständig , da der Einkommensnachweis fehlt. Ohne diesen kann der Antrag nicht bearbeitet werden.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-neutral">– nicht erreicht</span></div>
+          <div class="btext"><p class="mut">–</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div><p class="mut">Keine Judge-Bewertung vorhanden.</p></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 7</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 23 – Aylin Demir)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Demir, Aylin</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> Demir, Aylin</li><li><span class="bkey">Mietbescheinigung:</span> Demir, Aylin</li></ul><p class="bfazit">Kein Widerspruch (alle Namen stimmen überein).</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 08.11.1997</li><li><span class="bkey">Gehaltsabrechnung:</span> 08.11.1997</li><li><span class="bkey">Verdienstbescheinigung:</span> 08.11.1997</li></ul><p class="bfazit">Kein Widerspruch (alle Daten stimmen überein).</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch (alle Adressen stimmen überein).</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Gehaltsabrechnung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Verdienstbescheinigung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Kontoauszug:</span> 1.565,00 € (Netto, monatlich, Gehaltszahlung)</li></ul><p class="bfazit">Kein Widerspruch (Bruttoeinkommen stimmt überein; Nettoeinkommen ist konsistent mit den Abzügen in den Gehaltsabrechnungen).</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1-Personen-Haushalt (nur Aylin Demir)</li><li><span class="bkey">Einkommensnachweis:</span> Keine weiteren Haushaltsmitglieder genannt</li></ul><p class="bfazit">Kein Widerspruch (Haushaltsgröße passt zu den Angaben).</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> 820,00 € (Gesamtmiete)</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete 680,00 € + Betriebskosten (75,00 € Heizung + 20,00 € Wasser + 15,00 € Entwässerung + 15,00 € Müllabfuhr + 5,00 € Allgemeinstrom + 10,00 € weitere Betriebskosten) = 820,00 €</li><li><span class="bkey">Mietvertrag:</span> 680,00 € (Grundmiete) + 75,00 € (Heizung) + 20,00 € (Wasser) + 15,00 € (Entwässerung) + 15,00 € (Müllabfuhr) + 5,00 € (Allgemeinstrom) + 10,00 € (weitere Betriebskosten) = 820,00 €</li><li><span class="bkey">Kontoauszug:</span> 820,00 € (monatliche Mietzahlung an Vermieter)</li></ul><p class="bfazit">Kein Widerspruch (alle Mietangaben sind rechnerisch und logisch konsistent).</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag:</span> IBAN: DE44500502010024681357 (Kontoinhaber: Aylin Demir)</li><li><span class="bkey">Kontoauszug:</span> IBAN: DE44500502010024681357 (Kontoinhaber: Aylin Demir)</li><li><span class="bkey">Gehaltsabrechnung:</span> IBAN: DE44500502010024681357 (Arbeitnehmerkonto: Aylin Demir)</li></ul><p class="bfazit">Kein Widerspruch (IBAN gehört zum Antragsteller).</p><p>Fazit: Es wurden keine Widersprüche zwischen den vorhandenen Angaben festgestellt. Alle geprüften Daten sind konsistent.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung des Wohngeldantrags (Testfall TF-23, Aylin Demir)</p><p class="bkopf">1. Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> Vorhanden (Datei: Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis:</span> Vorhanden (Dateien: Gehaltsabrechnungen_Testfall23_Aylin_Demir_ausgefuellt.json , Verdienstbescheinigung_Testfall23_Aylin_Demir_ausgefuellt.json , Einkommenserklaerung_Testfall23_Aylin_Demir_ausgefuellt.json ).</li></ul><p class="bkopf">2. Pflichtangaben</p><p class="bkopf">Zur Person des Antragstellers</p><ul class="bl"><li><span class="bkey">Name:</span> &quot;Demir, Aylin&quot; (vorhanden in Wohngeldantrag und Einkommenserklaerung ).</li><li><span class="bkey">Geburtsdatum:</span> &quot;08.11.1997&quot; (vorhanden in Wohngeldantrag , Gehaltsabrechnungen , Verdienstbescheinigung ).</li><li><span class="bkey">Anschrift:</span> &quot;Eckenheimer Landstraße 88, 60318 Frankfurt am Main&quot; (vorhanden in Wohngeldantrag , Einkommenserklaerung , Verdienstbescheinigung ).</li><li><span class="bkey">Postleitzahl:</span> &quot;60318&quot; (vorhanden in Wohngeldantrag ).</li><li><span class="bkey">Wohnort:</span> &quot;Frankfurt am Main&quot; (vorhanden in Wohngeldantrag ).</li></ul><p class="bkopf">Zum Haushalt</p><ul class="bl"><li><span class="bkey">Haushaltsgröße:</span> 1 Person (implizit durch fehlende weitere Haushaltsmitglieder in Wohngeldantrag und explizit in Einkommenserklaerung als &quot;1-Personen-Haushalt&quot; angegeben).</li></ul><p class="bkopf">Zur Miete</p><ul class="bl"><li><span class="bkey">Gesamtmiete:</span> 820,00 € (vorhanden in Wohngeldantrag und Mietvertrag ).</li></ul><p class="bkopf">Zum Einkommen</p><ul class="bl"><li><span class="bkey">Einkommensbetrag:</span> 2.150,00 € (Brutto, vorhanden in Wohngeldantrag , Gehaltsabrechnungen , Verdienstbescheinigung ).</li><li><span class="bkey">Art des Einkommens:</span> &quot;Gehalt/Lohn&quot; (vorhanden in Wohngeldantrag und Verdienstbescheinigung ).</li></ul><p>Fazit: Alle Pflichtdokumente und Pflichtangaben liegen vollständig und bearbeitbar vor. Es gibt keine formellen Mängel. Der Antrag kann für die weitere Prüfung freigegeben werden.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>1. Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland und Hauptwohnsitz:</span> Die Wohnung befindet sich in Frankfurt am Main (Postleitzahl 60318), was als Hauptwohnsitz in Deutschland gilt. Dies ist durch die Mietbescheinigung und den Mietvertrag belegt.</li><li><span class="bkey">Haushaltsgröße:</span> Es handelt sich um einen 1-Personen-Haushalt (Aylin Demir), was den Anforderungen des § 5 WoGG entspricht.</li><li><span class="bkey">Monatliches Einkommen:</span> Aylin Demir hat ein monatliches Bruttoeinkommen von 2.150 € (Gehalt/Lohn), was deutlich über null liegt und damit § 13 WoGG erfüllt.</li><li><span class="bkey">Monatliche Miete:</span> Die monatliche Gesamtmiete beträgt 820 € (680 € Bruttokaltmiete + 140 € Nebenkosten). Dies ist ebenfalls über null und erfüllt § 9 WoGG.</li><li><span class="bkey">Antragsteller gehört zum Haushalt:</span> Aylin Demir ist die Hauptmieterin der Wohnung und gehört damit zum Haushalt, für den Wohngeld beantragt wird.</li></ul><p>2. Ausschlussgründe</p><p class="bkopf">Es liegen keine konkreten Ausschlussgründe vor</p><ul class="bl"><li><span class="bkey">Bürgergeld/Leistungen nach SGB II:</span> Es gibt keine Hinweise darauf, dass Aylin Demir Bürgergeld oder Leistungen nach dem SGB II bezieht. In der Einkommenserklärung und im Wohngeldantrag sind keine solchen Leistungen angegeben.</li><li><span class="bkey">Grundsicherung/Sozialhilfe:</span> Es gibt keine Hinweise auf Bezug von Grundsicherung oder Sozialhilfe.</li><li><span class="bkey">BAföG/Berufsausbildungsbeihilfe:</span> Es gibt keine Hinweise auf Bezug von BAföG oder Berufsausbildungsbeihilfe.</li><li><span class="bkey">Vermögensgrenze:</span> Aylin Demir hat angegeben, dass ihr Vermögen nicht über der maßgeblichen Grenze liegt. Es gibt keine konkreten Daten, die eine Überschreitung belegen.</li></ul><p>3. Tatsachenbasis</p><p class="bkopf">Die Daten sind in sich stimmig und reichen für eine materielle Bewertung aus</p><ul class="bl"><li><span class="bkey">Miete:</span> Die Miete von 820 € (680 € Bruttokaltmiete + 140 € Nebenkosten) ist plausibel und wird durch Mietvertrag, Mietbescheinigung und Kontoauszüge bestätigt.</li><li><span class="bkey">Einkommen:</span> Das Einkommen von 2.150 € brutto monatlich ist durch Gehaltsabrechnungen und Verdienstbescheinigungen belegt.</li><li><span class="bkey">Haushaltsgröße:</span> Die Haushaltsgröße von 1 Person ist klar angegeben und konsistent.</li><li><span class="bkey">Wohnsitz:</span> Der Wohnsitz in Deutschland ist durch die Adresse in Frankfurt am Main belegt.</li></ul><p>Fazit</p><p>Alle Tatbestandsmerkmale sind erfüllt, und es liegen keine konkreten Ausschlussgründe vor. Die Datenbasis ist ausreichend für eine materielle Bewertung. Daher wird der Antrag für die weitere Bearbeitung freigegeben.</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div><p class="mut">Keine Judge-Bewertung vorhanden.</p></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 8</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 23 – Aylin Demir)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Demir, Aylin</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> Demir, Aylin</li><li><span class="bkey">Mietbescheinigung:</span> Demir, Aylin</li><li><span class="bkey">Mietvertrag:</span> Aylin Demir</li><li><span class="bkey">Kontoauszug:</span> Aylin Demir</li></ul><p class="bfazit">Kein Widerspruch. Alle Namen stimmen überein.</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 08.11.1997</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> 08.11.1997</li><li><span class="bkey">Verdienstbescheinigung:</span> 08.11.1997</li></ul><p class="bfazit">Kein Widerspruch. Alle Geburtsdaten stimmen überein.</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Einkommensnachweis (Einkommenserklärung):</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Verdienstbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch. Alle Adressen stimmen überein.</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Verdienstbescheinigung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Kontoauszug:</span> 1.565,00 € (Netto, monatlich – Gehalt)</li></ul><p class="bfazit">Kein Widerspruch. Die Bruttoeinkommen stimmen überein. Der Nettobetrag im Kontoauszug ist kein Widerspruch, da er sich auf das Nettoeinkommen bezieht.</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1-Personen-Haushalt (keine weiteren Haushaltsmitglieder angegeben)</li><li><span class="bkey">Einkommenserklärung:</span> Haushalt: 1-Personen-Haushalt</li></ul><p class="bfazit">Kein Widerspruch. Die Haushaltsgröße ist konsistent.</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> 820,00 € (Gesamtmiete pro Monat)</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete: 680,00 € + Betriebskosten (Heizkosten: 75,00 €, Müllabfuhr: 15,00 €, Entwässerung: 15,00 €, Allgemeinstrom: 5,00 €, weitere Betriebskosten: 10,00 €, Wassergeld: 20,00 €) = 680,00 € + 140,00 € = 820,00 €</li><li><span class="bkey">Mietvertrag:</span> Grundmiete: 680,00 € + Heizkosten: 75,00 € + Frischwasserkosten: 20,00 € + Entwässerung: 15,00 € + Müllabfuhr: 15,00 € + Allgemeinbeleuchtung: 5,00 € + weitere Betriebskosten: 10,00 € = 680,00 € + 140,00 € = 820,00 €</li><li><span class="bkey">Kontoauszug:</span> Miete Mainblick: 820,00 € (monatlich)</li></ul><p class="bfazit">Kein Widerspruch. Alle Mietangaben sind konsistent.</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag:</span> IBAN: DE44500502010024681357, Bank: Frankfurter Sparkasse</li><li><span class="bkey">Kontoauszug:</span> IBAN: DE44500502010024681357, Kontoinhaber: Aylin Demir, Bank: Frankfurter Sparkasse</li><li><span class="bkey">Gehaltsabrechnung:</span> IBAN: DE44500502010024681357</li></ul><p class="bfazit">Kein Widerspruch. Die IBAN gehört zum Antragsteller und ist konsistent.</p><p>Fazit: Es wurden keine Widersprüche zwischen den vorhandenen Angaben festgestellt. Alle geprüften Punkte (Name, Geburtsdatum, Anschrift, Einkommen, Haushaltsgröße, Miete, Bankverbindung) sind konsistent.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p class="bkopf">Fehlende Pflichtdokumente</p><ul class="bl"><li>Kein Wohngeldantrag vorhanden (obwohl ein Dokument mit dem Titel &#039;Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json&#039; vorliegt, handelt es sich um den Antrag selbst, der als solches nicht explizit als &#039;Wohngeldantrag&#039; im Sinne der Pflichtdokumente markiert ist. Allerdings ist der Antrag in den Daten enthalten, daher wird dies nicht als fehlend gewertet.</li></ul><p class="bkopf">Fehlende Pflichtangaben</p><ul class="bl"><li>Keine Haushaltsgröße explizit als Zahl angegeben. Zwar ist in der Einkommenserklärung der Hinweis &#039;Haushalt: 1-Personen-Haushalt&#039; enthalten, aber eine numerische Angabe fehlt.</li><li>Keine explizite Angabe zur Art des Einkommens im Wohngeldantrag (obwohl in der Einkommenserklärung und Verdienstbescheinigung Details vorhanden sind, fehlt diese Angabe im Antrag selbst).</li></ul><p class="bkopf">Hinweis</p><p>Die Mietbescheinigung, Gehaltsabrechnungen, Verdienstbescheinigung und Einkommenserklärung liegen vor und enthalten die notwendigen Daten. Allerdings sind die Pflichtangaben im Wohngeldantrag nicht vollständig.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-neutral">– nicht erreicht</span></div>
+          <div class="btext"><p class="mut">–</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div><p class="mut">Keine Judge-Bewertung vorhanden.</p></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 9</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 23 – Aylin Demir)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Demir, Aylin</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> Demir, Aylin</li><li><span class="bkey">Kontoauszug:</span> Aylin Demir</li></ul><p class="bfazit">Kein Widerspruch (Namen stimmen überein).</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 08.11.1997</li><li><span class="bkey">Gehaltsabrechnung:</span> 08.11.1997</li><li><span class="bkey">Verdienstbescheinigung:</span> 08.11.1997</li></ul><p class="bfazit">Kein Widerspruch (Daten stimmen überein).</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Einkommenserklärung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Verdienstbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch (Adressen stimmen überein).</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Gehaltsabrechnung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Verdienstbescheinigung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Kontoauszug:</span> 1.565,00 € (Netto, monatlich, Gehaltseingang)</li></ul><p class="bfazit">Kein Widerspruch (Bruttoeinkommen stimmt überein; Nettoeinkommen ist konsistent mit den Abzügen in den Gehaltsabrechnungen).</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1-Personen-Haushalt</li><li><span class="bkey">Haushaltsmitglieder:</span> Keine weiteren Personen angegeben</li></ul><p class="bfazit">Kein Widerspruch (Haushaltsgröße passt zu den Angaben).</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> 820,00 € (Gesamtmiete, monatlich)</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete 680,00 € + Betriebskosten (75,00 € Heizkosten + 20,00 € Wassergeld + 15,00 € Entwässerung + 15,00 € Müllabfuhr + 5,00 € Allgemeinstrom + 10,00 € weitere Betriebskosten) = 820,00 €</li><li><span class="bkey">Mietvertrag:</span> Grundmiete 680,00 € + Betriebskosten (75,00 € Heizkosten + 20,00 € Frischwasserkosten + 15,00 € Entwässerung + 15,00 € Müllabfuhr + 5,00 € Allgemeinbeleuchtung + 10,00 € weitere Betriebskosten) = 820,00 €</li><li><span class="bkey">Kontoauszug:</span> 820,00 € (monatliche Mietabbuchung)</li></ul><p class="bfazit">Kein Widerspruch (Mietangaben sind konsistent).</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag:</span> IBAN: DE44500502010024681357 (Frankfurter Sparkasse)</li><li><span class="bkey">Kontoauszug:</span> IBAN: DE44500502010024681357 (Kontoinhaber: Aylin Demir)</li><li><span class="bkey">Gehaltsabrechnung:</span> IBAN: DE44500502010024681357</li></ul><p class="bfazit">Kein Widerspruch (IBAN gehört zum Antragsteller).</p><p>Fazit: Es wurden keine Widersprüche zwischen den vorhandenen Angaben festgestellt. Die Konsistenzprüfung ergibt daher APPROVED .</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung des Wohngeldantrags (Testfall TF-23, Aylin Demir)</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> Vorhanden (Datei: Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis:</span> Vorhanden (Dateien: Gehaltsabrechnungen_Testfall23_Aylin_Demir_ausgefuellt.json , Verdienstbescheinigung_Testfall23_Aylin_Demir_ausgefuellt.json , Einkommenserklaerung_Testfall23_Aylin_Demir_ausgefuellt.json ).</li></ul><p class="bkopf">Pflichtangaben</p><p class="bkopf">Zur Person des Antragstellers</p><ul class="bl"><li><span class="bkey">Name:</span> Demir, Aylin (vorhanden in Wohngeldantrag und Einkommenserklaerung ).</li><li><span class="bkey">Geburtsdatum:</span> 08.11.1997 (vorhanden in Wohngeldantrag , Gehaltsabrechnungen und Verdienstbescheinigung ).</li><li><span class="bkey">Anschrift:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main (vorhanden in Wohngeldantrag , Mietbescheinigung und Einkommenserklaerung ).</li><li><span class="bkey">Postleitzahl:</span> 60318 (vorhanden in Wohngeldantrag und Mietbescheinigung ).</li><li><span class="bkey">Wohnort:</span> Frankfurt am Main (vorhanden in Wohngeldantrag und Mietbescheinigung ).</li></ul><p class="bkopf">Zum Haushalt</p><ul class="bl"><li><span class="bkey">Haushaltsgröße:</span> 1-Personen-Haushalt (explizit angegeben in Einkommenserklaerung unter haushaltshinweis ).</li></ul><p class="bkopf">Zur Miete</p><ul class="bl"><li><span class="bkey">Gesamtmiete:</span> 820,00 €/Monat (vorhanden in Wohngeldantrag unter frage_23_gesamtmiete und Mietvertrag ).</li></ul><p class="bkopf">Zum Einkommen</p><ul class="bl"><li><span class="bkey">Einkommensbetrag:</span> 2.150,00 €/Monat (Brutto, vorhanden in Wohngeldantrag unter frage_12_einnahmen , Gehaltsabrechnungen und Verdienstbescheinigung ).</li><li><span class="bkey">Art des Einkommens:</span> Gehalt/Lohn (vorhanden in Wohngeldantrag unter frage_12_einnahmen ).</li></ul><p>Ergebnis: Alle Pflichtdokumente und Pflichtangaben liegen vollständig und bearbeitbar vor. Der Antrag ist formell vollständig und kann weiterbearbeitet werden.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Materielle Vorprüfung des Wohngeldantrags (Testfall 23 – Aylin Demir)</p><p>1. Tatbestandsmerkmale (§§ 3, 5, 9, 13 WoGG)</p><ul class="bl"><li><span class="bkey">Wohnsitz in Deutschland:</span> Die Wohnung befindet sich in Frankfurt am Main (PLZ 60318) und ist der Hauptwohnsitz der Antragstellerin (Mietvertrag, Mietbescheinigung, Wohngeldantrag). Erfüllt.</li><li><span class="bkey">Haushaltsgröße:</span> Es handelt sich um einen 1-Personen-Haushalt (Einkommenserklärung, Wohngeldantrag). Erfüllt.</li><li><span class="bkey">Monatliches Einkommen &gt; 0:</span> Die Antragstellerin bezieht ein monatliches Bruttoeinkommen von 2.150 € (Gehaltsabrechnungen, Verdienstbescheinigung, Einkommenserklärung). Erfüllt.</li><li><span class="bkey">Monatliche Miete &gt; 0:</span> Die Bruttokaltmiete beträgt 680 € (Mietvertrag, Mietbescheinigung). Die Gesamtmiete inkl. Betriebskosten beträgt 820 € (Kontoauszug, Wohngeldantrag). Erfüllt.</li><li><span class="bkey">Antragstellerin gehört zum Haushalt:</span> Die Antragstellerin ist Hauptmieterin der Wohnung (Mietvertrag, Mietbescheinigung). Erfüllt.</li></ul><p>2. Ausschlussgründe (§§ 7, 20, 21 WoGG)</p><ul class="bl"><li><span class="bkey">Leistungen nach SGB II/III oder Sozialhilfe:</span> Keine Angaben zu Bürgergeld, Grundsicherung oder Sozialhilfe in der Einkommenserklärung oder im Wohngeldantrag. Kein Ausschluss.</li><li><span class="bkey">BAföG oder Berufsausbildungsbeihilfe:</span> Keine Angaben zu BAföG oder Berufsausbildungsbeihilfe. Kein Ausschluss.</li><li><span class="bkey">Vermögensgrenze überschritten:</span> Die Antragstellerin erklärt, dass ihr Vermögen nicht über der maßgeblichen Grenze liegt (Frage 20 im Wohngeldantrag). Kein Ausschluss.</li></ul><p>3. Tatsachenbasis (§ 24 VwVfG)</p><ul class="bl"><li><span class="bkey">Plausibilität der Miete:</span> Die Bruttokaltmiete von 680 € ist konsistent mit den Angaben im Mietvertrag, der Mietbescheinigung und dem Kontoauszug (Gesamtmiete 820 € inkl. Betriebskosten). Plausibel.</li><li><span class="bkey">Datengrundlage:</span> Alle relevanten Daten (Wohnsitz, Haushaltsgröße, Einkommen, Miete) sind vollständig und widerspruchsfrei vorhanden. Ausreichend.</li></ul><p>Fazit</p><p>Alle Tatbestandsmerkmale sind erfüllt, und es liegen keine konkreten Ausschlussgründe vor. Die Datenbasis ist ausreichend für eine materielle Bewertung. Daher wird der Antrag für die weitere Bearbeitung freigegeben.</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div><p class="mut">Keine Judge-Bewertung vorhanden.</p></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 10</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 23 – Aylin Demir)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Demir, Aylin</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnungen):</span> Demir, Aylin</li><li><span class="bkey">Mietbescheinigung:</span> Demir, Aylin</li><li><span class="bkey">Verdienstbescheinigung:</span> Demir, Aylin</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 08.11.1997</li><li><span class="bkey">Gehaltsabrechnungen:</span> 08.11.1997</li><li><span class="bkey">Verdienstbescheinigung:</span> 08.11.1997</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnungen):</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Verdienstbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Gehaltsabrechnungen:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Verdienstbescheinigung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Einkommenserklärung:</span> 2.150,00 € (Brutto, monatlich)</li></ul><p class="bfazit">Kein Widerspruch (Abweichung ≤ 20 %).</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1-Personen-Haushalt (nur Aylin Demir)</li><li><span class="bkey">Einkommenserklärung:</span> Haushaltshinweis: 1-Personen-Haushalt</li><li>Keine weiteren Haushaltsmitglieder in den Dokumenten genannt.</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> Gesamtmiete: 820,00 €/Monat</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete: 680,00 € + Betriebskosten (Heizkosten 75,00 € + Entwässerung 15,00 € + Müllabfuhr 15,00 € + Allgemeinstrom 5,00 € + Weitere Betriebskosten 10,00 €) = 820,00 €</li><li><span class="bkey">Mietvertrag:</span> Monatliche Miete: 680,00 € + Heizkosten 75,00 € + Frischwasserkosten 20,00 € + Entwässerung 15,00 € + Müllabfuhr 15,00 € + Allgemeinbeleuchtung 5,00 € + Weitere Betriebskosten 10,00 € = 820,00 €</li><li><span class="bkey">Kontoauszug:</span> Mietabbuchungen: 820,00 €/Monat</li></ul><p class="bfazit">Kein Widerspruch.</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag (IBAN):</span> DE44500502010024681357</li><li><span class="bkey">Kontoauszug (IBAN):</span> DE44500502010024681357</li><li><span class="bkey">Gehaltsabrechnungen (IBAN):</span> DE44500502010024681357</li><li><span class="bkey">Kontoinhaber:</span> Aylin Demir</li></ul><p class="bfazit">Kein Widerspruch.</p><p>Fazit: Es wurden keine Widersprüche zwischen den geprüften Angaben festgestellt. Alle relevanten Daten sind konsistent.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung des Wohngeldantrags (Testfall TF-23, Aylin Demir)</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> Vorhanden (Datei: Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis:</span> Vorhanden (Dateien: Gehaltsabrechnungen_Testfall23_Aylin_Demir_ausgefuellt.json , Verdienstbescheinigung_Testfall23_Aylin_Demir_ausgefuellt.json , Einkommenserklaerung_Testfall23_Aylin_Demir_ausgefuellt.json ).</li></ul><p class="bkopf">Pflichtangaben</p><p class="bkopf">Zur Person des Antragstellers</p><ul class="bl"><li><span class="bkey">Name:</span> &quot;Demir, Aylin&quot; (vorhanden im Wohngeldantrag und anderen Dokumenten).</li><li><span class="bkey">Geburtsdatum:</span> &quot;08.11.1997&quot; (vorhanden im Wohngeldantrag, Gehaltsabrechnungen und Verdienstbescheinigung).</li><li><span class="bkey">Anschrift:</span> &quot;Eckenheimer Landstraße 88, 60318 Frankfurt am Main&quot; (vorhanden im Wohngeldantrag, Mietbescheinigung, Mietvertrag und anderen Dokumenten).</li><li><span class="bkey">Postleitzahl:</span> &quot;60318&quot; (vorhanden in der Anschrift).</li><li><span class="bkey">Wohnort:</span> &quot;Frankfurt am Main&quot; (vorhanden in der Anschrift).</li></ul><p class="bkopf">Zum Haushalt</p><ul class="bl"><li><span class="bkey">Haushaltsgröße:</span> 1 Person (Hinweis: &quot;Haushalt: 1-Personen-Haushalt&quot; in der Einkommenserklärung, keine weiteren Haushaltsmitglieder im Wohngeldantrag angegeben).</li></ul><p class="bkopf">Zur Miete</p><ul class="bl"><li><span class="bkey">Gesamtmiete:</span> 820,00 € (vorhanden im Wohngeldantrag, Frage 23).</li></ul><p class="bkopf">Zum Einkommen</p><ul class="bl"><li><span class="bkey">Einkommensbetrag:</span> 2.150,00 € (Brutto, vorhanden in Gehaltsabrechnungen, Verdienstbescheinigung und Einkommenserklärung).</li><li><span class="bkey">Art des Einkommens:</span> &quot;Gehalt/Lohn&quot; (vorhanden im Wohngeldantrag, Frage 12).</li></ul><p>Fazit: Alle Pflichtdokumente und Pflichtangaben liegen vollständig und bearbeitbar vor. Es gibt keine fehlenden Pflichtangaben oder Dokumente. Der Antrag ist daher formell vollständig .</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland und Hauptwohnsitz:</span> Die Wohnung befindet sich in Frankfurt am Main (Postleitzahl 60318), was als Hauptwohnsitz der Antragstellerin Aylin Demir bestätigt ist (Mietvertrag, Mietbescheinigung, Wohngeldantrag).</li><li><span class="bkey">Haushaltsgröße:</span> Es handelt sich um einen 1-Personen-Haushalt (Einkommenserklärung: &quot;Haushalt: 1-Personen-Haushalt&quot;). Dies erfüllt die Mindestanforderung von mindestens einer Person.</li><li><span class="bkey">Monatliches Einkommen:</span> Die Antragstellerin hat ein monatliches Bruttoeinkommen von 2.150 € (Gehaltsabrechnungen, Verdienstbescheinigung, Einkommenserklärung). Dies ist &gt; 0 €.</li><li><span class="bkey">Monatliche Miete:</span> Die monatliche Bruttokaltmiete beträgt 680 € (Mietvertrag, Mietbescheinigung). Die Gesamtmiete inkl. Nebenkosten beträgt 820 € (Kontoauszug, Wohngeldantrag). Beide Werte sind &gt; 0 €.</li><li><span class="bkey">Antragstellerin gehört zum Haushalt:</span> Aylin Demir ist als Hauptmieterin im Mietvertrag und in der Mietbescheinigung aufgeführt und bewohnt die Wohnung (Mietbescheinigung: &quot;wohnung_wird_bewohnt&quot;: true).</li></ul><p>Ausschlussgründe</p><ul class="bl"><li><span class="bkey">Bürgergeld/Leistungen nach SGB II:</span> Keine Angaben zu Bezug von Bürgergeld oder SGB-II-Leistungen in der Einkommenserklärung oder im Wohngeldantrag (Frage 10: &quot;transferleistung_erhalten_beantragt_sanktioniert_weggefallen_oder_kuerzlich_abgelehnt&quot;: false).</li><li><span class="bkey">Grundsicherung/Sozialhilfe:</span> Keine Angaben zu Bezug von Grundsicherung oder Sozialhilfe (Einkommenserklärung: Abschnitt 03: alle Beträge = 0 €).</li><li><span class="bkey">BAföG/Berufsausbildungsbeihilfe:</span> Keine Angaben zu Bezug von BAföG oder Berufsausbildungsbeihilfe (Einkommenserklärung: Abschnitt 03: BAföG-Betrag = 0 €).</li><li><span class="bkey">Vermögensgrenze überschritten:</span> Keine Überschreitung der Vermögensgrenze angegeben (Wohngeldantrag: Frage 20: &quot;vermoegen_oberhalb_der_massgeblichen_grenze&quot;: false).</li></ul><p>Tatsachenbasis</p><ul class="bl"><li><span class="bkey">Plausibilität der Miete:</span> Die Mietangaben sind in sich stimmig: Bruttokaltmiete (680 €) + Nebenkosten (Heizung 75 €, Warmwasser über Heizung, Entwässerung 15 €, Müllabfuhr 15 €, Allgemeinstrom 5 €, weitere Betriebskosten 10 €) ergeben eine Gesamtmiete von 820 €, was mit den Kontoauszügen übereinstimmt.</li><li><span class="bkey">Datengrundlage:</span> Alle relevanten Daten (Wohnsitz, Haushaltsgröße, Einkommen, Miete, Ausschlussgründe) sind vollständig und widerspruchsfrei vorhanden. Es gibt keine Lücken, die eine Bewertung unmöglich machen.</li></ul><p>Fazit</p><p>Alle Tatbestandsmerkmale sind erfüllt, und es liegen keine konkreten Ausschlussgründe vor. Die Tatsachenbasis ist ausreichend für eine materielle Bewertung. Daher wird der Antrag für die weitere Bearbeitung freigegeben.</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div><p class="mut">Keine Judge-Bewertung vorhanden.</p></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 11</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 23 – Aylin Demir)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Demir, Aylin</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> Demir, Aylin</li><li><span class="bkey">Kontoauszug:</span> Aylin Demir</li></ul><p class="bfazit">Kein Widerspruch (Namen stimmen überein).</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 08.11.1997</li><li><span class="bkey">Gehaltsabrechnung:</span> 08.11.1997</li><li><span class="bkey">Verdienstbescheinigung:</span> 08.11.1997</li></ul><p class="bfazit">Kein Widerspruch (Daten stimmen überein).</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Verdienstbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch (Adressen stimmen überein).</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Gehaltsabrechnung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Verdienstbescheinigung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Kontoauszug:</span> 1.565,00 € (Netto, monatlich, Gehaltseingang)</li></ul><p class="bfazit">Kein Widerspruch (Bruttoeinkommen stimmt überein; Nettoeinkommen ist konsistent mit den Abzügen in den Gehaltsabrechnungen).</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1-Personen-Haushalt (keine weiteren Haushaltsmitglieder angegeben)</li><li><span class="bkey">Einkommensnachweis:</span> Nur Aylin Demir als Arbeitnehmerin genannt</li></ul><p class="bfazit">Kein Widerspruch (Haushaltsgröße passt zu den Angaben).</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> 820,00 € (Gesamtmiete, monatlich)</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete 680,00 € + Betriebskosten (75,00 € Heizkosten + 20,00 € Wassergeld + 15,00 € Entwässerung + 15,00 € Müllabfuhr + 5,00 € Allgemeinstrom + 10,00 € weitere Betriebskosten) = 820,00 €</li><li><span class="bkey">Mietvertrag:</span> Grundmiete 680,00 € + Nebenkosten (75,00 € Heizkosten + 20,00 € Frischwasser + 15,00 € Entwässerung + 15,00 € Müllabfuhr + 5,00 € Allgemeinbeleuchtung + 10,00 € weitere Betriebskosten) = 820,00 €</li><li><span class="bkey">Kontoauszug:</span> 820,00 € (monatliche Mietabbuchung)</li></ul><p class="bfazit">Kein Widerspruch (Mietangaben sind konsistent).</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag:</span> IBAN: DE44500502010024681357 (Kontoinhaber: Aylin Demir)</li><li><span class="bkey">Kontoauszug:</span> IBAN: DE44500502010024681357 (Kontoinhaber: Aylin Demir)</li><li><span class="bkey">Gehaltsabrechnung:</span> IBAN: DE44500502010024681357 (Arbeitnehmerkonto: Aylin Demir)</li></ul><p class="bfazit">Kein Widerspruch (IBAN gehört zum Antragsteller).</p><p>Fazit: Es wurden keine Widersprüche zwischen den vorhandenen Angaben festgestellt. Alle geprüften Daten sind konsistent.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung des Wohngeldantrags (Testfall TF-23, Aylin Demir)</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> Vorhanden (Datei: Wohngeldantrag_Testfall23_Aylin_Demir_ausgefuellt.json ).</li><li><span class="bkey">Einkommensnachweis:</span> Vorhanden (Dateien: Gehaltsabrechnungen_Testfall23_Aylin_Demir_ausgefuellt.json , Verdienstbescheinigung_Testfall23_Aylin_Demir_ausgefuellt.json , Einkommenserklaerung_Testfall23_Aylin_Demir_ausgefuellt.json ).</li></ul><p class="bkopf">Pflichtangaben</p><p class="bkopf">Zur Person des Antragstellers</p><ul class="bl"><li><span class="bkey">Name:</span> &quot;Demir, Aylin&quot; (vorhanden in Wohngeldantrag, Frage 01).</li><li><span class="bkey">Geburtsdatum:</span> &quot;08.11.1997&quot; (vorhanden in Wohngeldantrag, Frage 01).</li><li><span class="bkey">Anschrift:</span> &quot;Eckenheimer Landstraße 88&quot; (vorhanden in Wohngeldantrag, Frage 02).</li><li><span class="bkey">Postleitzahl:</span> &quot;60318&quot; (vorhanden in Wohngeldantrag, Frage 02).</li><li><span class="bkey">Wohnort:</span> &quot;Frankfurt am Main&quot; (vorhanden in Wohngeldantrag, Frage 02).</li></ul><p class="bkopf">Zum Haushalt</p><ul class="bl"><li><span class="bkey">Haushaltsgröße:</span> 1 Person (implizit durch fehlende weitere Haushaltsmitglieder in Frage 06 und Hinweis &quot;Haushalt: 1-Personen-Haushalt&quot; in Einkommenserklärung).</li></ul><p class="bkopf">Zur Miete</p><ul class="bl"><li><span class="bkey">Gesamtmiete:</span> 820,00 € (vorhanden in Wohngeldantrag, Frage 23).</li></ul><p class="bkopf">Zum Einkommen</p><ul class="bl"><li><span class="bkey">Einkommensbetrag:</span> 2.150,00 € (Brutto, vorhanden in Wohngeldantrag, Frage 12, sowie in Gehaltsabrechnungen und Verdienstbescheinigung).</li><li><span class="bkey">Art des Einkommens:</span> &quot;Gehalt/Lohn&quot; (vorhanden in Wohngeldantrag, Frage 12).</li></ul><p>Ergebnis: Alle Pflichtdokumente und Pflichtangaben sind vollständig und bearbeitbar. Der Antrag kann formell weiterbearbeitet werden.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnsitz in Deutschland:</span> Die Wohnung befindet sich in Frankfurt am Main (Postleitzahl 60318), was als Hauptwohnsitz in Deutschland gilt (§ 3 WoGG).</li><li><span class="bkey">Haushaltsgröße:</span> Es handelt sich um einen 1-Personen-Haushalt (Aylin Demir), was den Anforderungen des § 5 WoGG entspricht.</li><li><span class="bkey">Monatliches Einkommen:</span> Aylin Demir hat ein monatliches Bruttoeinkommen von 2.150 € (Gehalt/Lohn), was mehr als null ist (§ 13 WoGG).</li><li><span class="bkey">Monatliche Miete:</span> Die monatliche Gesamtmiete beträgt 820 € (680 € Grundmiete + 140 € Nebenkosten), was mehr als null ist (§ 9 WoGG).</li><li><span class="bkey">Zugehörigkeit zum Haushalt:</span> Aylin Demir ist die Antragstellerin und Hauptmieterin der Wohnung, für die Wohngeld beantragt wird (§ 5 WoGG).</li></ul><p>Ausschlussgründe</p><p class="bkopf">Es liegen keine konkreten Ausschlussgründe vor</p><ul class="bl"><li><span class="bkey">Bürgergeld/Leistungen nach SGB II:</span> Es gibt keine Hinweise darauf, dass Aylin Demir Bürgergeld oder Leistungen nach dem SGB II bezieht (§ 7 Abs. 1 WoGG).</li><li><span class="bkey">Grundsicherung/Sozialhilfe:</span> Es gibt keine Hinweise darauf, dass Aylin Demir Grundsicherung oder Sozialhilfe bezieht (§ 7 Abs. 1 WoGG).</li><li><span class="bkey">BAföG/Berufsausbildungsbeihilfe:</span> Es gibt keine Hinweise darauf, dass Aylin Demir Leistungen nach dem BAföG oder Berufsausbildungsbeihilfe bezieht (§ 20 Abs. 2 WoGG).</li><li><span class="bkey">Vermögensgrenze:</span> Aylin Demir hat erklärt, dass ihr Vermögen nicht über der maßgeblichen Grenze liegt (§ 21 Nr. 3 WoGG).</li></ul><p>Tatsachenbasis</p><p class="bkopf">Die Daten sind in sich stimmig und reichen für eine materielle Bewertung aus</p><ul class="bl"><li><span class="bkey">Miete:</span> Die Miete von 820 € (680 € Grundmiete + 140 € Nebenkosten) ist plausibel und wird durch den Mietvertrag und die Mietbescheinigung bestätigt.</li><li><span class="bkey">Einkommen:</span> Das Einkommen von 2.150 € monatlich ist durch Gehaltsabrechnungen und Verdienstbescheinigungen belegt.</li><li><span class="bkey">Keine Widersprüche:</span> Es gibt keine offensichtlichen Widersprüche in den Daten.</li></ul><p>Fazit</p><p>Alle Tatbestandsmerkmale sind erfüllt, und es liegen keine konkreten Ausschlussgründe vor. Die Daten sind ausreichend für eine materielle Bewertung. Daher wird der Antrag für die weitere Bearbeitung freigegeben.</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div><p class="mut">Keine Judge-Bewertung vorhanden.</p></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 12</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung des Wohngeldantrags (Testfall 23 – Aylin Demir)</p><p class="bkopf">1. Name</p><ul class="bl"><li><span class="bkey">Antrag:</span> Demir, Aylin</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> Demir, Aylin</li><li><span class="bkey">Mietbescheinigung:</span> Demir, Aylin</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">2. Geburtsdatum</p><ul class="bl"><li><span class="bkey">Antrag:</span> 08.11.1997</li><li><span class="bkey">Gehaltsabrechnung:</span> 08.11.1997</li><li><span class="bkey">Verdienstbescheinigung:</span> 08.11.1997</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">3. Anschrift</p><ul class="bl"><li><span class="bkey">Antrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Einkommensnachweis (Gehaltsabrechnung):</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietbescheinigung:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li><li><span class="bkey">Mietvertrag:</span> Eckenheimer Landstraße 88, 60318 Frankfurt am Main</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">4. Einkommen</p><ul class="bl"><li><span class="bkey">Antrag:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Gehaltsabrechnung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Verdienstbescheinigung:</span> 2.150,00 € (Brutto, monatlich)</li><li><span class="bkey">Einkommenserklärung:</span> 2.150,00 € (Brutto, monatlich)</li></ul><p class="bfazit">Kein Widerspruch (Abweichung ≤ 20 %)</p><p class="bkopf">5. Haushaltsgröße</p><ul class="bl"><li><span class="bkey">Antrag:</span> 1-Personen-Haushalt</li><li>Keine weiteren Haushaltsmitglieder angegeben.</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">6. Miete</p><ul class="bl"><li><span class="bkey">Antrag:</span> 820,00 € (Gesamtmiete)</li><li><span class="bkey">Mietbescheinigung:</span> Grundmiete 680,00 € + Betriebskosten (75,00 € Heizung + 20,00 € Wasser + 15,00 € Entwässerung + 15,00 € Müllabfuhr + 5,00 € Allgemeinstrom + 10,00 € Sonstige) = 820,00 €</li><li><span class="bkey">Mietvertrag:</span> 680,00 € (Grundmiete) + 75,00 € (Heizung) + 20,00 € (Wasser) + 15,00 € (Entwässerung) + 15,00 € (Müllabfuhr) + 5,00 € (Allgemeinstrom) + 10,00 € (Sonstige) = 820,00 €</li><li><span class="bkey">Kontoauszug:</span> 820,00 € (monatliche Mietabbuchung)</li></ul><p class="bfazit">Kein Widerspruch</p><p class="bkopf">7. Bankverbindung</p><ul class="bl"><li><span class="bkey">Antrag:</span> IBAN: DE44500502010024681357 (Kontoinhaber: Aylin Demir)</li><li><span class="bkey">Kontoauszug:</span> IBAN: DE44500502010024681357 (Kontoinhaber: Aylin Demir)</li><li><span class="bkey">Gehaltsabrechnung:</span> IBAN: DE44500502010024681357 (Arbeitnehmerkonto: Aylin Demir)</li></ul><p class="bfazit">Kein Widerspruch</p><p>Fazit: Es liegen keine Widersprüche zwischen den geprüften Angaben vor. Die Konsistenzprüfung ergibt daher APPROVED .</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p class="bkopf">Fehlende Pflichtdokumente</p><ul class="bl"><li>Es fehlt der Wohngeldantrag selbst. Die vorliegenden Dokumente (Mietbescheinigung, Kontoauszug, Gehaltsabrechnungen, Einkommenserklärung, Verdienstbescheinigung, Mietvertrag) enthalten zwar den ausgefüllten Wohngeldantrag als JSON-Datei, jedoch ist der physische Wohngeldantrag als Dokument nicht explizit vorhanden. Gemäß den Pflichtdokumenten muss der Wohngeldantrag selbst als Dokument vorliegen.</li></ul><p class="bkopf">Fehlende Pflichtangaben</p><ul class="bl"><li>Keine fehlenden Pflichtangaben festgestellt. Alle erforderlichen Angaben (Name, Geburtsdatum, Anschrift, Postleitzahl, Wohnort, Haushaltsgröße, Mietbetrag, Einkommensbetrag und Einkommensart) sind in den vorliegenden Daten enthalten.</li></ul><p>Hinweis: Der Einkommensnachweis (z. B. Gehaltsabrechnungen oder Verdienstbescheinigung) liegt vor, sodass dieses Pflichtdokument erfüllt ist.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Materielle Prüfung</span><span class="vb vb-neutral">– nicht erreicht</span></div>
+          <div class="btext"><p class="mut">–</p></div>
+        </div>
+        <div class="judges"><div class="jt">AI as a Judge</div><p class="mut">Keine Judge-Bewertung vorhanden.</p></div>
+      </div>
+    </details>
+</section>
+</div>
+<div class="cg-footer"><div class="inner">
+  Automatisiert erzeugtes Prüfergebnis · bedarf der Bestätigung durch einen menschlichen Prüfer ·
+  <span class="mono">Testlauf TL-2026-09-07T17-03-41-307Z · erstellt 7.9.2026, 17:03:41</span>
+</div></div>
+<script type="application/json" id="testfall-daten">{"testlaufId":"TL-2026-09-07T17-03-41-307Z","zeitpunkt":"2026-09-07T17:03:41.307Z","fallId":"TF-23","fallName":"Aylin Demir","art":"","kategorie":null,"kategorieName":"","istFehlerfall":false,"soll":{"kp":"APPROVED","fp":"APPROVED","mp":"APPROVED"},"laeufeGesamt":12,"auswertbar":12,"technischeFehler":0,"exactMatch":9,"exactMatchPct":75,"betrag":{"soll":105,"istWerte":[105],"korrekt":9,"geprueft":12},"phasen":{"kp":{"modus":"verdict","reached":12,"correct":12,"basis":12,"pct":100,"soll":"APPROVED","verteilung":{"APPROVED":12}},"fp":{"modus":"verdict","reached":12,"correct":9,"basis":12,"pct":75,"soll":"APPROVED","verteilung":{"APPROVED":9,"REJECTED":3}},"mp":{"modus":"verdict","reached":9,"correct":9,"basis":9,"pct":100,"soll":"APPROVED","verteilung":{"APPROVED":9}}},"judge":{"j1":{"n":2,"pass":2,"fail":0,"quote":100,"dist":[0,2],"ohne":10},"j2g":{"n":2,"mean":4,"dist":[0,0,0,2],"ohne":10},"j2l":{"n":2,"mean":4,"dist":[0,0,0,2],"ohne":10},"j2":{"n":2,"mean":4,"dist":[0,0,0,2],"ohne":10}},"kopplung":{"verteilung":{"entfaellt":2},"erkannt":2,"eskaliertBeiErkannt":0,"phasentreu":0,"unplausibel":0},"laeufe":[{"runIndex":1,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"APPROVED","istBetrag":105,"berechnungStatus":"BERECHNET","betragKorrekt":true,"j1":1,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"KEINE","eskaliertIn":"KEINE","kopplung":"entfaellt"},{"runIndex":2,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"APPROVED","istBetrag":105,"berechnungStatus":"BERECHNET","betragKorrekt":true,"j1":null,"j2g":null,"j2l":null,"j2":null,"erkanntIn":null,"eskaliertIn":"KEINE","kopplung":null},{"runIndex":3,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"APPROVED","istBetrag":105,"berechnungStatus":"BERECHNET","betragKorrekt":true,"j1":null,"j2g":null,"j2l":null,"j2":null,"erkanntIn":null,"eskaliertIn":"KEINE","kopplung":null},{"runIndex":4,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"APPROVED","istBetrag":105,"berechnungStatus":"BERECHNET","betragKorrekt":true,"j1":1,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"KEINE","eskaliertIn":"KEINE","kopplung":"entfaellt"},{"runIndex":5,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"APPROVED","istBetrag":105,"berechnungStatus":"BERECHNET","betragKorrekt":true,"j1":null,"j2g":null,"j2l":null,"j2":null,"erkanntIn":null,"eskaliertIn":"KEINE","kopplung":null},{"runIndex":6,"technischerFehler":false,"sollKonform":false,"kpVerdict":"APPROVED","fpVerdict":"REJECTED","mpVerdict":null,"istBetrag":null,"berechnungStatus":null,"betragKorrekt":false,"j1":null,"j2g":null,"j2l":null,"j2":null,"erkanntIn":null,"eskaliertIn":"FP","kopplung":null},{"runIndex":7,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"APPROVED","istBetrag":105,"berechnungStatus":"BERECHNET","betragKorrekt":true,"j1":null,"j2g":null,"j2l":null,"j2":null,"erkanntIn":null,"eskaliertIn":"KEINE","kopplung":null},{"runIndex":8,"technischerFehler":false,"sollKonform":false,"kpVerdict":"APPROVED","fpVerdict":"REJECTED","mpVerdict":null,"istBetrag":null,"berechnungStatus":null,"betragKorrekt":false,"j1":null,"j2g":null,"j2l":null,"j2":null,"erkanntIn":null,"eskaliertIn":"FP","kopplung":null},{"runIndex":9,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"APPROVED","istBetrag":105,"berechnungStatus":"BERECHNET","betragKorrekt":true,"j1":null,"j2g":null,"j2l":null,"j2":null,"erkanntIn":null,"eskaliertIn":"KEINE","kopplung":null},{"runIndex":10,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"APPROVED","istBetrag":105,"berechnungStatus":"BERECHNET","betragKorrekt":true,"j1":null,"j2g":null,"j2l":null,"j2":null,"erkanntIn":null,"eskaliertIn":"KEINE","kopplung":null},{"runIndex":11,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"APPROVED","istBetrag":105,"berechnungStatus":"BERECHNET","betragKorrekt":true,"j1":null,"j2g":null,"j2l":null,"j2":null,"erkanntIn":null,"eskaliertIn":"KEINE","kopplung":null},{"runIndex":12,"technischerFehler":false,"sollKonform":false,"kpVerdict":"APPROVED","fpVerdict":"REJECTED","mpVerdict":null,"istBetrag":null,"berechnungStatus":null,"betragKorrekt":false,"j1":null,"j2g":null,"j2l":null,"j2":null,"erkanntIn":null,"eskaliertIn":"FP","kopplung":null}]}</script>
+</body></html>
