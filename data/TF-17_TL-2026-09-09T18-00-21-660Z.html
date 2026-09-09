@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Testbericht TF-17</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&family=Ubuntu+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cg-blue-900:#003A5C; --cg-blue-700:#005587; --cg-blue-500:#0070AD;
+  --cg-blue-300:#66A6CC; --cg-blue-100:#D9EBF4; --cg-blue-050:#EFF6FA;
+  --cg-vibrant-600:#0E8CB3; --cg-vibrant-500:#12ABDB; --cg-vibrant-100:#D8F0F9;
+  --ink-900:#0B0F14; --ink-600:#2E3A44; --ink-400:#5B6B78;
+  --line:#DDE3E8; --surface:#FFFFFF; --canvas:#F5F7F9;
+  --verdict-approved:#1E8A5F;  --verdict-approved-bg:#E6F4EE;
+  --verdict-rejected:#B3261E;  --verdict-rejected-bg:#FBE9E7;
+  --verdict-unbekannt:#B26A00; --verdict-unbekannt-bg:#FFF4E0;
+  --font-sans:"Ubuntu","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-mono:"Ubuntu Mono","SF Mono","Consolas",monospace;
+  --maxw:1120px; --radius-card:6px; --radius-badge:2px;
+  --shadow-card:0 1px 2px rgba(11,15,20,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--canvas);color:var(--ink-900);font-size:15px;line-height:1.6}
+.mono{font-family:var(--font-mono);font-size:13px;color:var(--ink-600)}
+.b{font-weight:500}
+.mut{color:var(--ink-400)}
+.cg-header{background:var(--cg-blue-900);padding:0 24px}
+.cg-header .inner{max-width:var(--maxw);margin:0 auto;min-height:96px;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:16px 0}
+.cg-header h1{font-size:32px;line-height:40px;font-weight:500;color:var(--surface)}
+.cg-header .sub{font-size:17px;color:var(--cg-blue-100);margin-top:6px}
+.cg-header .meta{font-family:var(--font-mono);font-size:13px;color:var(--cg-blue-300);margin-top:4px}
+.cg-logo-slot{width:140px;height:40px;flex:none}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:8px 24px 48px}
+.cg-section{margin-top:48px}
+.cg-section > h2{font-size:22px;line-height:30px;font-weight:500}
+.cg-section > h2::after{content:"";display:block;width:48px;height:3px;margin-top:10px;background:var(--cg-vibrant-500)}
+.note{font-size:13px;color:var(--ink-400);margin-top:12px;max-width:76ch;line-height:1.6}
+.warnbox{margin-top:24px;background:var(--verdict-rejected-bg);border:1px solid var(--verdict-rejected);border-radius:var(--radius-card);padding:16px 20px;color:var(--verdict-rejected);font-size:14px}
+.vb{display:inline-block;border-radius:var(--radius-badge);padding:2px 8px;font-size:12px;font-weight:500;
+    letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;border:1px solid transparent}
+.vb-approved{color:var(--verdict-approved);background:var(--verdict-approved-bg);border-color:rgba(30,138,95,.2)}
+.vb-rejected{color:var(--verdict-rejected);background:var(--verdict-rejected-bg);border-color:rgba(179,38,30,.2)}
+.vb-unbekannt{color:var(--verdict-unbekannt);background:var(--verdict-unbekannt-bg);border-color:rgba(178,106,0,.2)}
+.vb-skip{color:var(--ink-400);background:var(--canvas);border-color:var(--line)}
+.vb-neutral{color:var(--ink-400);background:var(--canvas);border-color:var(--line);text-transform:none;letter-spacing:0;font-style:italic}
+.kb{display:inline-block;border-radius:var(--radius-badge);padding:2px 8px;font-size:12px;font-weight:500;white-space:nowrap;border:1px solid transparent}
+.kb-ok{color:var(--verdict-approved);background:var(--verdict-approved-bg);border-color:rgba(30,138,95,.2)}
+.kb-mid{color:var(--verdict-unbekannt);background:var(--verdict-unbekannt-bg);border-color:rgba(178,106,0,.2)}
+.kb-bad{color:var(--verdict-rejected);background:var(--verdict-rejected-bg);border-color:rgba(179,38,30,.2)}
+.kb-neut{color:var(--ink-400);background:var(--canvas);border-color:var(--line)}
+.kb-warn{color:var(--verdict-unbekannt);background:var(--verdict-unbekannt-bg);border-color:var(--verdict-unbekannt);font-weight:700}
+.ph{display:inline-block;font-family:var(--font-mono);font-size:13px;font-weight:500;color:var(--ink-900);background:var(--cg-blue-050);border:1px solid var(--cg-blue-100);border-radius:var(--radius-badge);padding:1px 7px}
+.cfgcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-card);padding:32px;margin-top:16px}
+.cfg{display:grid;grid-template-columns:220px 1fr;row-gap:28px;column-gap:32px}
+.cfg dt{font-size:12px;line-height:18px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;color:var(--ink-400);padding-top:3px}
+.cfg dd{line-height:1.7}
+.gtext{max-width:76ch}
+.gtext > :last-child{margin-bottom:0}
+.gtext p{margin:0 0 12px}
+.gtext .bkopf{margin:0 0 12px;color:var(--ink-900);font-weight:500}
+.gtext .bfazit{margin:12px 0;padding:10px 16px;background:var(--cg-blue-050);border-left:3px solid var(--cg-vibrant-500);border-radius:0 var(--radius-card) var(--radius-card) 0;color:var(--ink-900)}
+.gtext ul.bl{list-style:none;margin:0 0 12px;padding:0}
+.gtext ul.bl li{position:relative;padding-left:20px;margin-bottom:5px}
+.gtext ul.bl li::before{content:"";position:absolute;left:5px;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--cg-blue-300)}
+.gtext .bkey{color:var(--ink-900);font-weight:500}
+.gtext strong{color:var(--ink-900);font-weight:500}
+.sollrow{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:center}
+.sollrow .paar{display:flex;align-items:center;gap:10px;font-weight:500;font-size:14px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-card);padding:24px;display:flex;flex-direction:column}
+.kname{font-size:17px;line-height:26px;font-weight:500}
+.ksoll{margin-top:10px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-400)}
+.kbig{font-size:40px;line-height:44px;font-weight:300;color:var(--cg-blue-500);margin:18px 0 4px}
+.ksub{font-size:13px;color:var(--ink-400);line-height:1.5;margin-bottom:16px}
+.dist{border-top:1px solid var(--line);padding-top:14px;margin-top:auto;display:flex;flex-direction:column;gap:10px}
+.drow{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px}
+.drow.sub{padding-left:16px}
+.dn{font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
+.okmark{color:var(--verdict-approved);font-weight:700}
+.badmark{color:var(--verdict-rejected);font-weight:700}
+.tblwrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-card);overflow-x:auto;margin-top:16px}
+table{border-collapse:collapse;width:100%}
+th{color:var(--cg-blue-500);font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;
+   text-align:left;padding:12px 16px;border-bottom:2px solid var(--cg-blue-500);background:var(--surface)}
+td{padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
+tr:nth-child(even) td{background:var(--cg-blue-050)}
+tr:last-child td{border-bottom:none}
+td.num,th.num{text-align:right}
+.stars{color:#E8A600;letter-spacing:.08em;white-space:nowrap}
+.stars .dim{color:var(--line)}
+details{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-card);margin-top:12px}
+summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:14px;padding:16px 24px;font-size:15px}
+summary::-webkit-details-marker{display:none}
+.chev{color:var(--cg-blue-500);transition:transform .15s;font-size:14px}
+details[open] .chev{transform:rotate(90deg)}
+details[open] summary{border-bottom:1px solid var(--line)}
+.mini{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dbody{padding:8px 24px 32px}
+.schritt{margin-top:26px}
+.schritt.sub{margin-top:16px;margin-left:20px;border-left:2px solid var(--cg-blue-300);padding-left:18px}
+.schritt.sub .skopf{border-bottom-width:1px;margin-bottom:10px}
+.qmark{font-size:11px;color:var(--ink-400);margin-top:4px}
+.skopf{display:flex;align-items:center;gap:12px;margin-bottom:12px;border-bottom:2px solid var(--cg-blue-500);padding-bottom:8px}
+.sname{font-size:15px;font-weight:500}
+.btext{background:var(--cg-blue-050);border-radius:var(--radius-card);padding:22px 26px;font-size:14px;line-height:1.7;color:var(--ink-600)}
+.btext > :first-child{margin-top:0}
+.btext > :last-child{margin-bottom:0}
+.btext p{margin:0 0 10px}
+.btext .bkopf{margin:22px 0 8px;color:var(--ink-900);font-weight:500}
+.btext .bfazit{margin:12px 0 16px;padding:10px 16px;background:var(--surface);border-left:3px solid var(--cg-vibrant-500);border-radius:0 var(--radius-card) var(--radius-card) 0;color:var(--ink-900)}
+.btext ul.bl{list-style:none;margin:0 0 12px;padding:0}
+.btext ul.bl li{position:relative;padding-left:20px;margin-bottom:5px}
+.btext ul.bl li::before{content:"";position:absolute;left:5px;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--cg-blue-300)}
+.btext .bkey{color:var(--ink-900);font-weight:500}
+.btext strong{color:var(--ink-900);font-weight:500}
+.errtext{color:var(--verdict-rejected);background:var(--verdict-rejected-bg);border-radius:var(--radius-card);padding:16px 20px;margin-top:20px;word-break:break-all}
+.judges{margin-top:30px;border-top:1px solid var(--line);padding-top:18px}
+.jt{font-size:15px;font-weight:500;margin-bottom:14px}
+.jblock{padding:14px 0;border-bottom:1px solid var(--cg-blue-050)}
+.jblock:last-child{border-bottom:none;padding-bottom:0}
+.jhead{display:flex;align-items:baseline;flex-wrap:wrap;gap:10px;margin-bottom:6px}
+.jkurz{font-family:var(--font-mono);font-size:13px;font-weight:500;color:var(--cg-blue-500)}
+.jname{font-size:14px;font-weight:500}
+.jwert{font-size:14px;font-weight:500;color:var(--ink-900);margin-left:auto}
+.jblock p{font-size:14px;line-height:1.7;color:var(--ink-600)}
+.cg-footer{background:var(--cg-blue-900);color:var(--cg-blue-300);padding:24px;font-size:12px;line-height:1.7;margin-top:48px}
+.cg-footer .inner{max-width:var(--maxw);margin:0 auto}
+.cg-footer .mono{color:var(--cg-blue-300)}
+@media(max-width:840px){
+  .kpis{grid-template-columns:1fr}
+  .cfg{grid-template-columns:1fr;row-gap:6px}
+  .cfg dt{margin-top:18px}
+  .cg-header .inner{flex-direction:column;align-items:flex-start}
+  .cg-logo-slot{display:none}
+}
+@media print{details{page-break-inside:avoid}.cg-header,.cg-footer{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body>
+<div class="cg-header"><div class="inner">
+  <div>
+    <h1>Testbericht TF-17</h1>
+    <div class="sub">Elena Krueger · MP/1 M1 Persoenliche und wohnungsbezogene Voraussetzungen</div>
+    <div class="meta">9.9.2026, 18:00:21 · 10 Läufe · 10 auswertbar · 0 technische Fehler</div>
+  </div>
+  <div class="cg-logo-slot"></div>
+</div></div>
+<div class="wrap">
+
+
+<section class="cg-section">
+<h2>Testfall</h2>
+<p class="note">Stammdaten und Ground Truth dieses Testfalls. Die Soll-Verdicts und der injizierte Fehler stammen aus dem Testfall-Sheet und wurden weder der Pipeline noch dem Judge mitgegeben.</p>
+<div class="cfgcard"><dl class="cfg">
+  <dt>Fall</dt>
+  <dd><span class="mono b">TF-17</span> · Elena Krueger</dd>
+  <dt>Fehlerart</dt>
+  <dd><span class="mono b">MP / 1</span> · M1 Persoenliche und wohnungsbezogene Voraussetzungen</dd>
+  <dt>Läufe</dt>
+  <dd>10 Durchläufe · 10 auswertbar · 0 technische Fehler</dd>
+  <dt>Soll-Verdicts</dt>
+  <dd><div class="sollrow">
+    <span class="paar"><span class="mono">KP</span> <span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span>
+    <span class="paar"><span class="mono">FP</span> <span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span>
+    <span class="paar"><span class="mono">MP</span> <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span>
+  </div></dd>
+  <dt>Ground Truth</dt>
+  <dd><div class="gtext"><p>Die beantragte Wohnung ist nicht die maßgebliche Wohnung der antragstellenden Person. Im Wohngeldantrag wird für die Wohnung Berger Straße 78, 60316 Frankfurt am Main Wohngeld beantragt und zugleich ein Zweitwohnsitz angegeben. Die Meldebescheinigung weist dagegen die Bockenheimer Landstraße 132, 60325 Frankfurt am Main als alleinige maßgebliche Hauptwohnung beziehungsweise Lebensmittelpunkt aus; die Berger Straße 78 ist ausdrücklich als Nebenwohnung (Zweitwohnung) gemeldet. Auch der Mietvertrag bestätigt die Nutzung der Berger Straße 78 als Zweitwohnung und den fortbestehenden Lebensmittelpunkt in der Bockenheimer Landstraße 132. Erwartet wird ein materieller Nichtanspruch, da die Wohnung, für die Wohngeld beantragt wird, nicht die maßgebliche Wohnung der Person ist. Alle übrigen Angaben (Name Elena Krüger, Geburtsdatum 11.09.1994, Bruttoeinkommen 2.150,00 EUR, Nettoeinkommen 1.540,00 EUR, Haushaltsgröße 1, Wohnfläche 45 qm, Gesamtmiete 825,00 EUR und Heizkosten 75,00 EUR) sind konsistent. Kein weiterer Fehler injiziert.</p></div></dd>
+</dl></div>
+</section>
+
+<section class="cg-section">
+<h2>Harte Zahlen</h2>
+<p class="note">Anteil korrekter Entscheidungen je Prüfschritt. Läufe, die eine Phase nicht erreicht haben, fließen in deren Prozentzahl nicht ein. Ausnahme Soll „NICHT ERWARTET": dort ist das Nicht-Erreichen selbst das korrekte Verhalten und wird über alle auswertbaren Läufe gemessen.</p>
+<div class="kpis">
+
+  <div class="kpi">
+    <div class="kname">Konsistenzprüfung</div>
+    <div class="ksoll">Soll-Verdict <span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+    <div class="kbig">50 %</div>
+    <div class="ksub">5 von 10 korrekt · Phase erreicht in 10/10 Läufen</div>
+    <div class="dist"><div class="drow"><span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span><span class="dn">5× <span class="okmark">✓</span></span></div><div class="drow"><span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span><span class="dn">5× <span class="badmark">✗</span></span></div></div>
+  </div>
+  <div class="kpi">
+    <div class="kname">Formelle Prüfung</div>
+    <div class="ksoll">Soll-Verdict <span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+    <div class="kbig">100 %</div>
+    <div class="ksub">5 von 5 korrekt · Phase erreicht in 5/10 Läufen</div>
+    <div class="dist"><div class="drow"><span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span><span class="dn">5× <span class="okmark">✓</span></span></div><div class="drow"><span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span><span class="dn">0×</span></div><div class="drow"><span class="mut">Phase nicht erreicht</span><span class="dn">5×</span></div></div>
+  </div>
+  <div class="kpi">
+    <div class="kname">Materielle Prüfung</div>
+    <div class="ksoll">Soll-Verdict <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+    <div class="kbig">100 %</div>
+    <div class="ksub">5 von 5 korrekt · Phase erreicht in 5/10 Läufen</div>
+    <div class="dist"><div class="drow"><span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span><span class="dn">0×</span></div><div class="drow"><span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span><span class="dn">5× <span class="okmark">✓</span></span></div><div class="drow"><span class="mut">Phase nicht erreicht</span><span class="dn">5×</span></div></div>
+  </div>
+
+  <div class="kpi">
+    <div class="kname">Wohngeldbetrag</div>
+    <div class="kbig"><span class="mut">–</span></div>
+    <div class="ksub"><span class="mut">kein Soll-Betrag hinterlegt, nicht geprüft</span></div>
+    <div class="dist"><div class="drow"><span>Soll laut Testregister</span><span class="dn">–</span></div><div class="drow"><span>Von der Pipeline berechnet</span><span class="dn">–</span></div><div class="drow"><span><span class="kb kb-neut">durch MP-1 gesperrt</span></span><span class="dn">5×</span></div></div>
+  </div>
+</div>
+<div class="cfgcard"><dl class="cfg">
+  <dt>Exact Match</dt>
+  <dd><span class="b">50 %</span> — in 5 von 10 auswertbaren Läufen stimmten <em>alle drei</em> Phasen mit dem Soll überein.</dd>
+</dl></div>
+</section>
+
+<section class="cg-section">
+<h2>AI as a Judge</h2>
+<p class="note">Drei Prüffragen mit unterschiedlichen Skalen. J1 ist binär und wird als Quote ausgewiesen; 2A Groundedness und 2B logische Gültigkeit laufen auf 1–4 und werden gemittelt. Quote und Skala werden nie zu einem gemeinsamen Wert verrechnet. <b>NV Nachvollziehbarkeit</b> ist keine Judge-Ausgabe, sondern wird je Lauf als <b>Minimum</b> aus 2A und 2B berechnet — nicht als Mittelwert, damit eine gute Logik eine unbelegte Faktenbasis nicht ausgleichen kann. Der Judge sah dieselben Originaldokumente wie die Pipeline, aber nicht die Soll-Verdicts; für 2A und 2B ist die Ground Truth laut Prompt ausdrücklich unerheblich.</p>
+<div class="kpis">
+
+  <div class="kpi">
+    <div class="kname">J1 · Fehlererkennung</div>
+    <div class="kbig">100 %</div>
+    <div class="ksub">Befund in 10 von 10 auswertbaren Läufen korrekt erkannt · binäre Skala 0/1</div>
+    <div class="dist"><div class="drow"><span>Erkannt (1)</span><span class="dn">10× <span class="okmark">✓</span></span></div><div class="drow"><span>Nicht erkannt (0)</span><span class="dn">0×</span></div></div>
+  </div>
+
+  <div class="kpi">
+    <div class="kname">2A · Groundedness</div>
+    <div class="kbig">4 <span class="ksub" style="font-size:15px">/ 4</span></div>
+    <div class="ksub">Sind die Tatsachenbehauptungen in den Originaldokumenten belegt? · 10 auswertbare Läufe <span class="stars">★★★★<span class="dim"></span></span></div>
+    <div class="dist"><div class="drow"><span>4 – vollständig belegt</span><span class="dn">10×</span></div><div class="drow"><span>3 – entsch.-relevant belegt</span><span class="dn">0×</span></div><div class="drow"><span>2 – ungedeckt</span><span class="dn">0×</span></div><div class="drow"><span>1 – dokumentwidrig</span><span class="dn">0×</span></div></div>
+  </div>
+
+  <div class="kpi">
+    <div class="kname">2B · Logische Gültigkeit</div>
+    <div class="kbig">4 <span class="ksub" style="font-size:15px">/ 4</span></div>
+    <div class="ksub">Folgt die Schlussfolgerung aus den genannten Tatsachen? · 10 auswertbare Läufe <span class="stars">★★★★<span class="dim"></span></span></div>
+    <div class="dist"><div class="drow"><span>4 – zwingend</span><span class="dn">10×</span></div><div class="drow"><span>3 – tragfähig, verkürzt</span><span class="dn">0×</span></div><div class="drow"><span>2 – lückenhaft</span><span class="dn">0×</span></div><div class="drow"><span>1 – ungültig</span><span class="dn">0×</span></div></div>
+  </div>
+
+  <div class="kpi">
+    <div class="kname">NV · Nachvollziehbarkeit</div>
+    <div class="kbig">4 <span class="ksub" style="font-size:15px">/ 4</span></div>
+    <div class="ksub">Berechnet als Minimum aus 2A und 2B je Lauf · 10 auswertbare Läufe <span class="stars">★★★★<span class="dim"></span></span></div>
+    <div class="dist"><div class="drow"><span>4 – makellos</span><span class="dn">10×</span></div><div class="drow"><span>3 – akzeptabel</span><span class="dn">0×</span></div><div class="drow"><span>2 – mangelhaft</span><span class="dn">0×</span></div><div class="drow"><span>1 – kritisch</span><span class="dn">0×</span></div></div>
+  </div>
+
+  <div class="kpi">
+    <div class="kname">Eskalationskopplung</div>
+    <div class="kbig">100 %</div>
+    <div class="ksub">In 10 von 10 Läufen mit erkanntem Befund wurde auch tatsächlich eskaliert · Phasentreue 100 %</div>
+    <div class="dist"><div class="drow"><span><span class="kb kb-ok">erkannt und eskaliert</span></span><span class="dn">10×</span></div><div class="drow"><span><span class="kb kb-mid">später eskaliert</span></span><span class="dn">0×</span></div><div class="drow"><span><span class="kb kb-bad">erkannt, nicht eskaliert</span></span><span class="dn">0×</span></div><div class="drow"><span><span class="kb kb-neut">nicht erkannt</span></span><span class="dn">0×</span></div></div>
+  </div>
+</div>
+</section>
+
+<section class="cg-section">
+<h2>Erkennung → Eskalation</h2>
+<p class="note">Wo hat die Pipeline den Befund benannt, und wo hat sie deswegen abgebrochen? „Erkannt in" stellt der Judge fest — maßgeblich ist die früheste Phase, die den Befund als Beanstandung behandelt, unabhängig von ihrem Verdict. „Eskaliert in" wird deterministisch aus den Verdicts berechnet (erste Phase mit REJECTED). Der kritische Fall ist <span class="kb kb-bad">erkannt, nicht eskaliert</span>: der Mangel steht in der Begründung, der Antrag läuft trotzdem durch.</p>
+
+<div class="tblwrap"><table>
+ <tr><th>Lauf</th><th>Befund</th><th>Erkannt in</th><th>Eskaliert in</th><th>Kopplung</th></tr>
+ 
+    <tr>
+      <td class="mono b">1</td>
+      <td><span class="kb kb-ok">erkannt</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="kb kb-ok">erkannt und eskaliert</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">2</td>
+      <td><span class="kb kb-ok">erkannt</span></td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+      <td><span class="kb kb-ok">erkannt und eskaliert</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">3</td>
+      <td><span class="kb kb-ok">erkannt</span></td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+      <td><span class="kb kb-ok">erkannt und eskaliert</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">4</td>
+      <td><span class="kb kb-ok">erkannt</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="kb kb-ok">erkannt und eskaliert</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">5</td>
+      <td><span class="kb kb-ok">erkannt</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="kb kb-ok">erkannt und eskaliert</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">6</td>
+      <td><span class="kb kb-ok">erkannt</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="kb kb-ok">erkannt und eskaliert</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">7</td>
+      <td><span class="kb kb-ok">erkannt</span></td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+      <td><span class="kb kb-ok">erkannt und eskaliert</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">8</td>
+      <td><span class="kb kb-ok">erkannt</span></td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+      <td><span class="kb kb-ok">erkannt und eskaliert</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">9</td>
+      <td><span class="kb kb-ok">erkannt</span></td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+      <td><span class="kb kb-ok">erkannt und eskaliert</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">10</td>
+      <td><span class="kb kb-ok">erkannt</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="kb kb-ok">erkannt und eskaliert</span></td>
+    </tr>
+</table></div>
+</section>
+
+<section class="cg-section">
+<h2>Übersicht je Lauf</h2>
+<p class="note">Verdicts der drei Prüfschritte (KP → FP → MP), Judge-Bewertungen und Phasenzuordnung je Lauf. J1 binär 0/1; 2A und 2B auf der Skala 1–4. NV ist das Minimum aus 2A und 2B und damit in jeder Zeile nachrechenbar.</p>
+<div class="tblwrap"><table>
+ <tr><th>Lauf</th><th>Soll erfüllt</th><th>KP</th><th>FP</th><th>MP</th><th class="num">J1</th><th class="num">2A</th><th class="num">2B</th><th class="num">NV</th><th>Erkannt in</th><th>Eskaliert in</th></tr>
+ 
+    <tr>
+      <td class="mono b">1</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><div class="qmark">aus MP-1</div></td>
+      <td class="num b">1</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">2</td>
+      <td><span class="vb vb-rejected">✕ ABWEICHUNG</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></td>
+      <td><span class="vb vb-neutral">– nicht erreicht</span></td>
+      <td><span class="vb vb-neutral">– nicht erreicht</span></td>
+      <td class="num b">1</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">3</td>
+      <td><span class="vb vb-rejected">✕ ABWEICHUNG</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></td>
+      <td><span class="vb vb-neutral">– nicht erreicht</span></td>
+      <td><span class="vb vb-neutral">– nicht erreicht</span></td>
+      <td class="num b">1</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">4</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><div class="qmark">aus MP-1</div></td>
+      <td class="num b">1</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">5</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><div class="qmark">aus MP-1</div></td>
+      <td class="num b">1</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">6</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><div class="qmark">aus MP-1</div></td>
+      <td class="num b">1</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">7</td>
+      <td><span class="vb vb-rejected">✕ ABWEICHUNG</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></td>
+      <td><span class="vb vb-neutral">– nicht erreicht</span></td>
+      <td><span class="vb vb-neutral">– nicht erreicht</span></td>
+      <td class="num b">1</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">8</td>
+      <td><span class="vb vb-rejected">✕ ABWEICHUNG</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></td>
+      <td><span class="vb vb-neutral">– nicht erreicht</span></td>
+      <td><span class="vb vb-neutral">– nicht erreicht</span></td>
+      <td class="num b">1</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">9</td>
+      <td><span class="vb vb-rejected">✕ ABWEICHUNG</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></td>
+      <td><span class="vb vb-neutral">– nicht erreicht</span></td>
+      <td><span class="vb vb-neutral">– nicht erreicht</span></td>
+      <td class="num b">1</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+      <td><span class="ph" title="Konsistenzprüfung">KP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">10</td>
+      <td><span class="vb vb-approved">✓ SOLL ERFÜLLT</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><div class="qmark">aus MP-1</div></td>
+      <td class="num b">1</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+</table></div>
+</section>
+
+<section class="cg-section">
+<h2>Details</h2>
+<p class="note">Begründungen der Prüfschritte und die vier Judge-Begründungen je Lauf. NV trägt keine eigene Begründung, weil der Wert berechnet und nicht bewertet wird.</p>
+
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 1</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung TF-17 – Elena Krüger – kein Widerspruch festgestellt</p><ul class="bl"><li><span class="bkey">Name:</span> Antrag „Krüger, Elena“ = Mietbescheinigung = Verdienstbescheinigung = Gehaltsabrechnungen = Einkommenserklärung; Mietvertrag „Elena Krüger“, Kontoauszug „Elena Krüger“ – übereinstimmend.</li><li><span class="bkey">Geburtsdatum:</span> 11.09.1994 in Antrag, Verdienstbescheinigung und allen Gehaltsabrechnungen – übereinstimmend.</li><li><span class="bkey">Anschrift:</span> Mietobjekt Berger Straße 78, 60316 Frankfurt in Antrag und Mietbescheinigung sowie als Lage der Mieträume im Mietvertrag identisch. Abweichende Anschrift Bockenheimer Landstraße 132, 60325 Frankfurt in Verdienstbescheinigung, Einkommenserklärung und als „mieter_derzeitige_anschrift“ im Mietvertrag ist kein logischer Widerspruch, da Antrag Frage 05 Zweitwohnsitz=true und Mietvertrag §21 „Nutzung als Zweitwohnung. Hauptwohnung bleibt Bockenheimer“ die zwei Adressen als Haupt- vs. Zweitwohnung funktional trennen. Gleiche Rollen stimmen jeweils überein.</li><li><span class="bkey">Einkommen:</span> Antrag 2.150 EUR monatlich = Verdienstbescheinigung 12x 2.150 EUR = Gehaltsabrechnungen 6x 2.150 EUR brutto = Einkommenserklärung 02-07/2026 je 2.150 EUR – keine auffällige Abweichung.</li><li><span class="bkey">Haushaltsgröße:</span> Keine weiteren Haushaltsmitglieder in Frage 06 benannt, keine Zahl die dem widerspräche.</li><li><span class="bkey">Miete:</span> Antrag Gesamtmiete 825 EUR = Mietbescheinigung 680 +20+15+20+5+75+10 = 825 EUR = Mietvertrag 680+75+20+15+20+5+10 = 825 EUR = Kontoauszug 3x 825 EUR „Miete BergerTor“ – rechnerisch vereinbar.</li><li><span class="bkey">Bankverbindung:</span> IBAN DE86500502010037486129 in Antrag, Kontoauszug (Kontoinhaber Elena Krüger) und allen Gehaltsabrechnungen identisch, Bank Frankfurter Sparkasse übereinstimmend.</li><li><span class="bkey">Versicherungsbeiträge:</span> Antrag Steuern ja, Renten ja, Kranken/Pflege ja = Verdienstbescheinigung alle true = Einkommenserklärung alle true, belegt durch Abzüge in Gehaltsabrechnungen.</li><li><span class="bkey">Wohnfläche:</span> 45 qm in Antrag, Mietbescheinigung und Mietvertrag – übereinstimmend.</li><li><span class="bkey">Einzugsdatum/Mietbeginn:</span> Mietbescheinigung 01.02.2025 = Mietvertrag Mietbeginn 01.02.2025.</li><li><span class="bkey">Öffentliche Förderung:</span> Antrag nein = Mietbescheinigung nein = Mietvertrag frei finanziert ja / öffentlich gefördert nein – übereinstimmend.</li><li><span class="bkey">Kontoauszug:</span> Gehaltseingänge 1.540 EUR entsprechen Netto/Auszahlungsbetrag 1.540 EUR der Gehaltsabrechnungen; Mietausgänge entsprechen Gesamtmiete.</li></ul><p>Keine zwei konkret vorhandenen Werte schließen einander logisch aus. Fehlendes (optionale Felder) ist nicht Gegenstand dieser Prüfung. Daher APPROVED.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung (Schritt 2/7) – Wohngeldantrag TF-17, Elena Krüger</p><ul class="bl"><li><span class="bkey">Wohngeldantrag:</span> liegt vor (Wohngeldantrag_fuer_den_Mietzuschuss, 11 Seiten).</li><li><span class="bkey">Einkommensnachweis:</span> liegt vor – Einkommenserklärung + Verdienstbescheinigung (12 Monate 08/2025-07/2026) + 6 Gehaltsabrechnungen (02/2026-07/2026, je 2150 EUR brutto). Mindestanforderung &amp;ge;6 Gehaltsnachweise bei nichtselbständiger Arbeit erfüllt.</li><li><span class="bkey">Weitere Nachweise:</span> Verdienstbescheinigung, Gehaltsabrechnung, Mietbescheinigung (45qm, Grundmiete 680 EUR), Mietvertrag (01.02.2025) – alle vorhanden und mit fallspezifischen prüfbaren Angaben.</li><li><span class="bkey">Schwerbehinderung:</span> Frage 15 = false – kein Schwerbehindertenausweis als Pflichtdokument erforderlich.</li><li><span class="bkey">Pflichtangaben Person:</span> Name (Krüger, Elena), Geburtsdatum (11.09.1994), Anschrift (Berger Straße 78), PLZ (60316) und Wohnort (Frankfurt am Main) vorhanden.</li><li><span class="bkey">Haushalt:</span> keine weiteren Haushaltsmitglieder ersichtlich → 1-Personen-Haushalt, Zahl nicht zwingend erforderlich.</li><li><span class="bkey">Miete:</span> Gesamtmiete 825 EUR/Monat &gt;0 vorhanden.</li><li><span class="bkey">Einkommen:</span> Art (Gehalt/Lohn) + Brutto 2150 EUR/Monat &gt;0 vorhanden.</li><li><span class="bkey">Optional / nicht formell:</span> E-Mail, Telefon, Familienstand etc. nicht mangelrelevant. Hinweis Zweitwohnung (Frage 05 = true, Mietvertrag Sonst. Vereinbarungen) wird nicht formell bewertet, nur als Hinweis für materielle Prüfung.</li></ul><p>Alle Pflichtdokumente und Pflichtangaben vollständig und bearbeitbar. Kein Mangel, keine Unklarheit i.S. der Entscheidungslogik. APPROVED.</p></div>
+        </div>
+      <div class="schritt">
+        <div class="skopf">
+          <span class="sname">Materielle Prüfung (gesamt)</span>
+          <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span>
+          <span class="kb kb-bad">Ablehnung aus MP-1</span>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-1 · Fachliche Vorprüfung (Agent)</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p>Vorprüfung (Schritt 4 von 7) – Ergebnis: Ausschluss wegen fehlendem Hauptwohnsitz, keine Berechnung freigegeben.</p><p class="bkopf">1. Tatbestandsmerkmale (§§ 3, 5, 9, 13 WoGG)</p><ul class="bl"><li><span class="bkey">Lage in Deutschland:</span> belegt – Berger Straße 78, 60316 Frankfurt am Main.</li><li><span class="bkey">Hauptwohnsitz in der beantragten Wohnung:</span> sicher nicht erfüllt – Mietvertrag §21 Sonstige Vereinbarungen: „Nutzung als Zweitwohnung. Hauptwohnung/Lebensmittelpunkt bleibt Bockenheimer…“. Übereinstimmend Anschrift Bockenheimer Landstraße 132, 60325 Frankfurt am Main in Verdienstbescheinigung und Einkommenserklärung sowie Frage 05 „Zweitwohnsitz vorhanden: ja“.</li><li><span class="bkey">Haushaltsgröße:</span> 1 Person angegeben, keine weiteren Haushaltsmitglieder in Frage 06.</li><li><span class="bkey">Monatliches Einkommen &gt; null:</span> belegt durch Verdienstbescheinigung, Gehaltsabrechnungen und Einkommenserklärung.</li><li><span class="bkey">Monatliche Miete &gt; null:</span> Gesamtmiete 825 EUR, Bruttokaltmiete rechnerisch ableitbar, belegt.</li><li><span class="bkey">Haushaltszugehörigkeit / Nutzungsberechtigung:</span> Hauptmieterin laut Antrag Frage 21 und Mietbescheinigung.</li></ul><p class="bkopf">2. Ausschlussgründe (§ 7 Abs. 1, § 20 Abs. 2, § 21 Nr. 3 WoGG)</p><ul class="bl"><li><span class="bkey">Kein konkreter Ausschluss aus Transferleistungen:</span> Frage 10 verneint, Einkommenserklärung weist 0 EUR für ALG II, Sozialhilfe, Arbeitslosengeld aus.</li><li><span class="bkey">Kein BAföG / BAB-Ausschluss belegt:</span> Einkommenserklärung 0 EUR.</li><li><span class="bkey">Keine Vermögensüberschreitung belegt:</span> Frage 20 „Vermögen oberhalb Grenze: nein“.</li></ul><p>Ein sicher nicht erfülltes Kernmerkmal nach § 3 WoGG wirkt wie ein Ausschluss.</p><p>3. Tatsachenbasis (§ 9 WoGG, § 24 VwVfG): Miete in sich stimmig und durch Mietbescheinigung, Mietvertrag (Grundmiete plus kalte Betriebskosten plus Heizkosten) und Kontoauszug (wiederkehrende Zahlung) belegt, ohne offensichtlichen Widerspruch. Datengrundlage reicht für die Bewertung des Hauptwohnsitzmerkmals aus; kein Klärungsfall, keine Nachforderung erforderlich.</p><p>Die Vorprüfung gibt den Antrag daher nicht zur Berechnung frei. Es wird keine Aussage über einen Zahlbetrag oder eine Bewilligung getroffen.</p></div>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-2 · Wohngeldberechnung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><span class="kb kb-neut">durch MP-1 gesperrt</span></div>
+          <div class="btext"><p>Keine eigenständige Berechnung. Die fachliche Vorprüfung hat den Antrag nicht zur Berechnung freigegeben; die Berechnung bestätigt lediglich diese Entscheidung und trifft keinen eigenen Befund.</p></div>
+        </div>
+      </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-ok">1 · erkannt</span></span></div>
+        <p>Die Pipeline hat korrekt erkannt, dass die Wohnung an der Berger Straße lediglich als Zweitwohnung genutzt wird und der Lebensmittelpunkt laut Mietvertrag (§21) sowie Meldeangaben (Antrag Frage 05) an der Bockenheimer Landstraße verbleibt, was zum materiellen Ausschluss führt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle entscheidungstragenden Angaben sind durch die Dokumente belegt. Die Pipeline zitiert korrekt aus dem Mietvertrag (§21), dem Wohngeldantrag (Frage 05) und den Adressangaben in der Verdienstbescheinigung/Einkommenserklärung.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Die Ableitung ist zwingend: Die Pipeline benennt die gesetzliche Anforderung des Hauptwohnsitzes (§ 3 WoGG), stellt die Tatsachen (Nutzung als Zweitwohnung laut Vertrag und Antrag) gegenüber und folgert daraus folgerichtig das REJECTED-Verdict.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="ph" title="Materielle Prüfung">MP</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Materielle Prüfung">MP</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></div>
+        <p>Die Pipeline erkennt den fehlenden Hauptwohnsitz als materielles Hindernis korrekt in der Phase MP-1. Die Phasen KP und FP erwähnen den Sachverhalt zwar (Zweitwohnsitz-Status), stufen ihn jedoch ausdrücklich als konsistent bzw. formell unproblematisch ein und beanstanden ihn nicht.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 2</span><span class="mini"><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p>Konsistenzprüfung TF-17 – Elena Krüger</p><ul class="bl"><li><span class="bkey">Name:</span> übereinstimmend – Antrag „Krüger, Elena“, Mietbescheinigung „Krüger, Elena“, Verdienstbescheinigung „Krüger, Elena“, Mietvertrag „Elena Krüger“, Kontoauszug „Elena Krüger“, Gehaltsabrechnungen „Krüger, Elena“, Einkommenserklärung „Krüger, Elena“ – kein Widerspruch.</li><li><span class="bkey">Geburtsdatum:</span> übereinstimmend 11.09.1994 in Antrag, Verdienstbescheinigung und allen Gehaltsabrechnungen – kein Widerspruch.</li><li><span class="bkey">Anschrift – WIDERSPRUCH:</span> Antrag Wohnung Berger Straße 78, 60316 Frankfurt und Mietbescheinigung Berger Straße 78, 60316 Frankfurt stehen gegenüber Verdienstbescheinigung Bockenheimer Landstraße 132, 60325 Frankfurt, Mietvertrag derzeitige Anschrift Bockenheimer Landstraße 132, 60325 Frankfurt und Einkommenserklärung Bockenheimer Landstraße 132, 60325 Frankfurt. Zwei konkret vorhandene Werte weichen in Straßenname, Hausnummer und PLZ ab. Gemäß Fachanweisung ist schon ein abweichender Straßenname ein Widerspruch (§ 24 VwVfG). Die Angabe Zweitwohnsitz / Nutzung als Zweitwohnung erklärt die Abweichung nicht weg – dies klärt der Sachbearbeiter.</li><li><span class="bkey">Einkommen:</span> Antrag 2150 EUR monatlich, Verdienstbescheinigung 12x 2150 EUR, Gehaltsabrechnungen 6x brutto 2150 EUR / netto 1540 EUR, Einkommenserklärung 6x 2150 EUR, Kontoauszug Gehalt 1540 EUR – rechnerisch vereinbar, kein auffälliges Abweichen.</li><li>Haushaltsgröße, Miete, Wohnfläche, Förderung, Einzug, Versicherung, Bank, Kontoauszug: Miete 825 EUR in Antrag, Mietbescheinigung (680+20+15+20+5+75+10=825), Mietvertrag und Kontoauszug übereinstimmend; Wohnfläche 45 qm überall; Förderung übereinstimmend nein/frei finanziert; Einzug 01.02.2025 / Mietbeginn 01.02.2025; Steuern/KV/PV/RV überall ja; IBAN DE86500502010037486129 gehört lt. Kontoauszug zu Elena Krüger – keine Widersprüche.</li></ul><p>Ergebnis: Mindestens ein konkreter Widerspruch (Anschrift) festgestellt. Kein Fall von offensichtlich falscher Person/Antrag, daher Klärungsfall für menschliche Sachbearbeitung, keine inhaltliche Ablehnung. Verdict REJECTED mit Empfehlung HUMAN_REVIEW.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-neutral">– nicht erreicht</span></div>
+          <div class="btext"><p class="mut">–</p></div>
+        </div>
+      <div class="schritt">
+        <div class="skopf">
+          <span class="sname">Materielle Prüfung (gesamt)</span>
+          <span class="vb vb-neutral">– nicht erreicht</span>
+          
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-1 · Fachliche Vorprüfung (Agent)</span><span class="vb vb-neutral">– nicht erreicht</span></div>
+          <div class="btext"><p class="mut">–</p></div>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-2 · Wohngeldberechnung</span><span class="vb vb-neutral">– nicht erreicht</span></div>
+          <div class="btext"><p class="mut">–</p></div>
+        </div>
+      </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-ok">1 · erkannt</span></span></div>
+        <p>Die Pipeline hat den zentralen Widerspruch bezüglich der Anschrift und der Nutzung der Wohnung (Zweitwohnsitz vs. Hauptwohnung) korrekt erkannt und als Grund für das REJECTED-Verdict in der Konsistenzprüfung angeführt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle genannten Daten (Namen, Geburtsdatum, Anschriften, Einkommenswerte, Miete) sind durch die Dokumente 1 bis 7 belegt. Der Widerspruch zwischen den Anschriften ergibt sich direkt aus dem Vergleich von Antrag/Mietbescheinigung und Verdienstbescheinigung/Mietvertrag.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Die Pipeline leitet aus dem festgestellten Widerspruch der Anschriften folgerichtig ab, dass eine Konsistenz nicht gegeben ist. Die Entscheidung für ein REJECTED mit Verweis auf menschliche Prüfung ist innerhalb der Logik der Konsistenzprüfung zwingend begründet.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="ph" title="Konsistenzprüfung">KP</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Konsistenzprüfung">KP</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></div>
+        <p>Die Konsistenzprüfung (KP) identifiziert den Widerspruch in der Anschrift (Berger Straße vs. Bockenheimer Landstraße) und beanstandet diesen explizit als Klärungsfall, was dem Kern des erwarteten Befunds (Wohnung ist nicht Lebensmittelpunkt) entspricht.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 3</span><span class="mini"><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p>Konsistenzprüfung TF-17 – Elena Krüger – REJECTED als Klärungsfall (HUMAN_REVIEW)</p><p class="bkopf">Festgestellter Widerspruch – Anschrift (§ 24 VwVfG)</p><p>Antrag Frage_02 und Mietbescheinigung: Berger Straße 78, 60316 Frankfurt am Main vs. Verdienstbescheinigung Abs.01, Einkommenserklärung und Mietvertrag Mieteranschrift: Bockenheimer Landstraße 132, 60325 Frankfurt am Main . Zwei konkret vorhandene Werte mit abweichendem Straßennamen, Hausnummer und PLZ schließen sich als einheitliche Anschrift logisch aus.</p><p>Der Mietvertrag enthält den Hinweis Nutzung als Zweitwohnung / Hauptwohnung bleibt Bockenheimer und Antrag Frage_05 Zweitwohnsitz=true. Dies ist eine denkbare Erklärung, darf nach Fachanweisung aber nicht selbst weg-erklärt werden – Klärung durch Sachbearbeiter erforderlich.</p><p class="bkopf">Ohne Widerspruch geprüft</p><ul class="bl"><li><span class="bkey">Name:</span> Krüger, Elena überall übereinstimmend</li><li><span class="bkey">Geburtsdatum:</span> 11.09.1994 in Antrag, Verdienstbescheinigung, Gehaltsabrechnungen übereinstimmend</li><li><span class="bkey">Einkommen:</span> 2.150 EUR brutto in Antrag, Verdienstbescheinigung 12x2.150, Gehaltsabrechnungen, Einkommenserklärung übereinstimmend; netto 1.540 EUR zu Kontoauszug passend</li><li><span class="bkey">Miete:</span> 825 EUR in Antrag, rechnerisch aus Mietbescheinigung (680+20+15+20+5+75+10=825) und Mietvertrag identisch, Kontoauszug 3x825 passend</li><li>Wohnfläche 45 qm, Einzug/Mietbeginn 01.02.2025, öffentliche Förderung = nein/freifinanziert, Versicherungspflichtangaben = ja, IBAN DE86...6129 = Kontoinhaberin Elena Krüger, Haushaltsgröße 1-Person konsistent – jeweils widerspruchsfrei</li></ul><p>Da ein konkreter Anschriften-Widerspruch vorliegt, kein APPROVED. Kein Fall von offensichtlich fremden Dokumenten (Name/DOB identisch), daher kein endgültiges REJECT, sondern REJECTED als Klärungsfall zur menschlichen Prüfung.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-neutral">– nicht erreicht</span></div>
+          <div class="btext"><p class="mut">–</p></div>
+        </div>
+      <div class="schritt">
+        <div class="skopf">
+          <span class="sname">Materielle Prüfung (gesamt)</span>
+          <span class="vb vb-neutral">– nicht erreicht</span>
+          
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-1 · Fachliche Vorprüfung (Agent)</span><span class="vb vb-neutral">– nicht erreicht</span></div>
+          <div class="btext"><p class="mut">–</p></div>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-2 · Wohngeldberechnung</span><span class="vb vb-neutral">– nicht erreicht</span></div>
+          <div class="btext"><p class="mut">–</p></div>
+        </div>
+      </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-ok">1 · erkannt</span></span></div>
+        <p>Die Pipeline hat den Kern des Problems (Wohnung in der Berger Straße ist nur Zweitwohnsitz, Lebensmittelpunkt ist Bockenheimer Landstraße) korrekt als Widerspruch identifiziert und den Fall zur Klärung gestoppt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle genannten Fakten (Anschriften, Einkommen von 2.150 EUR, Miete von 825 EUR, Zweitwohnsitz-Hinweis im Mietvertrag) sind durch die Dokumente 1 bis 7 exakt belegt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Die Pipeline leitet aus dem dokumentierten Widerspruch der Anschriften und dem expliziten Hinweis auf den Zweitwohnsitz im Mietvertrag schlüssig ab, dass ein Klärungsbedarf besteht, der ein APPROVED verhindert.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="ph" title="Konsistenzprüfung">KP</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Konsistenzprüfung">KP</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></div>
+        <p>Die Konsistenzprüfung (KP) benennt den Widerspruch zwischen der Antragsanschrift (Berger Straße) und der Anschrift in den Einkommensnachweisen (Bockenheimer Landstraße) explizit als Klärungsfall.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 4</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung TF-17 – Elena Krüger</p><ul class="bl"><li><span class="bkey">Name:</span> Antrag „Krüger, Elena“ = Verdienstbescheinigung „Krüger, Elena“ = Gehaltsabrechnungen „Krüger, Elena“ = Einkommenserklärung „Krüger, Elena“ = Mietbescheinigung „Krüger, Elena“ = Mietvertrag „Elena Krüger“ – übereinstimmend.</li><li><span class="bkey">Geburtsdatum:</span> Antrag 11.09.1994 = Verdienstbescheinigung 11.09.1994 = Gehaltsabrechnungen 11.09.1994 – übereinstimmend.</li><li><span class="bkey">Anschrift:</span> Wohnungsanschrift für die Wohngeld beantragt wird übereinstimmend: Antrag Berger Straße 78, 60316 Frankfurt = Mietbescheinigung Berger Straße 78, 60316 Frankfurt = Mietvertrag Lage Berger Straße 78, Frankfurt. Die abweichende Anschrift Bockenheimer Landstraße 132, 60325 Frankfurt in Verdienstbescheinigung, Einkommenserklärung und als „derzeitige Anschrift“ im Mietvertrag bezeichnet jeweils die Hauptwohnung bei ausgewiesenem Zweitwohnsitz (Antrag Frage 05 = true, Mietvertrag §21 „Nutzung als Zweitwohnung“). Unterschiedliche Rollen schließen sich logisch nicht aus – kein Widerspruch i.S. der Grundregeln.</li><li><span class="bkey">Einkommen:</span> Antrag 2150 € monatlich = Verdienstbescheinigung 12x 2150 € = Gehaltsabrechnungen 6x 2150 € brutto = Einkommenserklärung 6x 2150 € – keine auffällige Abweichung.</li><li><span class="bkey">Haushaltsgröße:</span> Keine weiteren Haushaltsmitglieder benannt (Frage 06 leer, Frage 07 false) – passt zu 1-Personen-Haushalt.</li><li><span class="bkey">Miete:</span> Antrag Gesamtmiete 825 € = Mietbescheinigung 680+20+15+20+5+75+10=825 € = Mietvertrag 680+75+20+15+20+5+10=825 € = Kontoauszug 3x 825 € – rechnerisch vereinbar.</li><li><span class="bkey">Bankverbindung:</span> Antrag IBAN DE86500502010037486129 = Kontoauszug Kontoinhaber Elena Krüger gleiche IBAN = Gehaltsabrechnungen gleiche IBAN – gehört zum Antragsteller.</li><li><span class="bkey">Versicherungsbeiträge:</span> Antrag Steuern ja / Rente ja / Kranken+Pflege ja = Verdienstbescheinigung alle true = Einkommenserklärung Kranken/Pflege/Rente true = Gehaltsabrechnungen mit Abzügen – übereinstimmend.</li><li><span class="bkey">Wohnfläche:</span> Antrag 45,0 qm = Mietbescheinigung 45,0 qm = Mietvertrag 45 qm.</li><li><span class="bkey">Einzug/Mietbeginn:</span> Mietbescheinigung 01.02.2025 = Mietvertrag 01.02.2025.</li><li><span class="bkey">Öffentliche Förderung:</span> Antrag false = Mietbescheinigung false = Mietvertrag frei finanziert true / öffentlich gefördert false – einheitlich nicht gefördert.</li><li><span class="bkey">Kontoauszug:</span> Gehaltseingänge 2x 1540 € = Gehaltsabrechnungen netto 1540 €; Mietabgänge 825 € plausibel – übereinstimmend.</li></ul><p>Kein Prüfungspunkt zeigt zwei konkret vorhandene, sich logisch ausschließende Werte. Fehlendes ist nicht zu bewerten. Daher APPROVED.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Formelle Prüfung – Wohngeldantrag Elena Krüger (TF-17) – Ergebnis: vollständig und bearbeitbar</p><p class="bkopf">1. Pflichtdokumente (§22, §26 VwVfG, §23 WoGG)</p><ul class="bl"><li>Wohngeldantrag für Mietzuschuss liegt vor und ist ausgefüllt mit Unterschrift vom 22.08.2026.</li><li><span class="bkey">Einkommensnachweis liegt vor:</span> Einkommenserklärung vom 22.08.2026 + Verdienstbescheinigung (12 Monate 08/2025-07/2026) + 6 aktuelle Gehaltsabrechnungen 02/2026-07/2026 (je 2.150 € brutto) – damit Anforderung mind. 6 Gehaltsnachweise bei nichtselbständiger Arbeit erfüllt.</li><li>Verdienstbescheinigung liegt vor.</li><li>Gehaltsabrechnung liegt vor (6 Stück).</li><li>Mietbescheinigung liegt vor (Grundmiete 680 €).</li><li>Mietvertrag liegt vor.</li></ul><p>Kein Dokument ohne prüfbare fallspezifische Informationen. Bedingtes Dokument Schwerbehindertenausweis nicht erforderlich, da Frage 15 = false (keine Schwerbehinderung angegeben).</p><p class="bkopf">2. Pflichtangaben</p><ul class="bl"><li><span class="bkey">Person:</span> Name Krüger, Elena, Geburtsdatum 11.09.1994, Anschrift Berger Straße 78, PLZ 60316, Wohnort Frankfurt am Main – alle vorhanden.</li><li><span class="bkey">Haushalt (§5 WoGG):</span> keine weiteren Haushaltsmitglieder (Frage 06 leer) = 1-Personen-Haushalt, Zahl nicht zwingend erforderlich – erfüllt.</li><li><span class="bkey">Miete (§9 WoGG):</span> Gesamtmiete 825,00 €/Monat &gt;0 – erfüllt (zusätzlich Grundmiete 680 €).</li><li><span class="bkey">Einkommen (§§13,14 WoGG):</span> Art Gehalt/Lohn nicht leer, Bruttobetrag 2.150 € &gt;0 – erfüllt.</li></ul><p>3. Optionales / Nicht-Gegenstand: E-Mail, Telefon, Staatsangehörigkeit, Familienstand, Wohnfläche, IBAN sind optional und nicht mangelbegründend. Adressabweichungen (Berger Straße vs. Bockenheimer Landstraße) sind Konsistenzfrage, nicht formell. Angabe Zweitwohnsitz=true und Mietvertragshinweis &#039;Nutzung als Zweitwohnung&#039; wird nicht formell bewertet – lediglich Hinweis für materielle Prüfung (Hauptwohnungs-/Ausschlussprüfung).</p><p>Alle Pflichtpunkte vollständig und eindeutig – daher APPROVED .</p></div>
+        </div>
+      <div class="schritt">
+        <div class="skopf">
+          <span class="sname">Materielle Prüfung (gesamt)</span>
+          <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span>
+          <span class="kb kb-bad">Ablehnung aus MP-1</span>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-1 · Fachliche Vorprüfung (Agent)</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p>Materielle Vorprüfung (Schritt 4 von 7) – Ergebnis: nicht zur Berechnung freigegeben</p><p class="bkopf">1. Tatbestandsmerkmale (§§ 3, 5, 9, 13 WoGG)</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland:</span> Berger Straße 78, 60316 Frankfurt am Main – Lage in Deutschland belegt.</li><li><span class="bkey">Hauptwohnsitz (§ 3 WoGG):</span> sicher nicht erfüllt. Im Wohngeldantrag ist &quot;zweitwohnsitz_vorhanden: true&quot; angegeben. Der Mietvertrag § 21 Sonstige Vereinbarungen vermerkt ausdrücklich: &quot;Nutzung als Zweitwohnung. Hauptwohnung/Lebensmittelpunkt bleibt Bockenheimer&quot;. Die Verdienstbescheinigung, Gehaltsabrechnungen und Einkommenserklärung führen als Anschrift übereinstimmend Bockenheimer Landstraße 132, 60325 Frankfurt am Main. Die beantragte Wohnung Berger Straße 78 ist damit konkret als Zweitwohnung belegt, nicht als Hauptwohnsitz.</li><li><span class="bkey">Haushaltsgröße (§ 5 WoGG):</span> 1 Person (nur Antragstellerin Elena Krüger, keine weiteren Haushaltsmitglieder in Frage 06 eingetragen) – angegeben.</li><li><span class="bkey">Einkommen &gt; null (§ 13 WoGG):</span> monatlich 2.150,00 EUR brutto (Gehalt/Lohn), durch Verdienstbescheinigung, Gehaltsabrechnungen und Einkommenserklärung belegt.</li><li><span class="bkey">Miete &gt; null (§ 9 WoGG):</span> Gesamtmiete 825,00 EUR monatlich angegeben.</li><li><span class="bkey">Haushaltszugehörigkeit (§ 5 WoGG):</span> Antragstellerin ist Hauptmieterin der beantragten Wohnung, Einzug 01.02.2025, &quot;wohnung_wird_bewohnt: true&quot; – belegt.</li></ul><p class="bkopf">2. Ausschlussgründe (§ 7 Abs. 1, § 20 Abs. 2, § 21 Nr. 3 WoGG)</p><ul class="bl"><li><span class="bkey">Bürgergeld / SGB II mit berücksichtigten KdU:</span> Frage 10 &quot;transferleistung_erhalten_beantragt_sanktioniert_weggefallen_oder_kuerzlich_abgelehnt: false&quot;, Einkommenserklärung Arbeitslosengeld II 0,00 EUR – kein konkreter Anhalt.</li><li>Grundsicherung / Sozialhilfe mit berücksichtigten KdU: ebenso nicht belegt.</li><li>BAföG / Berufsausbildungsbeihilfe (§ 20 Abs. 2 WoGG): Erwerbsstatus Arbeitnehmerin, Einkommenserklärung BAföG 0,00 EUR – kein konkreter Anhalt.</li><li><span class="bkey">Vermögensgrenze (§ 21 Nr. 3 WoGG):</span> Frage 20 &quot;vermoegen_oberhalb_der_massgeblichen_grenze: false&quot; – keine konkrete Überschreitung belegt.</li></ul><p>Ein sicher nicht erfülltes Kernmerkmal (hier: fehlender Hauptwohnsitz nach § 3 WoGG) wirkt wie ein Ausschluss.</p><p class="bkopf">3. Tatsachenbasis (§ 9 WoGG, § 24 VwVfG)</p><ul class="bl"><li><span class="bkey">Miete rechnerisch in sich stimmig:</span> Grundmiete 680,00 EUR + Müll 20,00 + Entwässerung 15,00 + Wasser 20,00 + Allgemeinstrom 5,00 + Heizung 75,00 + weitere Betriebskosten 10,00 = 825,00 EUR Gesamtmiete; übereinstimmend in Antrag, Mietbescheinigung, Mietvertrag und Kontoauszug (825,00 EUR Mietabbuchungen). Keine offensichtlichen Widersprüche.</li><li>Datengrundlage für die Bewertung der Anspruchsvoraussetzungen und Ausschlussgründe ausreichend; Klärungsbedarf besteht nicht, da die Zweitwohnungseigenschaft eindeutig dokumentiert ist.</li></ul><p>Dies ist eine Vorprüfung ohne Entscheidung über die Höhe eines Anspruchs und ohne Wohngeldberechnung. Es wird kein Anspruch dem Grunde nach zugesagt und keine Bewilligung in Aussicht gestellt.</p></div>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-2 · Wohngeldberechnung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><span class="kb kb-neut">durch MP-1 gesperrt</span></div>
+          <div class="btext"><p>Keine eigenständige Berechnung. Die fachliche Vorprüfung hat den Antrag nicht zur Berechnung freigegeben; die Berechnung bestätigt lediglich diese Entscheidung und trifft keinen eigenen Befund.</p></div>
+        </div>
+      </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-ok">1 · erkannt</span></span></div>
+        <p>Die Pipeline hat den zentralen Befund (Nichtanspruch wegen Zweitwohnsitz-Eigenschaft der Wohnung) korrekt erkannt und in Phase MP-1 zur Ablehnung des Antrags geführt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle wesentlichen Angaben (Miete 825 EUR, Bruttoeinkommen 2150 EUR, Zweitwohnsitz-Status im Mietvertrag §21) sind durch die Dokumente belegt. Die Pipeline zitiert korrekt aus dem Mietvertrag und dem Antrag.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Die Ableitung ist zwingend: Die Pipeline stellt fest, dass Wohngeld einen Hauptwohnsitz voraussetzt, belegt anhand der Dokumente die Eigenschaft als Zweitwohnung und schließt daraus folgerichtig auf das REJECTED-Verdict.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="ph" title="Materielle Prüfung">MP</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Materielle Prüfung">MP</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></div>
+        <p>Die Pipeline erkennt in MP-1 korrekt, dass die Wohnung Berger Straße 78 nur ein Zweitwohnsitz ist und lehnt den Anspruch deshalb materiell ab. In KP und FP wurde der Sachverhalt zwar erwähnt, aber ausdrücklich als unproblematisch bzw. nicht formell relevant eingestuft.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 5</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung TF-17 – Elena Krüger</p><ul class="bl"><li><span class="bkey">Name:</span> Übereinstimmend in Antrag, Mietbescheinigung, Verdienstbescheinigung, Mietvertrag, Kontoauszug, Gehaltsabrechnungen und Einkommenserklärung (Krüger, Elena).</li><li><span class="bkey">Geburtsdatum:</span> Übereinstimmend 11.09.1994 in Antrag, Verdienstbescheinigung und Gehaltsabrechnungen.</li><li><span class="bkey">Anschrift:</span> Mietobjekt Berger Straße 78, 60316 Frankfurt übereinstimmend in Antrag, Mietbescheinigung und Mietvertrag (Lage der Mieträume). Abweichende Anschrift Bockenheimer Landstraße 132, 60325 Frankfurt in Verdienstbescheinigung, Mietvertrag (derzeitige Anschrift) und Einkommenserklärung bezeichnet dokumentiert die Hauptwohnung bei erklärter Zweitwohnungsnutzung (Antrag Frage 05 = true, Mietvertrag §21: Nutzung als Zweitwohnung). Kein logischer Ausschluss zweier Werte gleichen Bedeutungsgehalts – daher kein Widerspruch i.S. Grundregel 1.</li><li><span class="bkey">Einkommen:</span> 2150 EUR brutto monatlich übereinstimmend in Antrag, Verdienstbescheinigung (12x2150), Gehaltsabrechnungen und Einkommenserklärung. Netto 1540 EUR passt zu Kontoauszug.</li><li><span class="bkey">Miete:</span> 825 EUR Gesamtmiete im Antrag rechnerisch vereinbar mit Mietbescheinigung (680+20+15+20+5+75+10) und Mietvertrag sowie Kontoauszug (3x825).</li><li><span class="bkey">Wohnfläche:</span> 45 qm in Antrag, Mietbescheinigung und Mietvertrag übereinstimmend.</li><li><span class="bkey">Einzug/Mietbeginn:</span> 01.02.2025 in Mietbescheinigung und Mietvertrag übereinstimmend.</li><li><span class="bkey">Öffentliche Förderung:</span> Übereinstimmend nicht gefördert / frei finanziert.</li><li>Bankverbindung/Versicherung/Kontoauszug/Haushaltsgröße: IBAN DE86500502010037486129 gehört zur Antragstellerin, Versicherungsangaben true übereinstimmend, Kontoauszug passt zu Gehalt/Miete, keine weiteren Haushaltsmitglieder benannt.</li></ul><p>Kein Widerspruch nach Grundregel 1 festgestellt. Ergebnis: APPROVED.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Formelle Prüfung (Schritt 2 von 7) – Wohngeldantrag TF-17, Elena Krüger – APPROVED</p><p>Geprüft wurde ausschließlich die formelle Vollständigkeit / Bearbeitbarkeit. Keine materielle Wertung.</p><ul class="bl"><li><span class="bkey">Pflichtdokument Wohngeldantrag:</span> vorhanden (Wohngeldantrag_fuer_den_Mietzuschuss, 11 Seiten, unterschrieben 22.08.2026).</li><li><span class="bkey">Pflichtdokument Einkommensnachweis:</span> vorhanden – Verdienstbescheinigung (12 Monate 08/2025-07/2026, 2150 EUR), 6 Gehaltsabrechnungen 02-07/2026, Einkommenserklärung vom 22.08.2026. Mindestanforderung ≥6 aktuelle Gehaltsnachweise bei nichtselbständiger Arbeit ist erfüllt.</li><li><span class="bkey">Weitere Nachweise:</span> Verdienstbescheinigung, Gehaltsabrechnung, Mietbescheinigung (20.08.2026), Mietvertrag (15.01.2025), Kontoauszug – alle vorhanden und mit fallspezifischen prüfbaren Informationen erfasst.</li><li><span class="bkey">Schwerbehinderung:</span> Frage 15 = false – kein zusätzlicher Pflichtnachweis Schwerbehindertenausweis erforderlich.</li><li><span class="bkey">Person:</span> Name Krüger, Elena, Geburtsdatum 11.09.1994, Anschrift Berger Straße 78, PLZ 60316, Ort Frankfurt am Main – alle vorhanden (§22 VwVfG, §3 WoGG).</li><li><span class="bkey">Haushalt:</span> keine weiteren Haushaltsmitglieder aus Daten ersichtlich → 1-Personen-Haushalt; Zahl nicht zwingend erforderlich (§5 WoGG) – erfüllt.</li><li><span class="bkey">Miete:</span> Gesamtmiete 825,00 EUR/Monat &gt;0 (§9 WoGG) – erfüllt.</li><li><span class="bkey">Einkommen:</span> Art „Gehalt/Lohn“ nicht leer, Brutto 2150,00 EUR &gt;0 (§§13,14 WoGG) – erfüllt.</li></ul><p>Hinweis (kein formeller Mangel, nur für materielle Prüfung): Nutzung als Zweitwohnung vermerkt (Mietvertrag §21, Frage 05 Zweitwohnsitz = true, abweichende Anschrift Bockenheimer Landstraße in Verdienst-/Einkommensunterlagen) – Ausschluss-/Anspruchsfragen sind nicht Gegenstand dieser Prüfung.</p><p>Alle Pflichtdokumente und Pflichtangaben liegen vollständig und eindeutig vor. Antrag ist formell bearbeitbar.</p></div>
+        </div>
+      <div class="schritt">
+        <div class="skopf">
+          <span class="sname">Materielle Prüfung (gesamt)</span>
+          <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span>
+          <span class="kb kb-bad">Ablehnung aus MP-1</span>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-1 · Fachliche Vorprüfung (Agent)</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p>Vorprüfung – Ergebnis: Nicht zur Berechnung freigegeben (Ablehnung, kein Klärungsfall)</p><p class="bkopf">1. Tatbestandsmerkmale (§§ 3, 5, 9, 13 WoGG)</p><p>Haushaltsgröße: 1 Person (nur Antragstellerin, Frage 06 ohne weitere Personen) – angegeben.</p><p>Einkommen &gt; 0: 2.150 EUR monatlich (Frage 12, Verdienstbescheinigung 12x 2.150 EUR, Gehaltsabrechnungen 02-07/2026, Einkommenserklärung) – belegt.</p><p>Miete &gt; 0: Gesamtmiete 825 EUR, Bruttokaltmiete 750 EUR (680 Grundmiete + 70 kalte Betriebskosten) – über Antrag Frage 23, Mietbescheinigung und Mietvertrag §§ 1,3 übereinstimmend belegt, Kontoauszug mit 3x 825 EUR Zahlung stimmig.</p><p>Zugehörigkeit zum Haushalt: Mietbescheinigung „Wohnung wird bewohnt: true“, Hauptmieterin – belegt.</p><p>Wohnsitz in Deutschland als Hauptwohnsitz (§ 3 WoGG) – sicher nicht erfüllt: Für die Wohnung Berger Str. 78, 60316 Frankfurt wird Wohngeld beantragt, im Mietvertrag § 21 ist jedoch ausdrücklich vereinbart: „Nutzung als Zweitwohnung. Hauptwohnung/Lebensmittelpunkt bleibt Bockenheimer [Landstraße 132]“. Frage 05 bestätigt „Zweitwohnsitz vorhanden: true“. Verdienstbescheinigung, Einkommenserklärung und Mietvertrag nennen als derzeitige Anschrift/Wohnanschrift Bockenheimer Landstraße 132, 60325 Frankfurt. Die Antragswohnung ist damit konkret und eindeutig als Zweitwohnung dokumentiert, nicht als Hauptwohnsitz.</p><p class="bkopf">2. Ausschlussgründe (§ 7 Abs.1, § 20 Abs.2, § 21 Nr.3 WoGG)</p><p>Kein konkret belegter Transferleistungs-Ausschluss: Frage 10 „transferleistung ...: false“, Einkommenserklärung ALG II / Sozialhilfe / Arbeitslosengeld / Krankengeld / BAföG jeweils 0 EUR.</p><p>Kein BAföG-/BAB-Ausschluss ersichtlich: Erwerbsstatus Arbeitnehmerin, Vollzeit, kein Ausbildungsbezug.</p><p>Kein Vermögens-Ausschluss: Frage 20 „Vermögen oberhalb Grenze: false“, alle Unterpositionen false. Eine hohe Einkommenssumme allein ist kein Ausschlussgrund.</p><p class="bkopf">3. Tatsachenbasis (§ 9 WoGG, § 24 VwVfG)</p><p>Die Miete ist rechnerisch in sich stimmig und widerspruchsfrei (825 – 75 Heizkosten = 750; Zusammensetzung in Mietbescheinigung und Mietvertrag identisch). Die Datengrundlage reicht für die materielle Bewertung aus; es liegt kein Klärungsfall wegen fehlender Pflichtwerte vor. Die Bewertung beruht ausschließlich auf den übergebenen Daten.</p><p>Da das Kernmerkmal Hauptwohnsitz anhand der Daten sicher nicht erfüllt ist, wirkt dies wie ein Ausschluss. Es handelt sich um eine Ablehnung, nicht um eine Nachforderung oder menschliche Klärung.</p></div>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-2 · Wohngeldberechnung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><span class="kb kb-neut">durch MP-1 gesperrt</span></div>
+          <div class="btext"><p>Keine eigenständige Berechnung. Die fachliche Vorprüfung hat den Antrag nicht zur Berechnung freigegeben; die Berechnung bestätigt lediglich diese Entscheidung und trifft keinen eigenen Befund.</p></div>
+        </div>
+      </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-ok">1 · erkannt</span></span></div>
+        <p>Die Pipeline hat korrekt erkannt, dass die Wohnung Berger Straße 78 laut Mietvertrag (§ 21) und Antrag (Frage 05) nur ein Zweitwohnsitz ist und daher kein Wohngeldanspruch besteht. Dies entspricht exakt dem im Testregister injizierten Fehler.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle wesentlichen Angaben (Miete 825 EUR, Brutto 2150 EUR, Zweitwohnsitz-Status) sind durch die Dokumente 1, 2, 4 und 6 belegt. Die von der Pipeline in KP genannten 3x 825 EUR Zahlungen finden sich exakt im Kontoauszug (Dokument 5).</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Die Ablehnung in MP-1 folgt zwingend aus der Feststellung des Zweitwohnsitzes, da Wohngeld nur für die Hauptwohnung gewährt wird. Die Kette ist konsistent, und MP-2 bestätigt das Ergebnis von MP-1 systemkonform mit der Befundklasse MP_GESPERRT.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="ph" title="Materielle Prüfung">MP</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Materielle Prüfung">MP</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></div>
+        <p>Die Pipeline erkennt in MP-1 korrekt, dass die Wohnung nur ein Zweitwohnsitz ist und lehnt den Anspruch materiell ab. Die Phasen KP und FP erwähnen den Sachverhalt zwar, stufen ihn aber ausdrücklich als für ihre jeweilige Prüfung unerheblich ein.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 6</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung TF-17 – Elena Krüger</p><ul class="bl"><li><span class="bkey">Name:</span> Übereinstimmend in allen Dokumenten (Krüger, Elena / Elena Krüger) – kein Widerspruch.</li><li><span class="bkey">Geburtsdatum:</span> 11.09.1994 in Antrag, Verdienstbescheinigung und Gehaltsabrechnungen identisch – kein Widerspruch.</li><li><span class="bkey">Anschrift:</span> Mietobjekt Berger Straße 78, 60316 Frankfurt übereinstimmend in Antrag, Mietbescheinigung und Mietvertrag (Lage der Mieträume). Abweichende Anschrift Bockenheimer Landstraße 132, 60325 Frankfurt in Verdienstbescheinigung, Einkommenserklärung und Mietvertrag als derzeitige Anschrift schließt sich logisch nicht aus – Antrag Frage 05 Zweitwohnsitz=true und Mietvertrag §21 &quot;Nutzung als Zweitwohnung. Hauptwohnung/Lebensmittelpunkt bleibt Bockenheimer&quot; dokumentieren zwei Wohnsitze. Kein logischer Ausschluss, daher kein Widerspruch i.S. Grundregel 1.</li><li><span class="bkey">Einkommen:</span> Antrag 2150 EUR monatlich = Verdienstbescheinigung 12x2150 EUR = Gehaltsabrechnungen 6x2150 EUR brutto = Einkommenserklärung 6x2150 EUR – kein Widerspruch.</li><li><span class="bkey">Haushaltsgröße:</span> Keine weiteren Haushaltsmitglieder benannt (Frage 06 leer, Frage 07 false) – passt zu 1-Personen-Haushalt – kein Widerspruch.</li><li><span class="bkey">Miete:</span> Antrag 825 EUR = Mietbescheinigung 680+20+15+20+5+75+10=825 EUR = Mietvertrag gleiche Aufschlüsselung = Kontoauszug 3x825 EUR – rechnerisch vereinbar.</li><li><span class="bkey">Bankverbindung:</span> IBAN DE86500502010037486129 in Antrag, Kontoauszug (Inhaberin Elena Krüger) und Gehaltsabrechnungen identisch – kein Hinweis auf Fremdperson.</li><li><span class="bkey">Versicherungsbeiträge:</span> Antrag (Steuern, RV, KV/PV true) = Verdienstbescheinigung (alle true) = Einkommenserklärung (alle true) = Gehaltsabrechnungen mit Abzügen – kein Widerspruch.</li><li><span class="bkey">Wohnfläche:</span> 45 qm in Antrag, Mietbescheinigung und Mietvertrag – identisch.</li><li><span class="bkey">Einzugsdatum/Mietbeginn:</span> 01.02.2025 in Mietbescheinigung und Mietvertrag – identisch.</li><li><span class="bkey">Öffentliche Förderung:</span> Antrag false, Mietbescheinigung false, Mietvertrag frei finanziert true / öffentlich gefördert false – übereinstimmend.</li><li><span class="bkey">Kontoauszug:</span> Gehaltseingänge 2x1540 EUR entsprechen Netto 1540 EUR der Gehaltsabrechnungen; Mietabgänge 825 EUR entsprechen Miete – kein Widerspruch.</li></ul><p>Kein Prüfungspunkt zeigt zwei konkret vorhandene, sich logisch ausschließende Werte. Fehlendes ist nicht zu bewerten. Ergebnis: APPROVED.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Formelle Prüfung (Schritt 2 von 7) – Wohngeldantrag Elena Krüger (TF-17): APPROVED</p><ul class="bl"><li><span class="bkey">Pflichtdokument Wohngeldantrag:</span> vorhanden (Wohngeldantrag_Testfall17_Elena_Krueger_ausgefuellt.json, Erstantrag, unterschrieben 22.08.2026).</li><li><span class="bkey">Pflichtdokument Einkommensnachweis:</span> vorhanden – Einkommenserklärung (02-07/2026 je 2150 EUR), Verdienstbescheinigung (08/2025-07/2026, 12 Monate) und Gehaltsabrechnungen (6 Monatsabrechnungen 02-07/2026) liegen vor. Bedingung „mindestens sechs aktuelle Gehaltsnachweise bei nichtselbständiger Arbeit (Gehalt/Lohn)“ ist erfüllt (6 = zulässig).</li><li><span class="bkey">Weitere geforderte Nachweise:</span> Verdienstbescheinigung, Gehaltsabrechnung, Mietbescheinigung (45 qm, Grundmiete 680 EUR, bestätigt 20.08.2026) und Mietvertrag (Beginn 01.02.2025) liegen vollständig und mit fallspezifischen prüfbaren Angaben vor.</li><li><span class="bkey">Schwerbehinderung:</span> Frage 15 = false, daher kein Schwerbehindertenausweis als bedingtes Pflichtdokument erforderlich.</li><li><span class="bkey">Pflichtangaben Person (§ 22 VwVfG, § 3 WoGG):</span> Name Krüger/Elena, Geburtsdatum 11.09.1994, Anschrift Berger Straße 78, PLZ 60316, Wohnort Frankfurt am Main – alle vorhanden/nicht leer.</li><li><span class="bkey">Haushalt (§ 5 WoGG):</span> keine weiteren Haushaltsmitglieder ersichtlich → 1-Personen-Haushalt; Zahl nicht zwingend erforderlich.</li><li><span class="bkey">Miete (§ 9 WoGG):</span> Gesamtmiete 825,00 EUR/Monat &gt;0 (zusätzlich Grundmiete 680 EUR) – Anforderung erfüllt.</li><li><span class="bkey">Einkommen (§§ 13, 14 WoGG):</span> Art „Gehalt/Lohn“ nicht leer, Bruttobetrag 2150,00 EUR &gt;0 – Anforderung erfüllt.</li></ul><p>Hinweis (kein formeller Mangel): Zweitwohnsitz = true bzw. Mietvertrag „Nutzung als Zweitwohnung“ – möglicher Ausschlussgrund, nicht Gegenstand der formellen Prüfung, zur Bewertung an materielle Prüfung.</p><p>Keine fehlenden Dokumente/Angaben, keine Unklarheit i.S. AMBIGUOUS. Antrag ist formell vollständig und bearbeitbar.</p></div>
+        </div>
+      <div class="schritt">
+        <div class="skopf">
+          <span class="sname">Materielle Prüfung (gesamt)</span>
+          <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span>
+          <span class="kb kb-bad">Ablehnung aus MP-1</span>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-1 · Fachliche Vorprüfung (Agent)</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p class="bkopf">Vorprüfung (Schritt 4 von 7) – kein Entscheid über Höhe oder Bewilligung</p><p class="bkopf">1. Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland:</span> Berger Straße 78, 60316 Frankfurt am Main belegt.</li><li><span class="bkey">Hauptwohnsitz (§ 3 WoGG) sicher nicht erfüllt :</span> Mietvertrag § 21 Sonstige Vereinbarungen: „Nutzung als Zweitwohnung. Hauptwohnung/Lebensmittelpunkt bleibt Bockenheimer&quot;; korrespondierend Wohngeldantrag Frage 05 „zweitwohnsitz_vorhanden&quot;: true und Anschriften in Verdienstbescheinigung/Gehaltsabrechnungen/Einkommenserklärung (Bockenheimer Landstraße 132, 60325 Frankfurt am Main). Die Wohnung, für die Wohngeld beantragt wird, ist damit konkret als Zweitwohnung bezeichnet.</li><li><span class="bkey">Haushaltsgröße:</span> 1 Person (nur Antragstellerin, Fragen 06/07 ohne weitere Personen) – angegeben.</li><li><span class="bkey">Einkommen &gt;0:</span> 2.150 EUR monatlich Gehalt/Lohn (Antrag Frage 12), bestätigt durch Verdienstbescheinigung (12x 2.150 EUR), Gehaltsabrechnungen 02-07/2026 und Einkommenserklärung – belegt.</li><li><span class="bkey">Miete &gt;0:</span> Gesamtmiete 825 EUR (Antrag Frage 23), aufgeschlüsselt Grundmiete 680 EUR + Betriebskosten + Heizung 75 EUR (Mietbescheinigung, Mietvertrag § 3) – angegeben.</li><li>Haushaltszugehörigkeit formal gegeben, ändert die Zweitwohnungs-Einordnung nicht.</li></ul><p>2. Ausschlussgründe: Kein Ausschlussgrund geht konkret hervor: Frage 10 Transferleistungen = false, Einkommenserklärung Abschnitt 03 (ALG II, Sozialhilfe, BAföG jeweils 0 EUR), Frage 20 Vermögen oberhalb Grenze = false, kein BAföG-/BAB-Tatbestand, Erwerbsstatus Arbeitnehmerin. Vermutungen wurden nicht herangezogen.</p><p>3. Tatsachenbasis (§ 9 WoGG, § 24 VwVfG): Für die Bewertung ausreichend und in sich stimmig. Miete rechnerisch plausibel: 680 + 20 + 15 + 20 + 5 + 10 + 75 = 825 EUR, übereinstimmend in Antrag, Mietbescheinigung, Mietvertrag und Kontoauszug (3x 825 EUR Mietzahlung). Einkommen mehrfach widerspruchsfrei belegt. Werbungskosten 1.230 EUR jährlich (= 102,50 EUR monatlich) aus Einkommenserklärung übernommen.</p><p>Ergebnis der Vorprüfung: Obwohl keine Ausschlussgründe nach §§ 7 Abs.1, 20 Abs.2, 21 Nr.3 WoGG belegt sind und die Rechnerwerte vollständig vorliegen, ist ein Kernmerkmal nach § 3 WoGG sicher nicht erfüllt (Zweit- statt Hauptwohnung). Daher keine Freigabe zur Berechnung, sondern Ablehnungstatbestand.</p></div>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-2 · Wohngeldberechnung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><span class="kb kb-neut">durch MP-1 gesperrt</span></div>
+          <div class="btext"><p>Keine eigenständige Berechnung. Die fachliche Vorprüfung hat den Antrag nicht zur Berechnung freigegeben; die Berechnung bestätigt lediglich diese Entscheidung und trifft keinen eigenen Befund.</p></div>
+        </div>
+      </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-ok">1 · erkannt</span></span></div>
+        <p>Die Pipeline hat den zentralen Befund (Nichtanspruch aufgrund der Nutzung als Zweitwohnung) korrekt identifiziert und in der materiellen Prüfung zur Ablehnung des Antrags geführt. Damit wurde der wahre fachliche Zustand des Falls gemäß Ground Truth getroffen.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle entscheidungstragenden Angaben sind durch die Dokumente belegt. Die Pipeline zitiert korrekt den Mietvertrag (§ 21), den Wohngeldantrag (Frage 05) sowie die abweichenden Anschriften in den Einkommensnachweisen. Sämtliche Zahlenwerte (Miete 825 EUR, Einkommen 2150 EUR) sind in den Originaldokumenten verifizierbar.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Die Schlussfolgerung ist zwingend und lückenlos hergeleitet. Die Pipeline stellt die Tatsachen (Zweitwohnsitz-Status) fest, benennt die rechtliche Relevanz (§ 3 WoGG) und leitet daraus folgerichtig das REJECTED-Verdict ab, wobei MP-2 die Sperrung durch MP-1 korrekt übernimmt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="ph" title="Materielle Prüfung">MP</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Materielle Prüfung">MP</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></div>
+        <p>Die Pipeline erkennt in der Phase MP-1 korrekt, dass die Wohnung nur als Zweitwohnung genutzt wird und daher kein Anspruch nach § 3 WoGG besteht. In der KP und FP wurde der Sachverhalt zwar erwähnt, aber ausdrücklich als unproblematisch bzw. nicht gegenstand der Prüfung eingestuft.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 7</span><span class="mini"><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung TF-17 – Elena Krüger</p><ul class="bl"><li><span class="bkey">Name:</span> übereinstimmend – Antrag „Krüger, Elena“, Verdienstbescheinigung / Gehaltsabrechnungen / Einkommenserklärung „Krüger, Elena“, Mietvertrag „Elena Krüger“, Mietbescheinigung „Krüger, Elena“.</li><li><span class="bkey">Geburtsdatum:</span> übereinstimmend – 11.09.1994 in Antrag, Verdienstbescheinigung und allen Gehaltsabrechnungen.</li><li><span class="bkey">Anschrift – WIDERSPRUCH:</span> Antrag Wohnung (Frage 02) und Mietbescheinigung: Berger Straße 78, 60316 Frankfurt am Main vs. Verdienstbescheinigung und Einkommenserklärung: Bockenheimer Landstraße 132, 60325 Frankfurt am Main sowie Mietvertrag derzeitige Anschrift Bockenheimer Landstraße 132. Abweichender Straßenname + abweichende PLZ/Ortsteil = Widerspruch nach Fachanweisung. Dass Mietvertrag unter §21 „Nutzung als Zweitwohnung...“ und Antrag Frage 05 „Zweitwohnsitz vorhanden=true“ eine Erklärung andeuten, darf nach Regel „Widerspruch nicht wegerklären“ nicht zur Heilung führen – Klärung durch Sachbearbeiter.</li><li><span class="bkey">Einkommen:</span> konsistent – Antrag 2.150 €, Verdienstbescheinigung 12x 2.150 €, Gehaltsabrechnungen 6x 2.150 € brutto / 1.540 € netto, Einkommenserklärung 6x 2.150 €, Kontoauszug Gehaltseingänge 1.540 €.</li><li><span class="bkey">Haushaltsgröße:</span> konsistent – keine weiteren Haushaltsmitglieder benannt, keine weiteren Personen, passt zu 1-Personen-Haushalt.</li><li><span class="bkey">Miete:</span> konsistent – Antrag 825 € = Mietbescheinigung 680 +20+15+20+5+75+10 = 825 € = Mietvertrag gleiche Aufschlüsselung, Kontoauszug Mietabbuchungen 825 €.</li><li><span class="bkey">Bankverbindung:</span> konsistent – Antrag IBAN DE86500502010037486129 = Kontoauszug Inhaberin Elena Krüger = Gehaltsabrechnungen Arbeitnehmerkonto.</li><li><span class="bkey">Versicherungsbeiträge:</span> konsistent – Antrag Steuern/Rente/Kranken+Pflege ja = Verdienstbescheinigung true/true/true = Gehaltsabrechnungen mit Abzügen = Einkommenserklärung true/true/true.</li><li><span class="bkey">Wohnfläche:</span> konsistent – 45 qm in Antrag, Mietbescheinigung und Mietvertrag.</li><li><span class="bkey">Einzugsdatum/Mietbeginn:</span> konsistent – Einzug 01.02.2025 = Mietbeginn 01.02.2025.</li><li><span class="bkey">Öffentl. Förderung:</span> konsistent – Antrag nein = Mietbescheinigung nein = Mietvertrag frei finanziert ja / öffentlich gefördert nein.</li><li><span class="bkey">Kontoauszug:</span> konsistent – Miete und Nettogehalt stimmen mit Miet- und Gehaltsnachweisen überein.</li></ul><p>Ergebnis: 1 Widerspruch (Anschrift) festgestellt. Gleiche Person/Geburtsdatum belegt, daher weiterbearbeitbar als Klärungsfall → REJECTED mit Empfehlung HUMAN_REVIEW , keine inhaltliche Ablehnung.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-neutral">– nicht erreicht</span></div>
+          <div class="btext"><p class="mut">–</p></div>
+        </div>
+      <div class="schritt">
+        <div class="skopf">
+          <span class="sname">Materielle Prüfung (gesamt)</span>
+          <span class="vb vb-neutral">– nicht erreicht</span>
+          
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-1 · Fachliche Vorprüfung (Agent)</span><span class="vb vb-neutral">– nicht erreicht</span></div>
+          <div class="btext"><p class="mut">–</p></div>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-2 · Wohngeldberechnung</span><span class="vb vb-neutral">– nicht erreicht</span></div>
+          <div class="btext"><p class="mut">–</p></div>
+        </div>
+      </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-ok">1 · erkannt</span></span></div>
+        <p>Die Pipeline hat den zentralen Widerspruch zwischen der beantragten Wohnung und dem tatsächlichen Lebensmittelpunkt korrekt identifiziert, auch wenn sie den Fall aufgrund der Konsistenzregeln (Widerspruch nicht wegerklären) zur Klärung stoppt, statt ihn materiell abzulehnen.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle Angaben der Pipeline sind durch die Dokumente belegt. Der Widerspruch der Anschriften ergibt sich aus dem Vergleich von Antrag/Mietbescheinigung (Berger Str.) mit der Verdienstbescheinigung/Einkommenserklärung/Mietvertrag (Bockenheimer Landstr.).</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Die Pipeline leitet aus dem festgestellten Widerspruch der Anschriften folgerichtig ein REJECTED (KP) ab, da die internen Regeln eine Heilung durch &#039;Wegerklären&#039; (trotz der Hinweise im Mietvertrag auf Zweitwohnsitz) untersagen.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="ph" title="Konsistenzprüfung">KP</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Konsistenzprüfung">KP</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></div>
+        <p>Die Pipeline erkennt in der Konsistenzprüfung (KP) den Widerspruch in den Anschriften (Berger Straße vs. Bockenheimer Landstraße), was dem Kern des erwarteten Befunds (Wohnung ist nicht Lebensmittelpunkt) entspricht.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 8</span><span class="mini"><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung TF-17 – Elena Krüger</p><ul class="bl"><li><span class="bkey">Name:</span> übereinstimmend – Antrag „Krüger, Elena“, Mietbescheinigung „Krüger, Elena“, Verdienstbescheinigung „Krüger, Elena“, Mietvertrag „Elena Krüger“, Kontoauszug/Gehaltsabrechnungen/Einkommenserklärung „Krüger, Elena“.</li><li><span class="bkey">Geburtsdatum:</span> übereinstimmend – 11.09.1994 in Antrag, Verdienstbescheinigung und allen 6 Gehaltsabrechnungen.</li><li><span class="bkey">Anschrift – WIDERSPRUCH:</span> Antrag + Mietbescheinigung: Berger Straße 78, 60316 Frankfurt am Main vs. Verdienstbescheinigung + Mietvertrag (derzeitige Anschrift) + Einkommenserklärung: Bockenheimer Landstraße 132, 60325 Frankfurt am Main . Zwei konkret vorhandene Werte weichen in Straßenname, Hausnummer, PLZ ab. Dies ist nach Fachanweisung ein Widerspruch. Ein möglicher Zusammenhang mit Zweitwohnsitz (Antrag Frage 05 = true, Mietvertrag §21 „Nutzung als Zweitwohnung“) darf in der Konsistenzprüfung nicht selbst weg-erklärt werden – Klärung durch Sachbearbeiter.</li><li><span class="bkey">Einkommen:</span> kein Widerspruch – Antrag 2.150 € monatlich, Verdienstbescheinigung 12x 2.150 € = 25.800 €, Einkommenserklärung 02-07/2026 je 2.150 €, Gehaltsabrechnungen je 2.150 € brutto.</li><li><span class="bkey">Haushaltsgröße:</span> kein Widerspruch – keine weiteren Haushaltsmitglieder in Frage 06 benannt, 1-Personen-Haushalt konsistent.</li><li><span class="bkey">Miete:</span> widerspruchsfrei – Antrag 825 € = Mietbescheinigung 680+20+15+20+5+75+10 = 825 € = Mietvertrag 680+75+20+15+20+5+10 = 825 € = Kontoauszug 3x 825 € Miete.</li><li><span class="bkey">Bankverbindung:</span> kein Widerspruch – Antrag IBAN DE86500502010037486129 = Kontoauszug Kontoinhaber Elena Krüger = IBAN in Gehaltsabrechnungen.</li><li><span class="bkey">Versicherungsbeiträge:</span> übereinstimmend – Antrag Steuern ja / Rente ja / Kranken+Pflege ja = Verdienstbescheinigung alle true = Einkommenserklärung alle true, Gehaltsabrechnungen weisen Lohnsteuer, KV, RV, PV aus.</li><li><span class="bkey">Wohnfläche:</span> übereinstimmend – 45 qm in Antrag, Mietbescheinigung (45.0) und Mietvertrag (45).</li><li><span class="bkey">Einzugsdatum/Mietbeginn:</span> übereinstimmend – 01.02.2025 in Mietbescheinigung und Mietvertrag.</li><li><span class="bkey">Öffentliche Förderung:</span> übereinstimmend – Antrag nein = Mietbescheinigung nicht gefördert = Mietvertrag frei finanziert true / öffentlich gefördert false.</li><li><span class="bkey">Kontoauszug:</span> übereinstimmend – Gehalt 1.540 € netto = Gehaltsabrechnungen Netto/Auszahlung 1.540 €, Miete 825 € passt.</li></ul><p>Ein konkreter Widerspruch (Anschrift) festgestellt → Klärungsfall, keine endgültige Ablehnung. Gleiche Person/Antrag erkennbar (Name + Geburtsdatum identisch), daher weiterbearbeitbar nach menschlicher Klärung.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-neutral">– nicht erreicht</span></div>
+          <div class="btext"><p class="mut">–</p></div>
+        </div>
+      <div class="schritt">
+        <div class="skopf">
+          <span class="sname">Materielle Prüfung (gesamt)</span>
+          <span class="vb vb-neutral">– nicht erreicht</span>
+          
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-1 · Fachliche Vorprüfung (Agent)</span><span class="vb vb-neutral">– nicht erreicht</span></div>
+          <div class="btext"><p class="mut">–</p></div>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-2 · Wohngeldberechnung</span><span class="vb vb-neutral">– nicht erreicht</span></div>
+          <div class="btext"><p class="mut">–</p></div>
+        </div>
+      </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-ok">1 · erkannt</span></span></div>
+        <p>Die Pipeline hat den Kern des Problems (Widerspruch zwischen der Wohnung, für die Wohngeld beantragt wird, und dem tatsächlichen Lebensmittelpunkt/Hauptwohnsitz) korrekt erkannt und als Widerspruch beanstandet.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle von der Pipeline genannten Fakten (Anschriften, Geburtsdatum, Einkommen, Miete, IBAN, Wohnfläche) sind durch die Dokumente 1 bis 7 vollständig belegt. Die Pipeline zitiert korrekt aus dem Mietvertrag (§21) und dem Antrag (Frage 05) bezüglich des Zweitwohnsitzes.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Die Pipeline leitet aus dem festgestellten Widerspruch der Anschriften folgerichtig ein REJECTED-Verdict für die Konsistenzprüfung ab, da eine automatische Bereinigung dieses Widerspruchs fachlich nicht zulässig ist. Jeder Schritt der Prüfung ist detailliert aufgeführt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="ph" title="Konsistenzprüfung">KP</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Konsistenzprüfung">KP</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></div>
+        <p>Die Konsistenzprüfung (KP) identifiziert den Widerspruch in den Anschriften (Berger Straße vs. Bockenheimer Landstraße) und stuft diesen explizit als Beanstandung ein, die eine Klärung durch den Sachbearbeiter erfordert.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 9</span><span class="mini"><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p>Konsistenzprüfung TF-17 – Elena Krüger – REJECTED als Klärungsfall (HUMAN_REVIEW)</p><p class="bkopf">Festgestellter Widerspruch – Anschrift (§ 24 VwVfG)</p><p>Antrag Frage_02 Wohnung für die Wohngeld beantragt wird: Berger Straße 78, 60316 Frankfurt am Main = Mietbescheinigung mieter_adresse: Berger Straße 78, 60316 Frankfurt am Main .</p><p>Dagegen Verdienstbescheinigung Abschnitt_01 Anschrift: Bockenheimer Landstraße 132, 60325 Frankfurt am Main = Mietvertrag mieter_derzeitige_anschrift: Bockenheimer Landstraße 132, 60325 Frankfurt am Main = Einkommenserklärung allgemeine_angaben Anschrift: Bockenheimer Landstraße 132, 60325 Frankfurt am Main .</p><p>Zwei konkret vorhandene Werte weichen im Straßennamen, Hausnummer und PLZ/Ort voneinander ab. Dies ist nach Fachanweisung – schon abweichende Straßennamen sind ein Widerspruch – ein Widerspruch. Er wird nicht wegerklärt (Hinweise auf Zweitwohnung in Frage_05=true und §21 Mietvertrag ändern nichts an der Abweichung); Klärung durch Sachbearbeiter erforderlich.</p><p class="bkopf">Ohne Widerspruch geprüft</p><p>Name: Krüger, Elena in Antrag, Verdienstbescheinigung, Gehaltsabrechnungen, Kontoauszug übereinstimmend.</p><p>Geburtsdatum: 11.09.1994 in Antrag, Verdienstbescheinigung, Gehaltsabrechnungen übereinstimmend.</p><p>Einkommen: Antrag 2150 € monatlich = Verdienstbescheinigung 12x 2150 € = Gehaltsabrechnungen 6x brutto 2150 € / netto 1540 € = Einkommenserklärung 02-07/2026 je 2150 €; Kontoauszug Gehalt 1540 € passt zu netto.</p><p>Haushaltsgröße: keine weiteren Haushaltsmitglieder benannt, passt zu 1-Personen-Haushalt.</p><p>Miete: Antrag 825 € = Mietbescheinigung 680+20+15+20+5+75+10=825 € = Mietvertrag 680+75+20+15+20+5+10=825 € = Kontoauszug 3x 825 € Miete.</p><p>Bankverbindung: Antrag IBAN DE86500502010037486129 = Kontoauszug IBAN/Kontoinhaber Elena Krüger = Gehaltsabrechnungen IBAN; gehört zur Antragstellerin.</p><p>Versicherungsbeiträge: Antrag Steuern/Renten/Kranken-Pflege ja = Verdienstbescheinigung Steuern/Pflichtbeiträge Kranken-Pflege/Renten ja = Einkommenserklärung Kranken/Pflege/Renten true + Gehaltsabzüge vorhanden.</p><p>Wohnfläche: 45 qm in Antrag, Mietbescheinigung, Mietvertrag.</p><p>Einzugsdatum/Mietbeginn: 01.02.2025 in Mietbescheinigung und Mietvertrag.</p><p>Öffentliche Förderung: Antrag false = Mietbescheinigung false = Mietvertrag frei finanziert true / öffentlich gefördert false.</p><p>Kontoauszug: Miete 825 € und Gehalt 1540 € stimmen mit Mietvertrag/Mietbescheinigung und Gehaltsabrechnungen überein.</p><p>Ergebnis: Mindestens ein Widerspruch (Anschrift) → REJECTED als Klärungsfall, recommendation=HUMAN_REVIEW. Keine endgültige inhaltliche Ablehnung, keine materielle Bewertung (Zweitwohnung/Hauptwohnung ist Sache der materiellen Prüfung).</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-neutral">– nicht erreicht</span></div>
+          <div class="btext"><p class="mut">–</p></div>
+        </div>
+      <div class="schritt">
+        <div class="skopf">
+          <span class="sname">Materielle Prüfung (gesamt)</span>
+          <span class="vb vb-neutral">– nicht erreicht</span>
+          
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-1 · Fachliche Vorprüfung (Agent)</span><span class="vb vb-neutral">– nicht erreicht</span></div>
+          <div class="btext"><p class="mut">–</p></div>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-2 · Wohngeldberechnung</span><span class="vb vb-neutral">– nicht erreicht</span></div>
+          <div class="btext"><p class="mut">–</p></div>
+        </div>
+      </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-ok">1 · erkannt</span></span></div>
+        <p>Die Pipeline hat den zentralen Sachverhalt (Widerspruch zwischen der Wohnung, für die Wohngeld beantragt wird, und dem Lebensmittelpunkt/Hauptwohnsitz) korrekt identifiziert und als entscheidungserheblichen Widerspruch benannt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle von der Pipeline genannten Daten (Anschriften in den verschiedenen Dokumenten, Einkommenswerte, Miete, IBAN, Wohnfläche) sind exakt so in den Originaldokumenten belegt. Es wurden keine dokumentwidrigen Angaben gemacht.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Die Pipeline leitet das Verdict REJECTED (als Klärungsfall) schlüssig aus den dokumentierten Widersprüchen in den Adressangaben her, wobei sie die relevanten Dokumente gegenüberstellt und die Nicht-Heilung durch die Zweitwohnungshinweise begründet.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="ph" title="Konsistenzprüfung">KP</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Konsistenzprüfung">KP</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></div>
+        <p>Die Pipeline erkennt in der KP bereits den Widerspruch in den Anschriften, der auf die Zweitwohnungsproblematik (Kern des erwarteten Befunds) zurückzuführen ist, und beanstandet diesen als Klärungsfall.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 10</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung TF-17 – Elena Krüger – kein Widerspruch festgestellt</p><ul class="bl"><li><span class="bkey">Name:</span> Antrag „Krüger, Elena“ = Verdienstbescheinigung „Krüger, Elena“ = Gehaltsabrechnungen „Krüger, Elena“ = Einkommenserklärung „Krüger, Elena“ = Mietbescheinigung „Krüger, Elena“ = Kontoauszug „Elena Krüger“.</li><li><span class="bkey">Geburtsdatum:</span> Antrag 11.09.1994 = Verdienstbescheinigung 11.09.1994 = Gehaltsabrechnungen 11.09.1994 durchgehend.</li><li><span class="bkey">Anschrift:</span> Mietobjekt einheitlich: Antrag Berger Straße 78, 60316 Frankfurt = Mietbescheinigung Berger Straße 78, 60316 Frankfurt = Mietvertrag Berger Straße 78. Abweichende Adresse Bockenheimer Landstraße 132, 60325 in Verdienstbescheinigung / Einkommenserklärung / Mietvertrag Feld „derzeitige Anschrift“ ist als Hauptwohnung / Zweitwohnungskonstellation erklärt (Antrag Frage 05 Zweitwohnsitz true, Mietvertrag §21 „Nutzung als Zweitwohnung. Hauptwohnung bleibt Bockenheimer“). Kein logischer Ausschluss gleicher Attribute, daher kein Widerspruch i.S. Grundregel 1.</li><li><span class="bkey">Einkommen:</span> Antrag 2150 EUR monatlich = Verdienstbescheinigung 12x2150 = Gehaltsabrechnungen 6x2150 brutto = Einkommenserklärung 6x2150. Keine auffällige Abweichung.</li><li><span class="bkey">Haushaltsgröße:</span> Keine weiteren Haushaltsmitglieder benannt (Frage 06 leer), Frage 07 keine weiteren Personen – 1-Personen-Haushalt konsistent.</li><li><span class="bkey">Miete:</span> Antrag 825 EUR = Mietbescheinigung 680+20+15+20+5+75+10=825 = Mietvertrag 680+75+20+15+20+5+10=825 = Kontoauszug 3x825 rechnerisch vereinbar.</li><li><span class="bkey">Bankverbindung:</span> Antrag IBAN DE86500502010037486129 = Kontoauszug IBAN gleiche, Inhaber Elena Krüger = Gehaltsabrechnungen gleiche IBAN.</li><li><span class="bkey">Versicherungsbeiträge:</span> Antrag Steuern/Rente/Kranken+Pflege ja = Verdienstbescheinigung Steuern/Pflichtbeiträge Kranken+Pflege/Rente ja = Einkommenserklärung Kranken/Pflege/Rente true + Gehaltsabzüge vorhanden.</li><li><span class="bkey">Wohnfläche:</span> Antrag 45 qm = Mietbescheinigung 45,0 qm = Mietvertrag 45 qm.</li><li><span class="bkey">Einzugsdatum/Mietbeginn:</span> Mietbescheinigung 01.02.2025 = Mietvertrag 01.02.2025.</li><li><span class="bkey">Öffentliche Förderung:</span> Antrag false = Mietbescheinigung nicht gefördert false = Mietvertrag frei finanziert true / öffentlich gefördert false.</li><li><span class="bkey">Kontoauszug:</span> Gehaltseingänge 2x1540 EUR = Gehaltsabrechnung netto 1540 EUR; Mietabgänge 825 EUR = Gesamtmiete. Übereinstimmend.</li></ul><p>Keine zwei konkret vorhandenen Werte schließen sich logisch aus. Fehlendes ist Sache der formellen Prüfung, materielle Zweitwohnungsfrage ist Sache der materiellen Prüfung. Daher APPROVED .</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Formelle Prüfung – Wohngeldantrag Elena Krüger (TF-17): APPROVED</p><p>Geprüft wurde ausschließlich die formelle Vollständigkeit und Bearbeitbarkeit, keine materielle Prüfung.</p><p class="bkopf">1. Pflichtdokumente § 22, § 26 VwVfG, § 23 WoGG</p><ul class="bl"><li>Wohngeldantrag liegt vor (Wohngeldantrag_fuer_den_Mietzuschuss, 11 Seiten, Erstantrag, unterschrieben 22.08.2026).</li><li><span class="bkey">Einkommensnachweis liegt vor:</span> Einkommen aus nichtselbständiger Arbeit geltend gemacht (Gehalt/Lohn), belegt durch 6 aktuelle Gehaltsabrechnungen Feb-Jul 2026 à 2150 EUR brutto, zusätzlich Verdienstbescheinigung (12 Monate Aug 2025-Jul 2026) und Einkommenserklärung vom 22.08.2026. Mindestanforderung ≥6 Gehaltsnachweise erfüllt.</li><li>Verdienstbescheinigung liegt vor.</li><li>Gehaltsabrechnung liegt vor (6 Stück).</li><li>Mietbescheinigung liegt vor (Berger Straße 78, Grundmiete 680 EUR).</li><li>Mietvertrag liegt vor (Berger Straße 78, 45 qm, 680 EUR + Nebenkosten).</li></ul><p>Alle Dokumente enthalten prüfbare fallspezifische Informationen, kein Erfassungsfehler.</p><p>Bedingtes Dokument Schwerbehinderung: Frage 15 = false, keine Schwerbehinderung angegeben. Schwerbehindertenausweis daher nicht als Pflichtdokument erforderlich.</p><p class="bkopf">2. Pflichtangaben</p><ul class="bl"><li><span class="bkey">Person:</span> Name Krüger, Elena, Geburtsdatum 11.09.1994, Anschrift Berger Straße 78, PLZ 60316, Ort Frankfurt am Main – alle vorhanden (§ 22 VwVfG, § 3 WoGG).</li><li><span class="bkey">Haushalt:</span> keine weiteren Haushaltsmitglieder ersichtlich → 1-Personen-Haushalt. Zahl nicht zwingend erforderlich (§ 5 WoGG) – erfüllt.</li><li><span class="bkey">Miete:</span> Gesamtmiete 825,00 EUR/Monat &gt;0 (§ 9 WoGG) – erfüllt. Zusätzlich Grundmiete 680 EUR belegt.</li><li><span class="bkey">Einkommen:</span> Brutto 2150,00 EUR/Monat &gt;0 (§ 13 WoGG) + Art Gehalt/Lohn nicht leer (§ 14 WoGG) – erfüllt.</li></ul><p>3. Optionales / Nicht Gegenstand: E-Mail, Telefon, Staatsangehörigkeit, Familienstand, Wohnfläche (45 qm ohnehin angegeben), IBAN (DE86... angegeben) – kein Mangel. Hinweis Zweitwohnung (Frage 05 = true, Mietvertrag „Nutzung als Zweitwohnung“) ist kein formeller Mangel, allenfalls Hinweis für materielle Prüfung; keine Bewertung von Ausschlussgründen.</p><p>Ergebnis: Alle Pflichtdokumente und Pflichtangaben vollständig und eindeutig bearbeitbar. Keine missingDocuments / missingFields, keine AMBIGUOUS-Frage. → APPROVED .</p></div>
+        </div>
+      <div class="schritt">
+        <div class="skopf">
+          <span class="sname">Materielle Prüfung (gesamt)</span>
+          <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span>
+          <span class="kb kb-bad">Ablehnung aus MP-1</span>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-1 · Fachliche Vorprüfung (Agent)</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+          <div class="btext"><p>Materielle Vorprüfung (Schritt 4 von 7) – kein Freigabe zur Berechnung. Diese Prüfung trifft keine abschließende Entscheidung und nennt keinen Zahlbetrag.</p><p class="bkopf">1. Tatbestandsmerkmale (§§ 3, 5, 9, 13 WoGG)</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland:</span> ja – Berger Straße 78, 60316 Frankfurt am Main (Frage 02, Mietbescheinigung, Mietvertrag).</li><li><span class="bkey">Hauptwohnsitz in dieser Wohnung:</span> sicher nicht erfüllt – Frage 05 „zweitwohnsitz_vorhanden: true&quot; und Mietvertrag §21 sonstige Vereinbarungen: „Nutzung als Zweitwohnung. Hauptwohnung/Lebensmittelpunkt bleibt Bockenheimer&quot; (korrespondierend Anschrift Bockenheimer Landstraße 132, 60325 Frankfurt in Verdienstbescheinigung/Einkommenserklärung). Die für Wohngeld maßgebliche Wohnung ist damit als Zweitwohnung ausgewiesen, nicht als Hauptwohnsitz i.S. § 3 WoGG.</li><li><span class="bkey">Haushaltsgröße:</span> 1 Person (Antragstellerin allein, keine weiteren Personen in Frage 06/07) – formal angegeben.</li><li><span class="bkey">Einkommen &gt;0:</span> ja – 2.150 EUR monatlich Gehalt/Lohn (Frage 12), belegt durch Verdienstbescheinigung 12x 2.150 EUR, Gehaltsabrechnungen 02-07/2026 und Einkommenserklärung.</li><li><span class="bkey">Miete &gt;0:</span> ja – Gesamtmiete 825 EUR (Frage 23), Grundmiete 680 EUR + Nebenkosten, belegt durch Mietbescheinigung und Mietvertrag §3.</li><li><span class="bkey">Zugehörigkeit zum Haushalt der Wohngeldwohnung:</span> durch Hauptmieterverhältnis und „wohnung_wird_bewohnt: true&quot; zwar angegeben, jedoch durch Zweitwohnungsstatus entwertet – Lebensmittelpunkt liegt nach eigenen Angaben andernorts.</li></ul><p class="bkopf">2. Ausschlussgründe (§7 Abs.1, §20 Abs.2, §21 Nr.3 WoGG)</p><ul class="bl"><li><span class="bkey">Bürgergeld/SGB II mit KdU:</span> nein – Frage 10 „transferleistung_erhalten...: false&quot;.</li><li><span class="bkey">Grundsicherung/Sozialhilfe mit KdU:</span> nein – s.o., Einkommenserklärung Abschnitt 03: 0 EUR.</li><li><span class="bkey">BAföG/BAB-Ausschluss:</span> nein – BAföG 0 EUR.</li><li><span class="bkey">Vermögen oberhalb Grenze:</span> nein – Frage 20 „vermoegen_oberhalb_der_massgeblichen_grenze: false&quot;, keine Einzelwerte.</li></ul><p>Kein Ausschlussgrund nach §7/§20/§21 geht konkret aus den Daten hervor. Das sicher nicht erfüllte Kernmerkmal Hauptwohnsitz (§3) wirkt wie ein Ausschluss.</p><p class="bkopf">3. Tatsachenbasis (§9 WoGG, §24 VwVfG)</p><ul class="bl"><li><span class="bkey">Miete rechnerisch plausibel und widerspruchsfrei:</span> 680 + 20 (Müll) + 15 (Entwässerung) + 20 (Wasser) + 5 (Allgemeinstrom) + 75 (Heizung) + 10 (Hausreinigung/Winterdienst) = 825 EUR, übereinstimmend in Antrag, Mietbescheinigung, Mietvertrag und Kontoauszug (3x 825 EUR Abbuchung).</li><li>Einkommen widerspruchsfrei und belegt.</li><li>Datengrundlage reicht für die Bewertung der Anspruchsvoraussetzungen und Ausschlussgründe aus – kein Klärungsfall, keine fehlenden Pflichtwerte für den Rechner.</li></ul><p>Fazit: Ein Tatbestandsmerkmal (Hauptwohnsitz in der Wohngeldwohnung, §3 WoGG) ist anhand konkreter, eindeutiger Angaben sicher nicht erfüllt. Empfehlung: REJECT (Ablehnung) , kein HUMAN_REVIEW / keine Nachforderung. Rechnerwerte im Übrigen vollständig und belegt.</p></div>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-2 · Wohngeldberechnung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><span class="kb kb-neut">durch MP-1 gesperrt</span></div>
+          <div class="btext"><p>Keine eigenständige Berechnung. Die fachliche Vorprüfung hat den Antrag nicht zur Berechnung freigegeben; die Berechnung bestätigt lediglich diese Entscheidung und trifft keinen eigenen Befund.</p></div>
+        </div>
+      </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-ok">1 · erkannt</span></span></div>
+        <p>Die Pipeline hat den zentralen Befund (Nichtanspruch aufgrund von Zweitwohnsitz-Status der Wohnung) korrekt identifiziert und in MP-1 fachlich zutreffend begründet. Sie erkennt die Diskrepanz zwischen der Berger Straße (Zweitwohnung) und der Bockenheimer Landstraße (Lebensmittelpunkt).</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle wesentlichen Angaben (Adressen, Miete von 825 EUR, Einkommen von 2150 EUR, Zweitwohnsitz-Status im Mietvertrag § 21) sind durch die Dokumente 1 bis 7 vollständig belegt. Es wurden keine dokumentwidrigen oder frei erfundenen Tatsachen behauptet.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Die Schlussfolgerung in MP-1 ist zwingend: Aus der Tatsache, dass die Wohnung laut Mietvertrag und Antrag nur ein Zweitwohnsitz ist, folgt unter Nennung von § 3 WoGG direkt die Ablehnung. Die Sperrung von MP-2 ist die logische Konsequenz aus der MP-1-Entscheidung.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="ph" title="Materielle Prüfung">MP</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Materielle Prüfung">MP</span> <span class="kb kb-ok">erkannt und eskaliert</span></span></div>
+        <p>Die Pipeline erkennt in der Phase MP-1 korrekt, dass die Wohnung nur ein Zweitwohnsitz ist und daher kein Anspruch nach § 3 WoGG besteht. Die Phasen KP und FP erwähnen den Sachverhalt zwar, stufen ihn aber explizit als für ihre jeweilige Prüfung unerheblich ein.</p>
+      </div></div>
+      </div>
+    </details>
+</section>
+</div>
+<div class="cg-footer"><div class="inner">
+  Automatisiert erzeugtes Prüfergebnis · bedarf der Bestätigung durch einen menschlichen Prüfer ·
+  <span class="mono">Testlauf TL-2026-09-09T18-00-21-660Z · erstellt 9.9.2026, 18:00:21</span>
+</div></div>
+<script type="application/json" id="testfall-daten">{"testlaufId":"TL-2026-09-09T18-00-21-660Z","zeitpunkt":"2026-09-09T18:00:21.660Z","fallId":"TF-17","fallName":"Elena Krueger","art":"MP","kategorie":1,"kategorieName":"M1 Persoenliche und wohnungsbezogene Voraussetzungen","istFehlerfall":true,"soll":{"kp":"APPROVED","fp":"APPROVED","mp":"REJECTED"},"laeufeGesamt":10,"auswertbar":10,"technischeFehler":0,"exactMatch":5,"exactMatchPct":50,"betrag":{"soll":null,"istWerte":[],"korrekt":null,"geprueft":0},"phasen":{"kp":{"modus":"verdict","reached":10,"correct":5,"basis":10,"pct":50,"soll":"APPROVED","verteilung":{"APPROVED":5,"REJECTED":5}},"fp":{"modus":"verdict","reached":5,"correct":5,"basis":5,"pct":100,"soll":"APPROVED","verteilung":{"APPROVED":5}},"mp":{"modus":"verdict","reached":5,"correct":5,"basis":5,"pct":100,"soll":"REJECTED","verteilung":{"REJECTED":5}}},"judge":{"j1":{"n":10,"pass":10,"fail":0,"quote":100,"dist":[0,10],"ohne":0},"j2g":{"n":10,"mean":4,"dist":[0,0,0,10],"ohne":0},"j2l":{"n":10,"mean":4,"dist":[0,0,0,10],"ohne":0},"j2":{"n":10,"mean":4,"dist":[0,0,0,10],"ohne":0}},"kopplung":{"verteilung":{"erkannt_und_eskaliert":10},"erkannt":10,"eskaliertBeiErkannt":10,"phasentreu":10,"unplausibel":0},"laeufe":[{"runIndex":1,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","mpAgentVerdict":"REJECTED","mpQuelle":"AGENT","berVerdict":"REJECTED","berKlasse":"MP_GESPERRT","istBetrag":null,"berechnungStatus":"NICHT_BERECHENBAR","betragKorrekt":null,"j1":1,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"MP","eskaliertIn":"MP","kopplung":"erkannt_und_eskaliert"},{"runIndex":2,"technischerFehler":false,"sollKonform":false,"kpVerdict":"REJECTED","fpVerdict":null,"mpVerdict":null,"mpAgentVerdict":null,"mpQuelle":null,"berVerdict":null,"berKlasse":null,"istBetrag":null,"berechnungStatus":null,"betragKorrekt":null,"j1":1,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"KP","eskaliertIn":"KP","kopplung":"erkannt_und_eskaliert"},{"runIndex":3,"technischerFehler":false,"sollKonform":false,"kpVerdict":"REJECTED","fpVerdict":null,"mpVerdict":null,"mpAgentVerdict":null,"mpQuelle":null,"berVerdict":null,"berKlasse":null,"istBetrag":null,"berechnungStatus":null,"betragKorrekt":null,"j1":1,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"KP","eskaliertIn":"KP","kopplung":"erkannt_und_eskaliert"},{"runIndex":4,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","mpAgentVerdict":"REJECTED","mpQuelle":"AGENT","berVerdict":"REJECTED","berKlasse":"MP_GESPERRT","istBetrag":null,"berechnungStatus":"NICHT_BERECHENBAR","betragKorrekt":null,"j1":1,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"MP","eskaliertIn":"MP","kopplung":"erkannt_und_eskaliert"},{"runIndex":5,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","mpAgentVerdict":"REJECTED","mpQuelle":"AGENT","berVerdict":"REJECTED","berKlasse":"MP_GESPERRT","istBetrag":null,"berechnungStatus":"NICHT_BERECHENBAR","betragKorrekt":null,"j1":1,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"MP","eskaliertIn":"MP","kopplung":"erkannt_und_eskaliert"},{"runIndex":6,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","mpAgentVerdict":"REJECTED","mpQuelle":"AGENT","berVerdict":"REJECTED","berKlasse":"MP_GESPERRT","istBetrag":null,"berechnungStatus":"NICHT_BERECHENBAR","betragKorrekt":null,"j1":1,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"MP","eskaliertIn":"MP","kopplung":"erkannt_und_eskaliert"},{"runIndex":7,"technischerFehler":false,"sollKonform":false,"kpVerdict":"REJECTED","fpVerdict":null,"mpVerdict":null,"mpAgentVerdict":null,"mpQuelle":null,"berVerdict":null,"berKlasse":null,"istBetrag":null,"berechnungStatus":null,"betragKorrekt":null,"j1":1,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"KP","eskaliertIn":"KP","kopplung":"erkannt_und_eskaliert"},{"runIndex":8,"technischerFehler":false,"sollKonform":false,"kpVerdict":"REJECTED","fpVerdict":null,"mpVerdict":null,"mpAgentVerdict":null,"mpQuelle":null,"berVerdict":null,"berKlasse":null,"istBetrag":null,"berechnungStatus":null,"betragKorrekt":null,"j1":1,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"KP","eskaliertIn":"KP","kopplung":"erkannt_und_eskaliert"},{"runIndex":9,"technischerFehler":false,"sollKonform":false,"kpVerdict":"REJECTED","fpVerdict":null,"mpVerdict":null,"mpAgentVerdict":null,"mpQuelle":null,"berVerdict":null,"berKlasse":null,"istBetrag":null,"berechnungStatus":null,"betragKorrekt":null,"j1":1,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"KP","eskaliertIn":"KP","kopplung":"erkannt_und_eskaliert"},{"runIndex":10,"technischerFehler":false,"sollKonform":true,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","mpAgentVerdict":"REJECTED","mpQuelle":"AGENT","berVerdict":"REJECTED","berKlasse":"MP_GESPERRT","istBetrag":null,"berechnungStatus":"NICHT_BERECHENBAR","betragKorrekt":null,"j1":1,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"MP","eskaliertIn":"MP","kopplung":"erkannt_und_eskaliert"}]}</script>
+</body></html>
