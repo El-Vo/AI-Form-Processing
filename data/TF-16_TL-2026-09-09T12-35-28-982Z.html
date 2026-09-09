@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Testbericht TF-16</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&family=Ubuntu+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cg-blue-900:#003A5C; --cg-blue-700:#005587; --cg-blue-500:#0070AD;
+  --cg-blue-300:#66A6CC; --cg-blue-100:#D9EBF4; --cg-blue-050:#EFF6FA;
+  --cg-vibrant-600:#0E8CB3; --cg-vibrant-500:#12ABDB; --cg-vibrant-100:#D8F0F9;
+  --ink-900:#0B0F14; --ink-600:#2E3A44; --ink-400:#5B6B78;
+  --line:#DDE3E8; --surface:#FFFFFF; --canvas:#F5F7F9;
+  --verdict-approved:#1E8A5F;  --verdict-approved-bg:#E6F4EE;
+  --verdict-rejected:#B3261E;  --verdict-rejected-bg:#FBE9E7;
+  --verdict-unbekannt:#B26A00; --verdict-unbekannt-bg:#FFF4E0;
+  --font-sans:"Ubuntu","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-mono:"Ubuntu Mono","SF Mono","Consolas",monospace;
+  --maxw:1120px; --radius-card:6px; --radius-badge:2px;
+  --shadow-card:0 1px 2px rgba(11,15,20,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--canvas);color:var(--ink-900);font-size:15px;line-height:1.6}
+.mono{font-family:var(--font-mono);font-size:13px;color:var(--ink-600)}
+.b{font-weight:500}
+.mut{color:var(--ink-400)}
+.cg-header{background:var(--cg-blue-900);padding:0 24px}
+.cg-header .inner{max-width:var(--maxw);margin:0 auto;min-height:96px;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:16px 0}
+.cg-header h1{font-size:32px;line-height:40px;font-weight:500;color:var(--surface)}
+.cg-header .sub{font-size:17px;color:var(--cg-blue-100);margin-top:6px}
+.cg-header .meta{font-family:var(--font-mono);font-size:13px;color:var(--cg-blue-300);margin-top:4px}
+.cg-logo-slot{width:140px;height:40px;flex:none}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:8px 24px 48px}
+.cg-section{margin-top:48px}
+.cg-section > h2{font-size:22px;line-height:30px;font-weight:500}
+.cg-section > h2::after{content:"";display:block;width:48px;height:3px;margin-top:10px;background:var(--cg-vibrant-500)}
+.note{font-size:13px;color:var(--ink-400);margin-top:12px;max-width:76ch;line-height:1.6}
+.warnbox{margin-top:24px;background:var(--verdict-rejected-bg);border:1px solid var(--verdict-rejected);border-radius:var(--radius-card);padding:16px 20px;color:var(--verdict-rejected);font-size:14px}
+.vb{display:inline-block;border-radius:var(--radius-badge);padding:2px 8px;font-size:12px;font-weight:500;
+    letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;border:1px solid transparent}
+.vb-approved{color:var(--verdict-approved);background:var(--verdict-approved-bg);border-color:rgba(30,138,95,.2)}
+.vb-rejected{color:var(--verdict-rejected);background:var(--verdict-rejected-bg);border-color:rgba(179,38,30,.2)}
+.vb-unbekannt{color:var(--verdict-unbekannt);background:var(--verdict-unbekannt-bg);border-color:rgba(178,106,0,.2)}
+.vb-skip{color:var(--ink-400);background:var(--canvas);border-color:var(--line)}
+.vb-neutral{color:var(--ink-400);background:var(--canvas);border-color:var(--line);text-transform:none;letter-spacing:0;font-style:italic}
+.kb{display:inline-block;border-radius:var(--radius-badge);padding:2px 8px;font-size:12px;font-weight:500;white-space:nowrap;border:1px solid transparent}
+.kb-ok{color:var(--verdict-approved);background:var(--verdict-approved-bg);border-color:rgba(30,138,95,.2)}
+.kb-mid{color:var(--verdict-unbekannt);background:var(--verdict-unbekannt-bg);border-color:rgba(178,106,0,.2)}
+.kb-bad{color:var(--verdict-rejected);background:var(--verdict-rejected-bg);border-color:rgba(179,38,30,.2)}
+.kb-neut{color:var(--ink-400);background:var(--canvas);border-color:var(--line)}
+.kb-warn{color:var(--verdict-unbekannt);background:var(--verdict-unbekannt-bg);border-color:var(--verdict-unbekannt);font-weight:700}
+.ph{display:inline-block;font-family:var(--font-mono);font-size:13px;font-weight:500;color:var(--ink-900);background:var(--cg-blue-050);border:1px solid var(--cg-blue-100);border-radius:var(--radius-badge);padding:1px 7px}
+.cfgcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-card);padding:32px;margin-top:16px}
+.cfg{display:grid;grid-template-columns:220px 1fr;row-gap:28px;column-gap:32px}
+.cfg dt{font-size:12px;line-height:18px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;color:var(--ink-400);padding-top:3px}
+.cfg dd{line-height:1.7}
+.gtext{max-width:76ch}
+.gtext > :last-child{margin-bottom:0}
+.gtext p{margin:0 0 12px}
+.gtext .bkopf{margin:0 0 12px;color:var(--ink-900);font-weight:500}
+.gtext .bfazit{margin:12px 0;padding:10px 16px;background:var(--cg-blue-050);border-left:3px solid var(--cg-vibrant-500);border-radius:0 var(--radius-card) var(--radius-card) 0;color:var(--ink-900)}
+.gtext ul.bl{list-style:none;margin:0 0 12px;padding:0}
+.gtext ul.bl li{position:relative;padding-left:20px;margin-bottom:5px}
+.gtext ul.bl li::before{content:"";position:absolute;left:5px;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--cg-blue-300)}
+.gtext .bkey{color:var(--ink-900);font-weight:500}
+.gtext strong{color:var(--ink-900);font-weight:500}
+.sollrow{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:center}
+.sollrow .paar{display:flex;align-items:center;gap:10px;font-weight:500;font-size:14px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-card);padding:24px;display:flex;flex-direction:column}
+.kname{font-size:17px;line-height:26px;font-weight:500}
+.ksoll{margin-top:10px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-400)}
+.kbig{font-size:40px;line-height:44px;font-weight:300;color:var(--cg-blue-500);margin:18px 0 4px}
+.ksub{font-size:13px;color:var(--ink-400);line-height:1.5;margin-bottom:16px}
+.dist{border-top:1px solid var(--line);padding-top:14px;margin-top:auto;display:flex;flex-direction:column;gap:10px}
+.drow{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:14px}
+.drow.sub{padding-left:16px}
+.dn{font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap}
+.okmark{color:var(--verdict-approved);font-weight:700}
+.badmark{color:var(--verdict-rejected);font-weight:700}
+.tblwrap{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-card);overflow-x:auto;margin-top:16px}
+table{border-collapse:collapse;width:100%}
+th{color:var(--cg-blue-500);font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:500;
+   text-align:left;padding:12px 16px;border-bottom:2px solid var(--cg-blue-500);background:var(--surface)}
+td{padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
+tr:nth-child(even) td{background:var(--cg-blue-050)}
+tr:last-child td{border-bottom:none}
+td.num,th.num{text-align:right}
+.stars{color:#E8A600;letter-spacing:.08em;white-space:nowrap}
+.stars .dim{color:var(--line)}
+details{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-card);box-shadow:var(--shadow-card);margin-top:12px}
+summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:14px;padding:16px 24px;font-size:15px}
+summary::-webkit-details-marker{display:none}
+.chev{color:var(--cg-blue-500);transition:transform .15s;font-size:14px}
+details[open] .chev{transform:rotate(90deg)}
+details[open] summary{border-bottom:1px solid var(--line)}
+.mini{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.dbody{padding:8px 24px 32px}
+.schritt{margin-top:26px}
+.schritt.sub{margin-top:16px;margin-left:20px;border-left:2px solid var(--cg-blue-300);padding-left:18px}
+.schritt.sub .skopf{border-bottom-width:1px;margin-bottom:10px}
+.qmark{font-size:11px;color:var(--ink-400);margin-top:4px}
+.skopf{display:flex;align-items:center;gap:12px;margin-bottom:12px;border-bottom:2px solid var(--cg-blue-500);padding-bottom:8px}
+.sname{font-size:15px;font-weight:500}
+.btext{background:var(--cg-blue-050);border-radius:var(--radius-card);padding:22px 26px;font-size:14px;line-height:1.7;color:var(--ink-600)}
+.btext > :first-child{margin-top:0}
+.btext > :last-child{margin-bottom:0}
+.btext p{margin:0 0 10px}
+.btext .bkopf{margin:22px 0 8px;color:var(--ink-900);font-weight:500}
+.btext .bfazit{margin:12px 0 16px;padding:10px 16px;background:var(--surface);border-left:3px solid var(--cg-vibrant-500);border-radius:0 var(--radius-card) var(--radius-card) 0;color:var(--ink-900)}
+.btext ul.bl{list-style:none;margin:0 0 12px;padding:0}
+.btext ul.bl li{position:relative;padding-left:20px;margin-bottom:5px}
+.btext ul.bl li::before{content:"";position:absolute;left:5px;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--cg-blue-300)}
+.btext .bkey{color:var(--ink-900);font-weight:500}
+.btext strong{color:var(--ink-900);font-weight:500}
+.errtext{color:var(--verdict-rejected);background:var(--verdict-rejected-bg);border-radius:var(--radius-card);padding:16px 20px;margin-top:20px;word-break:break-all}
+.judges{margin-top:30px;border-top:1px solid var(--line);padding-top:18px}
+.jt{font-size:15px;font-weight:500;margin-bottom:14px}
+.jblock{padding:14px 0;border-bottom:1px solid var(--cg-blue-050)}
+.jblock:last-child{border-bottom:none;padding-bottom:0}
+.jhead{display:flex;align-items:baseline;flex-wrap:wrap;gap:10px;margin-bottom:6px}
+.jkurz{font-family:var(--font-mono);font-size:13px;font-weight:500;color:var(--cg-blue-500)}
+.jname{font-size:14px;font-weight:500}
+.jwert{font-size:14px;font-weight:500;color:var(--ink-900);margin-left:auto}
+.jblock p{font-size:14px;line-height:1.7;color:var(--ink-600)}
+.cg-footer{background:var(--cg-blue-900);color:var(--cg-blue-300);padding:24px;font-size:12px;line-height:1.7;margin-top:48px}
+.cg-footer .inner{max-width:var(--maxw);margin:0 auto}
+.cg-footer .mono{color:var(--cg-blue-300)}
+@media(max-width:840px){
+  .kpis{grid-template-columns:1fr}
+  .cfg{grid-template-columns:1fr;row-gap:6px}
+  .cfg dt{margin-top:18px}
+  .cg-header .inner{flex-direction:column;align-items:flex-start}
+  .cg-logo-slot{display:none}
+}
+@media print{details{page-break-inside:avoid}.cg-header,.cg-footer{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style></head><body>
+<div class="cg-header"><div class="inner">
+  <div>
+    <h1>Testbericht TF-16</h1>
+    <div class="sub">Katharina Neumann · FP/5 F-QUALITY Dokument nicht zuverlaessig auswertbar</div>
+    <div class="meta">9.9.2026, 12:35:28 · 10 Läufe · 8 auswertbar · 2 technische Fehler</div>
+  </div>
+  <div class="cg-logo-slot"></div>
+</div></div>
+<div class="wrap">
+
+
+<section class="cg-section">
+<h2>Testfall</h2>
+<p class="note">Stammdaten und Ground Truth dieses Testfalls. Die Soll-Verdicts und der injizierte Fehler stammen aus dem Testfall-Sheet und wurden weder der Pipeline noch dem Judge mitgegeben.</p>
+<div class="cfgcard"><dl class="cfg">
+  <dt>Fall</dt>
+  <dd><span class="mono b">TF-16</span> · Katharina Neumann</dd>
+  <dt>Fehlerart</dt>
+  <dd><span class="mono b">FP / 5</span> · F-QUALITY Dokument nicht zuverlaessig auswertbar</dd>
+  <dt>Läufe</dt>
+  <dd>10 Durchläufe · 8 auswertbar · 2 technische Fehler</dd>
+  <dt>Soll-Verdicts</dt>
+  <dd><div class="sollrow">
+    <span class="paar"><span class="mono">KP</span> <span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span>
+    <span class="paar"><span class="mono">FP</span> <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span>
+    <span class="paar"><span class="mono">MP</span> <span class="vb vb-skip" title="NICHT ERWARTET">⤴ NICHT ERWARTET</span></span>
+  </div></dd>
+  <dt>Ground Truth</dt>
+  <dd><div class="gtext"><p>Der eingereichte Kontoauszug liegt als Datei vor, ist jedoch nicht zuverlässig auswertbar: Das Dokument ist als mangelhafter Scan zu behandeln, aus dem weder Kontodaten noch Umsätze übernommen werden können. Erwartet wird, dass die formelle Prüfung diesen Qualitätsmangel erkennt und eine Nachforderung auslöst; der Workflow darf keine Werte aus diesem Dokument verwenden und auch keine daraus ableiten. Alle übrigen Angaben (Name Katharina Neumann, Geburtsdatum 14.04.1993, Adresse Wittelsbacherallee 92, 60385 Frankfurt am Main, Bruttoeinkommen 2.380,00 EUR, Nettoeinkommen 1.690,00 EUR, Krankenversicherung 190,00 EUR, Pflegeversicherung 15,00 EUR, Rentenversicherung 221,00 EUR, Haushaltsgröße 1, Gesamtmiete 815,00 EUR) sind konsistent. Kein weiterer Fehler injiziert.</p></div></dd>
+</dl></div>
+</section>
+
+<section class="cg-section">
+<h2>Harte Zahlen</h2>
+<p class="note">Anteil korrekter Entscheidungen je Prüfschritt. Läufe, die eine Phase nicht erreicht haben, fließen in deren Prozentzahl nicht ein. Ausnahme Soll „NICHT ERWARTET": dort ist das Nicht-Erreichen selbst das korrekte Verhalten und wird über alle auswertbaren Läufe gemessen.</p>
+<div class="kpis">
+
+  <div class="kpi">
+    <div class="kname">Konsistenzprüfung</div>
+    <div class="ksoll">Soll-Verdict <span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+    <div class="kbig">100 %</div>
+    <div class="ksub">8 von 8 korrekt · Phase erreicht in 8/8 Läufen</div>
+    <div class="dist"><div class="drow"><span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span><span class="dn">8× <span class="okmark">✓</span></span></div><div class="drow"><span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span><span class="dn">0×</span></div></div>
+  </div>
+  <div class="kpi">
+    <div class="kname">Formelle Prüfung</div>
+    <div class="ksoll">Soll-Verdict <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></div>
+    <div class="kbig">0 %</div>
+    <div class="ksub">0 von 8 korrekt · Phase erreicht in 8/8 Läufen</div>
+    <div class="dist"><div class="drow"><span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></span><span class="dn">8× <span class="badmark">✗</span></span></div><div class="drow"><span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span><span class="dn">0×</span></div></div>
+  </div>
+  <div class="kpi">
+    <div class="kname">Materielle Prüfung</div>
+    <div class="ksoll">Soll-Verdict <span class="vb vb-skip" title="NICHT ERWARTET">⤴ NICHT ERWARTET</span></div>
+    <div class="kbig">0 %</div>
+    <div class="ksub">Soll: Phase nicht erreichen · in 0 von 8 Läufen erfüllt</div>
+    <div class="dist">
+      <div class="drow"><span>Korrekt übersprungen</span><span class="dn">0×</span></div>
+      <div class="drow"><span>Fälschlich ausgeführt</span><span class="dn">8× <span class="badmark">✗</span></span></div><div class="drow sub"><span>davon <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span></span><span class="dn">8×</span></div></div>
+  </div>
+
+  <div class="kpi">
+    <div class="kname">Wohngeldbetrag</div>
+    <div class="kbig">0,00 €</div>
+    <div class="ksub"><span class="mut">kein Soll-Betrag hinterlegt, nicht geprüft</span></div>
+    <div class="dist"><div class="drow"><span>Soll laut Testregister</span><span class="dn">–</span></div><div class="drow"><span>Von der Pipeline berechnet</span><span class="dn">0,00 €</span></div><div class="drow"><span><span class="kb kb-mid">rechnerischer Nichtanspruch</span></span><span class="dn">8×</span></div></div>
+  </div>
+</div>
+<div class="cfgcard"><dl class="cfg">
+  <dt>Exact Match</dt>
+  <dd><span class="b">0 %</span> — in 0 von 8 auswertbaren Läufen stimmten <em>alle drei</em> Phasen mit dem Soll überein.</dd>
+</dl></div>
+</section>
+
+<section class="cg-section">
+<h2>AI as a Judge</h2>
+<p class="note">Drei Prüffragen mit unterschiedlichen Skalen. J1 ist binär und wird als Quote ausgewiesen; 2A Groundedness und 2B logische Gültigkeit laufen auf 1–4 und werden gemittelt. Quote und Skala werden nie zu einem gemeinsamen Wert verrechnet. <b>NV Nachvollziehbarkeit</b> ist keine Judge-Ausgabe, sondern wird je Lauf als <b>Minimum</b> aus 2A und 2B berechnet — nicht als Mittelwert, damit eine gute Logik eine unbelegte Faktenbasis nicht ausgleichen kann. Der Judge sah dieselben Originaldokumente wie die Pipeline, aber nicht die Soll-Verdicts; für 2A und 2B ist die Ground Truth laut Prompt ausdrücklich unerheblich.</p>
+<div class="kpis">
+
+  <div class="kpi">
+    <div class="kname">J1 · Fehlererkennung</div>
+    <div class="kbig">0 %</div>
+    <div class="ksub">Befund in 0 von 8 auswertbaren Läufen korrekt erkannt · binäre Skala 0/1</div>
+    <div class="dist"><div class="drow"><span>Erkannt (1)</span><span class="dn">0×</span></div><div class="drow"><span>Nicht erkannt (0)</span><span class="dn">8× <span class="badmark">✗</span></span></div></div>
+  </div>
+
+  <div class="kpi">
+    <div class="kname">2A · Groundedness</div>
+    <div class="kbig">4 <span class="ksub" style="font-size:15px">/ 4</span></div>
+    <div class="ksub">Sind die Tatsachenbehauptungen in den Originaldokumenten belegt? · 8 auswertbare Läufe <span class="stars">★★★★<span class="dim"></span></span></div>
+    <div class="dist"><div class="drow"><span>4 – vollständig belegt</span><span class="dn">8×</span></div><div class="drow"><span>3 – entsch.-relevant belegt</span><span class="dn">0×</span></div><div class="drow"><span>2 – ungedeckt</span><span class="dn">0×</span></div><div class="drow"><span>1 – dokumentwidrig</span><span class="dn">0×</span></div></div>
+  </div>
+
+  <div class="kpi">
+    <div class="kname">2B · Logische Gültigkeit</div>
+    <div class="kbig">4 <span class="ksub" style="font-size:15px">/ 4</span></div>
+    <div class="ksub">Folgt die Schlussfolgerung aus den genannten Tatsachen? · 8 auswertbare Läufe <span class="stars">★★★★<span class="dim"></span></span></div>
+    <div class="dist"><div class="drow"><span>4 – zwingend</span><span class="dn">8×</span></div><div class="drow"><span>3 – tragfähig, verkürzt</span><span class="dn">0×</span></div><div class="drow"><span>2 – lückenhaft</span><span class="dn">0×</span></div><div class="drow"><span>1 – ungültig</span><span class="dn">0×</span></div></div>
+  </div>
+
+  <div class="kpi">
+    <div class="kname">NV · Nachvollziehbarkeit</div>
+    <div class="kbig">4 <span class="ksub" style="font-size:15px">/ 4</span></div>
+    <div class="ksub">Berechnet als Minimum aus 2A und 2B je Lauf · 8 auswertbare Läufe <span class="stars">★★★★<span class="dim"></span></span></div>
+    <div class="dist"><div class="drow"><span>4 – makellos</span><span class="dn">8×</span></div><div class="drow"><span>3 – akzeptabel</span><span class="dn">0×</span></div><div class="drow"><span>2 – mangelhaft</span><span class="dn">0×</span></div><div class="drow"><span>1 – kritisch</span><span class="dn">0×</span></div></div>
+  </div>
+
+  <div class="kpi">
+    <div class="kname">Eskalationskopplung</div>
+    <div class="kbig">–</div>
+    <div class="ksub">In 0 von 0 Läufen mit erkanntem Befund wurde auch tatsächlich eskaliert · Phasentreue –</div>
+    <div class="dist"><div class="drow"><span><span class="kb kb-ok">erkannt und eskaliert</span></span><span class="dn">0×</span></div><div class="drow"><span><span class="kb kb-mid">später eskaliert</span></span><span class="dn">0×</span></div><div class="drow"><span><span class="kb kb-bad">erkannt, nicht eskaliert</span></span><span class="dn">0×</span></div><div class="drow"><span><span class="kb kb-neut">nicht erkannt</span></span><span class="dn">8×</span></div></div>
+  </div>
+</div>
+</section>
+
+<section class="cg-section">
+<h2>Erkennung → Eskalation</h2>
+<p class="note">Wo hat die Pipeline den Befund benannt, und wo hat sie deswegen abgebrochen? „Erkannt in" stellt der Judge fest — maßgeblich ist die früheste Phase, die den Befund als Beanstandung behandelt, unabhängig von ihrem Verdict. „Eskaliert in" wird deterministisch aus den Verdicts berechnet (erste Phase mit REJECTED). Der kritische Fall ist <span class="kb kb-bad">erkannt, nicht eskaliert</span>: der Mangel steht in der Begründung, der Antrag läuft trotzdem durch.</p>
+
+<div class="tblwrap"><table>
+ <tr><th>Lauf</th><th>Befund</th><th>Erkannt in</th><th>Eskaliert in</th><th>Kopplung</th></tr>
+ 
+    <tr>
+      <td class="mono b">1</td>
+      <td><span class="kb kb-bad">nicht erkannt</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="kb kb-neut">nicht erkannt</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">2</td>
+      <td><span class="kb kb-bad">nicht erkannt</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="kb kb-neut">nicht erkannt</span></td>
+    </tr><tr><td class="mono b">3</td><td colspan="4"><span class="vb vb-rejected">✕ TECHN. FEHLER</span></td></tr>
+    <tr>
+      <td class="mono b">4</td>
+      <td><span class="kb kb-bad">nicht erkannt</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="kb kb-neut">nicht erkannt</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">5</td>
+      <td><span class="kb kb-bad">nicht erkannt</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="kb kb-neut">nicht erkannt</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">6</td>
+      <td><span class="kb kb-bad">nicht erkannt</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="kb kb-neut">nicht erkannt</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">7</td>
+      <td><span class="kb kb-bad">nicht erkannt</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="kb kb-neut">nicht erkannt</span></td>
+    </tr><tr><td class="mono b">8</td><td colspan="4"><span class="vb vb-rejected">✕ TECHN. FEHLER</span></td></tr>
+    <tr>
+      <td class="mono b">9</td>
+      <td><span class="kb kb-bad">nicht erkannt</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="kb kb-neut">nicht erkannt</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">10</td>
+      <td><span class="kb kb-bad">nicht erkannt</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+      <td><span class="kb kb-neut">nicht erkannt</span></td>
+    </tr>
+</table></div>
+</section>
+
+<section class="cg-section">
+<h2>Übersicht je Lauf</h2>
+<p class="note">Verdicts der drei Prüfschritte (KP → FP → MP), Judge-Bewertungen und Phasenzuordnung je Lauf. J1 binär 0/1; 2A und 2B auf der Skala 1–4. NV ist das Minimum aus 2A und 2B und damit in jeder Zeile nachrechenbar.</p>
+<div class="tblwrap"><table>
+ <tr><th>Lauf</th><th>Soll erfüllt</th><th>KP</th><th>FP</th><th>MP</th><th class="num">J1</th><th class="num">2A</th><th class="num">2B</th><th class="num">NV</th><th>Erkannt in</th><th>Eskaliert in</th></tr>
+ 
+    <tr>
+      <td class="mono b">1</td>
+      <td><span class="vb vb-rejected">✕ ABWEICHUNG</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><div class="qmark">aus MP-2</div></td>
+      <td class="num b">0</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">2</td>
+      <td><span class="vb vb-rejected">✕ ABWEICHUNG</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><div class="qmark">aus MP-2</div></td>
+      <td class="num b">0</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">3</td>
+      <td><span class="vb vb-rejected">✕ TECHN. FEHLER</span></td>
+      <td>–</td>
+      <td><span class="vb vb-neutral">– nicht erreicht</span></td>
+      <td><span class="vb vb-neutral">– nicht erreicht</span></td>
+      <td class="num b">0</td>
+      <td class="num">1</td>
+      <td class="num">1</td>
+      <td class="num b">1</td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">4</td>
+      <td><span class="vb vb-rejected">✕ ABWEICHUNG</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><div class="qmark">aus MP-2</div></td>
+      <td class="num b">0</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">5</td>
+      <td><span class="vb vb-rejected">✕ ABWEICHUNG</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><div class="qmark">aus MP-2</div></td>
+      <td class="num b">0</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">6</td>
+      <td><span class="vb vb-rejected">✕ ABWEICHUNG</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><div class="qmark">aus MP-2</div></td>
+      <td class="num b">0</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">7</td>
+      <td><span class="vb vb-rejected">✕ ABWEICHUNG</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><div class="qmark">aus MP-2</div></td>
+      <td class="num b">0</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">8</td>
+      <td><span class="vb vb-rejected">✕ TECHN. FEHLER</span></td>
+      <td>–</td>
+      <td><span class="vb vb-neutral">– nicht erreicht</span></td>
+      <td><span class="vb vb-neutral">– nicht erreicht</span></td>
+      <td class="num b">0</td>
+      <td class="num">1</td>
+      <td class="num">1</td>
+      <td class="num b">1</td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">9</td>
+      <td><span class="vb vb-rejected">✕ ABWEICHUNG</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><div class="qmark">aus MP-2</div></td>
+      <td class="num b">0</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+    <tr>
+      <td class="mono b">10</td>
+      <td><span class="vb vb-rejected">✕ ABWEICHUNG</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></td>
+      <td><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><div class="qmark">aus MP-2</div></td>
+      <td class="num b">0</td>
+      <td class="num">4</td>
+      <td class="num">4</td>
+      <td class="num b">4</td>
+      <td><span class="vb vb-neutral">– keine</span></td>
+      <td><span class="ph" title="Materielle Prüfung">MP</span></td>
+    </tr>
+</table></div>
+</section>
+
+<section class="cg-section">
+<h2>Details</h2>
+<p class="note">Begründungen der Prüfschritte und die vier Judge-Begründungen je Lauf. NV trägt keine eigene Begründung, weil der Wert berechnet und nicht bewertet wird.</p>
+
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 1</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-neut">nicht erkannt</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung TF-16 – Katharina Neumann – kein Widerspruch festgestellt</p><ul class="bl"><li><span class="bkey">Name:</span> Antrag (Neumann, Katharina) = Verdienstbescheinigung (Neumann, Katharina) = Gehaltsabrechnungen = Einkommenserklärung – übereinstimmend.</li><li><span class="bkey">Geburtsdatum:</span> Antrag 14.04.1993 = Verdienstbescheinigung 14.04.1993 = Gehaltsabrechnungen 14.04.1993 – übereinstimmend.</li><li><span class="bkey">Anschrift:</span> Antrag Wittelsbacherallee 92, 60385 Frankfurt am Main = Verdienstbescheinigung = Mietbescheinigung = Mietvertrag = Einkommenserklärung – übereinstimmend, keine abweichenden Straßennamen.</li><li><span class="bkey">Einkommen:</span> Antrag 2.380,00 EUR monatlich = Verdienstbescheinigung 2.380,00 EUR x12 = Gehaltsabrechnungen je 2.380,00 EUR = Einkommenserklärung je 2.380,00 EUR – keine Abweichung &gt;1/5.</li><li><span class="bkey">Haushaltsgröße:</span> Keine weiteren Haushaltsmitglieder in Frage 06 benannt, keine weiteren Personen (Frage 07 nein), keine Veränderung – passt zu 1-Personen-Haushalt, kein Widerspruch.</li><li><span class="bkey">Miete:</span> Gesamtmiete Antrag 815,00 EUR = rechnerisch 670 Grundmiete +20 Müll +15 Entwässerung +20 Wasser +5 Allgemeinstrom +75 Heizung +10 weitere BK aus Mietbescheinigung und Mietvertrag = 815,00 EUR – rechnerisch und logisch vereinbar. Wohnfläche 47 qm überall gleich. Heizkosten 75,00 EUR überall gleich.</li><li><span class="bkey">Bankverbindung:</span> Antrag-IBAN DE57500502010068241379 = Arbeitnehmerkonto-IBAN in Gehaltsabrechnungen auf Name Neumann, Katharina – Zugehörigkeit zum Antragsteller belegt, kein Hinweis auf andere Person. Kontoauszug nicht auswertbar (alle null) – nicht bewertbar, kein Widerspruch. Vermieter-IBAN in Mietbescheinigung und Mietvertrag identisch (DE73500502010024791368).</li></ul><p>Fehlende optionale Angaben und nicht auswertbarer Kontoauszug sind keine Widersprüche. Wirtschaftliche Lage nicht Gegenstand.</p><p>Ergebnis: APPROVED</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Formelle Prüfung – Wohngeldantrag TF-16 (Katharina Neumann): APPROVED</p><p class="bkopf">Pflichtdokumente (§§ 22, 26 VwVfG, § 23 WoGG)</p><ul class="bl"><li>Wohngeldantrag liegt vor (Wohngeldantrag_Testfall16_Katharina_Neumann_ausgefuellt.json).</li><li>Einkommensnachweis liegt vor (Verdienstbescheinigung, Gehaltsabrechnungen 02-07/2026, Einkommenserklärung).</li></ul><p>Der nicht auswertbare Kontoauszug-Scan ist kein Pflichtdokument und daher kein Mangel.</p><p class="bkopf">Pflichtangaben</p><ul class="bl"><li><span class="bkey">Name:</span> Neumann, Katharina – vorhanden.</li><li><span class="bkey">Geburtsdatum:</span> 14.04.1993 – vorhanden.</li><li><span class="bkey">Anschrift:</span> Wittelsbacherallee 92, 60385 Frankfurt am Main – Strasse, Hausnummer, PLZ und Ort vorhanden (§ 22 VwVfG, § 3 WoGG).</li><li><span class="bkey">Haushalt:</span> keine weiteren Haushaltsmitglieder ersichtlich → 1-Personen-Haushalt, Zahl nicht zwingend erforderlich (§ 5 WoGG) – erfüllt.</li><li><span class="bkey">Miete:</span> Gesamtmiete 815,00 EUR/Monat &gt; 0 – erfüllt (§ 9 WoGG).</li><li><span class="bkey">Einkommen:</span> Art „Gehalt/Lohn“ nicht leer, Brutto 2380,00 EUR &gt; 0 – erfüllt (§§ 13, 14 WoGG).</li></ul><p>Keine Pflichtangabe fehlt, kein Pflichtdokument fehlt, keine Prüffrage unklar. Antrag ist formell vollständig und bearbeitbar. Keine materielle Bewertung vorgenommen.</p></div>
+        </div>
+      <div class="schritt">
+        <div class="skopf">
+          <span class="sname">Materielle Prüfung (gesamt)</span>
+          <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span>
+          <span class="kb kb-bad">Ablehnung aus MP-2</span>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-1 · Fachliche Vorprüfung (Agent)</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Vorprüfung (Schritt 4 von 7) – Testfall TF-16, Katharina Neumann</p><p class="bkopf">1. Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnsitz in Deutschland (§ 3 WoGG):</span> erfüllt – Wittelsbacherallee 92, 60385 Frankfurt am Main, Hauptmieterin, Einzug 01.04.2024, Wohnung wird bewohnt.</li><li><span class="bkey">Haushaltsgröße (§ 5 WoGG):</span> erfüllt – 1 Person, keine weiteren Haushaltsmitglieder, keine Mitbewohner, Zugehörigkeit zum Haushalt gegeben.</li><li><span class="bkey">Einkommen (§ 13 WoGG):</span> erfüllt – monatlich 2.380,00 EUR Gehalt/Lohn, belegt durch Verdienstbescheinigung 08/2025–07/2026, Gehaltsabrechnungen 02–07/2026 und Einkommenserklärung.</li><li><span class="bkey">Miete (§ 9 WoGG):</span> erfüllt – Gesamtmiete 815,00 EUR/Monat, belegt und in sich stimmig.</li><li><span class="bkey">Haushaltszugehörigkeit (§ 5 WoGG):</span> erfüllt – Antragstellerin ist Hauptmieterin der Wohnung, für die Wohngeld beantragt wird.</li></ul><p>2. Ausschlussgründe: Kein Ausschlussgrund konkret belegt – Frage 10 Transferleistungen: nein; keine Bürgergeld-/SGB-II-, Grundsicherungs-/Sozialhilfe-Angaben; BAföG/BAB 0,00 EUR; Vermögen oberhalb Grenze: nein (§ 21 Nr. 3 WoGG nicht überschritten); keine öffentliche Förderung/Mietpreisbindung.</p><p>3. Tatsachenbasis (§ 9 WoGG, § 24 VwVfG): Miete rechnerisch plausibel und widerspruchsfrei – Antrag 815,00 EUR = Mietbescheinigung 670 + 20 + 15 + 20 + 5 + 75 + 10 = 815,00 EUR = Mietvertragskomponenten. Abzüglich Heizkosten 75,00 EUR (Warmwasser über Heizung, nicht gesondert vereinbart) ergibt sich Bruttokaltmiete 740,00 EUR für den Rechner. Einkommen, Abzüge (Steuern, Kranken-/Pflege-, Rentenversicherung: ja) und Werbungskosten (1.230,00 EUR jährlich = 102,50 EUR monatlich) vollständig und belegt. Datengrundlage reicht für die Berechnung aus. Nicht auswertbarer Kontoauszug-Scan steht dem nicht entgegen.</p><p>Zur Berechnung freigegeben. Über die Höhe des Anspruchs entscheidet die nachgelagerte Berechnung nach §§ 19, 21 WoGG.</p></div>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-2 · Wohngeldberechnung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><span class="kb kb-mid">rechnerischer Nichtanspruch</span></div>
+          <div class="btext"><p>Rechnerischer Nichtanspruch. Nach § 19 Abs. 2 WoGG i. V. m. Anlage 3 ergibt sich bei einer zu berücksichtigenden Miete von 744,60 Euro (berücksichtigungsfähige Miete 634,20 Euro zuzüglich Heizkostenkomponente 110,40 Euro nach § 12 Abs. 6 WoGG) und einem wohngeldrechtlichen Gesamteinkommen von 1.594,25 Euro (aus 2.380,00 Euro monatlichem Einkommen nach den Werbungskosten, pauschalen Abzügen und Freibeträgen der §§ 16 bis 18 WoGG) für 1 zu berücksichtigendes Haushaltsmitglied ein rechnerisches Wohngeld von 9 Euro monatlich. Der Betrag unterschreitet die Mindestgrenze von 10 Euro nach § 21 Nr. 1 WoGG; ein Wohngeldanspruch besteht daher nicht.</p><p>Ergänzende Hinweise: Die Bruttokaltmiete oder Belastung überschreitet den Höchstbetrag einschließlich Klimakomponente und wurde entsprechend begrenzt.</p><p>Orientierungsberechnung. Eine rechtsverbindliche Entscheidung trifft ausschließlich die zuständige Wohngeldbehörde.</p></div>
+        </div>
+      </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-bad">0 · nicht erkannt</span></span></div>
+        <p>Der erwartete Befund war die Erkennung des mangelhaften Kontoauszug-Scans als Qualitätsmangel (FP Kategorie 5), der eine Nachforderung auslösen muss. Die Pipeline hat diesen Mangel zwar bemerkt, ihn aber fälschlicherweise als unproblematisch eingestuft (&#039;kein Pflichtdokument&#039;, &#039;kein Widerspruch&#039;) und den Fall bis zur materiellen Ablehnung durchlaufen lassen.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle wesentlichen Tatsachenbehauptungen zu Einkommen (2.380 EUR), Miete (815 EUR), Wohnfläche (47 qm) und den persönlichen Daten sind durch die Dokumente 1, 3, 4, 5, 6 und 7 vollständig belegt. Auch der Hinweis auf den nicht auswertbaren Kontoauszug entspricht den Metadaten von Dokument 2.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Die Ableitung des Ergebnisses ist zwingend: Die Pipeline legt die Rechengrößen (Miete 744,60 EUR, Einkommen 1.594,25 EUR) dar und stellt fest, dass das Ergebnis (9 EUR) unter der gesetzlichen Mindestgrenze von 10 EUR (§ 21 Nr. 1 WoGG) liegt. Jeder Schritt von den (als wahr unterstellten) Tatsachen zum REJECTED-Verdict ist explizit aufgeführt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="vb vb-neutral">– keine</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Materielle Prüfung">MP</span> <span class="kb kb-neut">nicht erkannt</span></span></div>
+        <p>Die Pipeline hat den erwarteten Befund (mangelhafter Scan des Kontoauszugs) zwar in allen Phasen erwähnt, ihn jedoch explizit als unerheblich für den Fortgang des Verfahrens eingestuft und den Antrag durchgewinkt. Da der Mangel zu keinem Zeitpunkt als Beanstandung behandelt wurde, ist die Phase KEINE.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 2</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-neut">nicht erkannt</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Konsistenzprüfung TF-16 – Katharina Neumann: Keine Widersprüche festgestellt.</p><ul class="bl"><li><span class="bkey">Name (§24 VwVfG):</span> Antrag „Katharina Neumann“ stimmt mit Verdienstbescheinigung „Neumann, Katharina“, Gehaltsabrechnungen und Einkommenserklärung überein.</li><li><span class="bkey">Geburtsdatum (§24 VwVfG):</span> 14.04.1993 in Antrag, Verdienstbescheinigung und allen Gehaltsabrechnungen identisch.</li><li><span class="bkey">Anschrift (§24 VwVfG):</span> Wittelsbacherallee 92, 60385 Frankfurt am Main in Antrag, Verdienstbescheinigung, Mietbescheinigung, Mietvertrag und Einkommenserklärung identisch.</li><li><span class="bkey">Einkommen (§26 VwVfG):</span> Antrag 2.380,00 € monatlich = Verdienstbescheinigung 2.380,00 € x12, Gehaltsabrechnungen je 2.380,00 €, Einkommenserklärung je 2.380,00 € – keine Abweichung &gt;20%.</li><li><span class="bkey">Haushaltsgröße (§5 WoGG):</span> Keine weiteren Haushaltsmitglieder in Frage 06 benannt, keine Mitbewohner, keine Veränderung – passt zu 1-Personen-Haushalt.</li><li><span class="bkey">Miete (§9 WoGG):</span> Gesamtmiete 815,00 € rechnerisch vereinbar: 670 Grundmiete +20 Müll +15 Entwässerung +20 Wasser +5 Allgemeinstrom +75 Heizung +10 weitere Betriebskosten =815 in Mietbescheinigung und Mietvertrag; Wohnfläche 47 qm überall gleich; Heizkosten 75 € überall gleich.</li><li><span class="bkey">Bankverbindung (§24 VwVfG):</span> Antrags-IBAN DE57500502010068241379 stimmt mit Arbeitnehmerkonto in Gehaltsabrechnungen überein – gehört zur Antragstellerin. Vermieter-IBAN DE73500502010024791368 in Mietbescheinigung und Mietvertrag identisch und separat.</li></ul><p>Fehlende optionale Angaben / nicht auswertbarer Kontoauszug (alle null) sind kein Widerspruch. Wirtschaftliche Lage nicht bewertet.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung – Testfall TF-16 (Katharina Neumann)</p><p>Pflichtdokumente: Wohngeldantrag liegt vor (Wohngeldantrag_fuer_den_Mietzuschuss). Einkommensnachweis liegt vor (Verdienstbescheinigung mit 12x 2380,00 EUR, Gehaltsabrechnungen, Einkommenserklärung). Kontoauszug ist nicht auswertbar, ist für die formelle Vollständigkeit jedoch nicht erforderlich.</p><p>Pflichtangaben: Name (Neumann, Katharina), Geburtsdatum (14.04.1993), Anschrift (Wittelsbacherallee 92), PLZ (60385) und Wohnort (Frankfurt am Main) vorhanden. Haushalt: keine weiteren Haushaltsmitglieder ersichtlich =&gt; 1-Personen-Haushalt, Zahl nicht zwingend erforderlich. Miete: Gesamtmiete 815,00 EUR &gt; 0. Einkommen: Brutto 2380,00 EUR &gt; 0 mit Art &#039;Gehalt/Lohn&#039; vorhanden.</p><p>Keine fehlenden Pflichtdokumente oder Pflichtfelder. Keine unklaren Prüffragen. Optionale Angaben und materielle Fragen (z.B. Transferleistungen) nicht prüfungsrelevant.</p><p>Ergebnis: vollständig und bearbeitbar → APPROVED .</p></div>
+        </div>
+      <div class="schritt">
+        <div class="skopf">
+          <span class="sname">Materielle Prüfung (gesamt)</span>
+          <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span>
+          <span class="kb kb-bad">Ablehnung aus MP-2</span>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-1 · Fachliche Vorprüfung (Agent)</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Vorprüfung (Schritt 4 von 7) – Testfall TF-16, Neumann, Katharina</p><p class="bkopf">1. Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland:</span> Wittelsbacherallee 92, 60385 Frankfurt am Main; kein Zweitwohnsitz.</li><li><span class="bkey">Haushaltsgröße:</span> 1 Person (Antragstellerin allein, keine weiteren Haushaltsmitglieder nach Frage 06, keine weiteren Personen nach Frage 07).</li><li><span class="bkey">Einkommen &gt; 0:</span> monatlich 2.380,00 EUR Gehalt/Lohn, belegt durch Verdienstbescheinigung (08/2025–07/2026 je 2.380 EUR), 6 Gehaltsabrechnungen 02–07/2026 je 2.380 EUR brutto und Einkommenserklärung.</li><li><span class="bkey">Miete &gt; 0:</span> Gesamtmiete 815,00 EUR/Monat, davon Heizkosten 75,00 EUR. Bruttokaltmiete rechnerisch 740,00 EUR.</li><li><span class="bkey">Haushaltszugehörigkeit:</span> Antragstellerin ist Hauptmieterin, Wohnung wird bewohnt (Einzug 01.04.2024, Mietvertrag 15.03.2024), keine Untervermietung/gewerbliche Nutzung.</li></ul><p class="bkopf">2. Ausschlussgründe – kein konkreter Beleg</p><ul class="bl"><li><span class="bkey">SGB II/Bürgergeld:</span> Frage 10 = false; Einkommenserklärung Arbeitslosengeld II = 0,00 EUR.</li><li><span class="bkey">Grundsicherung/Sozialhilfe mit KdU:</span> Frage 10 = false; Sozialhilfe = 0,00 EUR.</li><li><span class="bkey">BAföG/BAB nach § 20 Abs. 2 WoGG:</span> BAföG = 0,00 EUR; Erwerbsstatus Arbeitnehmerin in Vollzeit als Sachbearbeiterin, kein Ausbildungsverhältnis.</li><li><span class="bkey">Vermögen nach § 21 Nr. 3 WoGG:</span> Frage 20 = Vermögen oberhalb der maßgeblichen Grenze = false, alle Vermögensarten = false.</li></ul><p>Hohe Einkommenssumme allein ist kein Ausschlussgrund; nicht auswertbarer Kontoauszug-Scan ist fehlender optionaler Nachweis, kein Ausschlussgrund.</p><p class="bkopf">3. Tatsachenbasis</p><ul class="bl"><li><span class="bkey">Miete in sich stimmig und widerspruchsfrei:</span> Antrag (815 EUR / 75 EUR Heizung), Mietbescheinigung (Grundmiete 670 + 20 Müll + 15 Entwässerung + 20 Wasser + 5 Allgemeinstrom + 75 Heizung + 10 Hausreinigung/Winterdienst = 815 EUR) und Mietvertrag identisch; Wohnfläche 47 qm übereinstimmend.</li><li><span class="bkey">Einkommen widerspruchsfrei und belegt:</span> Antrag, Verdienstbescheinigung (Steuern, RV- und KV/PV-Pflichtbeiträge = true), Gehaltsabrechnungen und Einkommenserklärung stimmen überein. Werbungskosten 1.230 EUR jährlich = 102,50 EUR monatlich für Rechner berücksichtigt.</li><li>Datengrundlage nach § 24 VwVfG ausreichend zur Beurteilung von Voraussetzungen und Ausschlussgründen; keine Pflichtwerte für den Rechner fehlend.</li></ul><p>Ergebnis der Vorprüfung: Alle prüfbaren Tatbestandsmerkmale liegen vor, kein Ausschlussgrund geht konkret aus den Daten hervor, die für die Berechnung erforderlichen Werte sind vollständig, widerspruchsfrei und belegt. Über die Höhe des Anspruchs entscheidet die nachgelagerte Berechnung nach §§ 19, 21 WoGG.</p></div>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-2 · Wohngeldberechnung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><span class="kb kb-mid">rechnerischer Nichtanspruch</span></div>
+          <div class="btext"><p>Rechnerischer Nichtanspruch. Nach § 19 Abs. 2 WoGG i. V. m. Anlage 3 ergibt sich bei einer zu berücksichtigenden Miete von 744,60 Euro (berücksichtigungsfähige Miete 634,20 Euro zuzüglich Heizkostenkomponente 110,40 Euro nach § 12 Abs. 6 WoGG) und einem wohngeldrechtlichen Gesamteinkommen von 1.594,25 Euro (aus 2.380,00 Euro monatlichem Einkommen nach den Werbungskosten, pauschalen Abzügen und Freibeträgen der §§ 16 bis 18 WoGG) für 1 zu berücksichtigendes Haushaltsmitglied ein rechnerisches Wohngeld von 9 Euro monatlich. Der Betrag unterschreitet die Mindestgrenze von 10 Euro nach § 21 Nr. 1 WoGG; ein Wohngeldanspruch besteht daher nicht.</p><p>Ergänzende Hinweise: Die Bruttokaltmiete oder Belastung überschreitet den Höchstbetrag einschließlich Klimakomponente und wurde entsprechend begrenzt.</p><p>Orientierungsberechnung. Eine rechtsverbindliche Entscheidung trifft ausschließlich die zuständige Wohngeldbehörde.</p></div>
+        </div>
+      </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-bad">0 · nicht erkannt</span></span></div>
+        <p>Die Pipeline hat den zentralen Fehler (FP Kategorie 5 - Dokument nicht zuverlässig auswertbar) nicht korrekt behandelt. Obwohl sie den mangelhaften Scan erkennt, bewertet sie ihn fälschlicherweise als &#039;nicht erforderlich&#039; für die formelle Vollständigkeit und führt eine materielle Prüfung auf Basis der (laut Ground Truth nicht zu verwendenden) Daten durch.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle von der Pipeline genannten Primärdaten (Einkommen 2.380 €, Miete 815 €, Haushaltsgröße 1, IBANs) sind durch die Dokumente 1, 3, 4, 5 und 6 exakt belegt. Die von MP-2 genutzten Rechengrößen (Gesamteinkommen, berücksichtigungsfähige Miete) sind gesetzeskonforme Ableitungen und keine dokumentwidrigen Tatsachenbehauptungen.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Die Pipeline führt jeden Schritt ihrer Entscheidung transparent auf. MP-1 begründet die Freigabe mit der Widerspruchsfreiheit der Daten, und MP-2 leitet daraus unter Nennung der Grenzwerte (§ 21 Nr. 1 WoGG) und der berechneten Zwischenschritte den Nichtanspruch zwingend her.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="vb vb-neutral">– keine</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Materielle Prüfung">MP</span> <span class="kb kb-neut">nicht erkannt</span></span></div>
+        <p>Die Pipeline hat den mangelhaften Scan zwar in der KP und FP erwähnt, ihn aber explizit als unproblematisch für die Bearbeitbarkeit eingestuft und den Lauf fortgesetzt. Da der Fehler nicht als Beanstandung (REJECTED oder Nachforderung) behandelt wurde, gilt er als nicht erkannt.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 3</span><span class="mini"><span class="vb vb-rejected">✕ TECHN. FEHLER</span></span></summary>
+      <div class="dbody">
+        <p class="errtext mono">&quot;Your request is invalid or could not be processed by the service&quot;</p>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-bad">0 · nicht erkannt</span></span></div>
+        <p>Die Pipeline hat den Testfall nicht bearbeitet (alle Phasen &#039;NICHT ERREICHT&#039;), wodurch der spezifische Fehler der mangelhaften Dokumentqualität nicht identifiziert wurde.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        <p>Da keine Phase ein Ergebnis geliefert hat und keine Tatsachenbehauptungen aufgestellt wurden, gilt der Lauf gemäß Sonderregel als technisch fehlgeschlagen.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        <p>Es wurde keine Begründung oder Ableitung erzeugt, da die Pipeline vor der ersten Phase abbrach; dies wird als technischer Fehlschlag gewertet.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="vb vb-neutral">– keine</span> <span class="mut">· eskaliert in</span> <span class="vb vb-neutral">– keine</span> <span class="vb vb-neutral">–</span></span></div>
+        <p>Die Pipeline hat keine der Prüfphasen durchlaufen und somit den erwarteten Befund (mangelhafter Scan des Kontoauszugs in der FP) nicht erkannt.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 4</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-neut">nicht erkannt</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung TF-16 Katharina Neumann</p><p>Name: Antrag &#039;Neumann, Katharina&#039; = Verdienstbescheinigung &#039;Neumann, Katharina&#039; = Gehaltsabrechnungen &#039;Neumann, Katharina&#039; – kein Widerspruch.</p><p>Geburtsdatum: Antrag 14.04.1993 = Verdienstbescheinigung 14.04.1993 = Gehaltsabrechnungen 14.04.1993 – kein Widerspruch.</p><p>Anschrift: Antrag Wittelsbacherallee 92, 60385 Frankfurt am Main = Mietbescheinigung, Verdienstbescheinigung, Mietvertrag, Einkommenserklärung identisch – kein Widerspruch.</p><p>Einkommen: Antrag 2380 EUR monatlich = Verdienstbescheinigung 2380 EUR x12 = Gehaltsabrechnungen 2380 EUR = Einkommenserklärung 2380 EUR – keine Abweichung &gt;1/5.</p><p>Haushaltsgröße: Keine weiteren Haushaltsmitglieder benannt (Frage 06 alle null), keine abweichende Personenzahl vorhanden – nicht bewertbar, kein Widerspruch.</p><p>Miete: Gesamtmiete 815 EUR = 670 +75 Heizung +20 Wasser +15 Entwässerung +20 Müll +5 Allgemeinstrom +10 weitere Kosten aus Mietbescheinigung und Mietvertrag rechnerisch vereinbar – kein Widerspruch.</p><p>Bankverbindung: Antrags-IBAN DE57500502010068241379 = Arbeitnehmerkonto-IBAN in Gehaltsabrechnungen für Neumann, Katharina – gehört zum Antragsteller. Kontoauszug ohne verwertbare IBAN – nicht bewertbar, kein Widerspruch.</p><p>Kein Widerspruch in den zu prüfenden Angaben festgestellt.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung – Testfall TF-16 (Katharina Neumann)</p><ul class="bl"><li><span class="bkey">Pflichtdokument Wohngeldantrag:</span> vorhanden (Wohngeldantrag_Testfall16_Katharina_Neumann_ausgefuellt.json).</li><li><span class="bkey">Pflichtdokument Einkommensnachweis:</span> vorhanden (Verdienstbescheinigung, Gehaltsabrechnungen und Einkommenserklärung liegen vor).</li><li><span class="bkey">Person:</span> Name (Neumann, Katharina), Geburtsdatum (14.04.1993), Anschrift (Wittelsbacherallee 92), PLZ (60385) und Wohnort (Frankfurt am Main) vorhanden.</li><li><span class="bkey">Haushalt:</span> Keine weiteren Haushaltsmitglieder ersichtlich → 1-Personen-Haushalt; keine Zahl erforderlich, kein Mangel.</li><li><span class="bkey">Miete:</span> Gesamtmiete 815,00 EUR &gt; 0 vorhanden (§ 9 WoGG).</li><li><span class="bkey">Einkommen:</span> Art „Gehalt/Lohn“ vorhanden, Bruttobetrag 2380,00 EUR &gt; 0 vorhanden (§§ 13, 14 WoGG).</li></ul><p>Keine fehlenden Pflichtdokumente oder Pflichtangaben. Optionale Angaben und materielle Fragen nicht Gegenstand. Antrag ist formell vollständig und bearbeitbar.</p></div>
+        </div>
+      <div class="schritt">
+        <div class="skopf">
+          <span class="sname">Materielle Prüfung (gesamt)</span>
+          <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span>
+          <span class="kb kb-bad">Ablehnung aus MP-2</span>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-1 · Fachliche Vorprüfung (Agent)</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Vorprüfung des Erstantrags von Katharina Neumann (1-Personen-Haushalt, Frankfurt am Main, 60385):</p><ul class="bl"><li><span class="bkey">Tatbestandsmerkmale (§§ 3, 5, 9, 13 WoGG):</span> Wohnung in Deutschland (Wittelsbacherallee 92, 60385 Frankfurt am Main), kein Zweitwohnsitz, Haushaltsgröße 1 Person, Antragstellerin ist Hauptmieterin und bewohnt die Wohnung laut Mietbescheinigung. Monatliches Einkommen 2.380 EUR brutto &gt; 0, monatliche Bruttokaltmiete 740 EUR (Gesamtmiete 815 EUR abzüglich 75 EUR Heizkosten, Warmwasser über Heizung ohne gesonderten Betrag) &gt; 0.</li><li>Ausschlussgründe (§ 7 Abs. 1, § 20 Abs. 2, § 21 Nr. 3 WoGG): Keine Transferleistung nach Frage 10 (false), Einkommenserklärung weist ALG II, Sozialhilfe und BAföG jeweils 0 EUR aus, Erwerbsstatus Arbeitnehmerin in Vollzeit. Vermögensgrenze nach Frage 20 nicht überschritten (false). Kein Ausschlussgrund geht konkret aus den Daten hervor.</li><li><span class="bkey">Tatsachenbasis (§ 9 WoGG, § 24 VwVfG):</span> Miete rechnerisch in sich stimmig und belegt: 670 EUR Grundmiete + 20 + 15 + 20 + 5 + 75 + 10 = 815 EUR, übereinstimmend in Antrag, Mietbescheinigung vom 20.08.2026 und Mietvertrag. Einkommen durch Verdienstbescheinigung (08/2025-07/2026 je 2.380 EUR), 6 Gehaltsabrechnungen und Einkommenserklärung widerspruchsfrei belegt inkl. Steuer- und Sozialversicherungspflicht. Werbungskosten 1.230 EUR jährlich = 102,50 EUR monatlich berücksichtigt. Der nicht maschinell lesbare Kontoauszug-Scan enthält keine verwertbaren Daten, ist für die Bewertung aber nicht erforderlich und kein Pflichtwert.</li></ul><p>Die für die Berechnung erforderlichen Werte sind vollständig, widerspruchsfrei und belegt. Es erfolgt keine Aussage zu Anspruch oder Höhe. Über die Höhe des Anspruchs entscheidet die nachgelagerte Berechnung nach §§ 19, 21 WoGG.</p></div>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-2 · Wohngeldberechnung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><span class="kb kb-mid">rechnerischer Nichtanspruch</span></div>
+          <div class="btext"><p>Rechnerischer Nichtanspruch. Nach § 19 Abs. 2 WoGG i. V. m. Anlage 3 ergibt sich bei einer zu berücksichtigenden Miete von 744,60 Euro (berücksichtigungsfähige Miete 634,20 Euro zuzüglich Heizkostenkomponente 110,40 Euro nach § 12 Abs. 6 WoGG) und einem wohngeldrechtlichen Gesamteinkommen von 1.594,25 Euro (aus 2.380,00 Euro monatlichem Einkommen nach den Werbungskosten, pauschalen Abzügen und Freibeträgen der §§ 16 bis 18 WoGG) für 1 zu berücksichtigendes Haushaltsmitglied ein rechnerisches Wohngeld von 9 Euro monatlich. Der Betrag unterschreitet die Mindestgrenze von 10 Euro nach § 21 Nr. 1 WoGG; ein Wohngeldanspruch besteht daher nicht.</p><p>Ergänzende Hinweise: Die Bruttokaltmiete oder Belastung überschreitet den Höchstbetrag einschließlich Klimakomponente und wurde entsprechend begrenzt.</p><p>Orientierungsberechnung. Eine rechtsverbindliche Entscheidung trifft ausschließlich die zuständige Wohngeldbehörde.</p></div>
+        </div>
+      </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-bad">0 · nicht erkannt</span></span></div>
+        <p>Die Pipeline hat den zentralen Befund (FP Kategorie 5 - Dokument nicht zuverlässig auswertbar) nicht erkannt. Stattdessen wurde der mangelhafte Scan in allen Phasen als unerheblich für den Fortgang des Verfahrens bewertet und der Antrag fälschlicherweise als formell vollständig eingestuft.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle wesentlichen Tatsachenbehauptungen (Einkommen 2.380 EUR, Miete 815 EUR, Haushaltsgröße 1) sind durch die Dokumente 1, 3, 4, 5, 6 und 7 belegt. Die Pipeline stellt in KP und MP-1 korrekt fest, dass der Kontoauszug keine verwertbaren Daten enthält, was durch Dokument 2 gestützt wird.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Die Begründungen sind in sich schlüssig und führen zwingend zu den jeweiligen Verdicts der Pipeline. MP-2 leitet den Nichtanspruch korrekt aus den zuvor festgestellten Werten für Einkommen und Miete unter Nennung der gesetzlichen Mindestgrenze (§ 21 Nr. 1 WoGG) ab.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="vb vb-neutral">– keine</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Materielle Prüfung">MP</span> <span class="kb kb-neut">nicht erkannt</span></span></div>
+        <p>Die Pipeline hat den erwarteten Befund (mangelhafter Scan des Kontoauszugs) in der KP und MP-1 zwar erwähnt, ihn dort aber ausdrücklich als unproblematisch bzw. nicht erforderlich eingestuft. In der FP wurde der Mangel gar nicht erwähnt; eine Beanstandung fand in keiner Phase statt.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 5</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-neut">nicht erkannt</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Konsistenzprüfung TF-16 – Katharina Neumann: kein Widerspruch festgestellt</p><ul class="bl"><li><span class="bkey">Name (§24 VwVfG):</span> Antrag „Katharina Neumann“ stimmt überein mit Verdienstbescheinigung „Neumann, Katharina“, Gehaltsabrechnungen „Neumann, Katharina“, Mietbescheinigung „Neumann, Katharina“, Mietvertrag „Katharina Neumann“ und Einkommenserklärung.</li><li><span class="bkey">Geburtsdatum (§24 VwVfG):</span> Antrag 14.04.1993 = Verdienstbescheinigung 14.04.1993 = alle Gehaltsabrechnungen 14.04.1993. Keine Abweichung.</li><li><span class="bkey">Anschrift (§24 VwVfG):</span> Antrag Wittelsbacherallee 92, 60385 Frankfurt am Main = Verdienstbescheinigung, Mietbescheinigung, Mietvertrag und Einkommenserklärung identisch. Kein abweichender Straßenname.</li><li><span class="bkey">Einkommen (§26 VwVfG):</span> Antrag 2380,00 EUR monatlich = Verdienstbescheinigung 2380,00 EUR x 12 (28560 EUR gesamt) = Gehaltsabrechnungen je 2380,00 EUR = Einkommenserklärung je 2380,00 EUR. Abweichung 0%, Richtwert 1/5 deutlich unterschritten.</li><li><span class="bkey">Haushaltsgröße (§5 WoGG):</span> Keine weiteren Haushaltsmitglieder in Frage 06 benannt, Frage 07 und 09 verneint – vereinbar mit 1-Personen-Haushalt (Antragstellerin allein). Kein Widerspruch.</li><li><span class="bkey">Miete (§9 WoGG):</span> Gesamtmiete Antrag 815,00 EUR ist rechnerisch vereinbar: Grundmiete 670 + Heizung 75 + Müll 20 + Entwässerung 15 + Wasser 20 + Allgemeinstrom 5 + weitere Betriebskosten 10 = 815. Wohnfläche 47 qm in Antrag, Mietbescheinigung und Mietvertrag identisch. Mietvertragsbeträge stimmen mit Mietbescheinigung überein.</li><li><span class="bkey">Bankverbindung (§24 VwVfG):</span> Antrags-IBAN DE57500502010068241379 stimmt mit Arbeitnehmerkonto in allen Gehaltsabrechnungen überein – gehört nachweislich zur Antragstellerin. Vermieter-IBAN DE73500502010024791368 ist separat und in Mietbescheinigung und Mietvertrag identisch, kein Hinweis auf Fehlleitung.</li><li><span class="bkey">Kontoauszug:</span> nicht maschinell lesbar, alle Werte null – mangels vorhandener Werte nicht bewertbar, kein Widerspruch. Fehlendes bewertet die formelle Prüfung.</li></ul><p>Damit liegt bei keiner der beschriebenen Prüfungen ein Widerspruch aus zwei konkret vorhandenen Werten vor. → APPROVED</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Prüfung (Schritt 2 von 7) – Wohngeldantrag TF-16, Katharina Neumann</p><ul class="bl"><li><span class="bkey">Pflichtdokumente (§ 22, § 26 VwVfG, § 23 WoGG):</span> Wohngeldantrag liegt vor (Wohngeldantrag_fuer_den_Mietzuschuss). Einkommensnachweis liegt vor – Verdienstbescheinigung (12x 2380 EUR brutto), Gehaltsabrechnungen (6 Monate) und Einkommenserklärung. Der nicht auswertbare Kontoauszug-Scan ist insoweit unerheblich.</li><li><span class="bkey">Person (§ 22 VwVfG, § 3 WoGG):</span> Name (Neumann, Katharina), Geburtsdatum (14.04.1993), Anschrift (Wittelsbacherallee 92), PLZ (60385) und Wohnort (Frankfurt am Main) vorhanden und nicht leer.</li><li><span class="bkey">Haushalt (§ 5 WoGG):</span> Keine weiteren Haushaltsmitglieder ersichtlich – es gilt Ein-Personen-Haushalt. Zahl nicht zwingend erforderlich, kein Mangel.</li><li><span class="bkey">Miete (§ 9 WoGG):</span> Gesamtmiete 815,00 EUR/Monat &gt; 0 vorhanden.</li><li><span class="bkey">Einkommen (§§ 13, 14 WoGG):</span> Bruttobetrag 2380,00 EUR &gt; 0 und Art der Einnahme (Gehalt/Lohn) nicht leer vorhanden.</li><li><span class="bkey">Optionales / Materielles:</span> E-Mail, Staatsangehörigkeit, Telefon, Familienstand, Wohnfläche, IBAN etc. nicht prüfrelevant. Keine Ausschlussgründe im Rahmen der formellen Prüfung bewertet.</li></ul><p>Alle Pflichtpunkte vollständig und eindeutig erfüllt – Antrag ist formell vollständig und bearbeitbar. APPROVED.</p></div>
+        </div>
+      <div class="schritt">
+        <div class="skopf">
+          <span class="sname">Materielle Prüfung (gesamt)</span>
+          <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span>
+          <span class="kb kb-bad">Ablehnung aus MP-2</span>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-1 · Fachliche Vorprüfung (Agent)</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Vorprüfung zur Berechnung – kein Entscheid über Bewilligung</p><p>1. Tatbestandsmerkmale (§§ 3, 5, 9, 13 WoGG): Wohnung Wittelsbacherallee 92, 60385 Frankfurt am Main in Deutschland; kein Zweitwohnsitz, kein Wohngeld für andere Wohnung. Haushaltsgröße 1 Person (nur Antragstellerin Katharina Neumann, Hauptmieterin, Einzug 01.04.2024, Wohnung wird bewohnt). Monatliches Einkommen 2.380,00 EUR aus Gehalt/Lohn belegt durch Antrag Frage 12, Verdienstbescheinigung 08/2025–07/2026, Gehaltsabrechnungen 02–07/2026 und Einkommenserklärung. Monatliche Miete 815,00 EUR Gesamtmiete belegt durch Antrag Frage 23, Mietbescheinigung und Mietvertrag – jeweils widerspruchsfrei.</p><p>2. Ausschlussgründe (§ 7 Abs. 1, § 20 Abs. 2, § 21 Nr. 3 WoGG): Keine Transferleistung mit KdU ersichtlich – Frage 10 = false, Einkommenserklärung ALG II / Sozialhilfe / Arbeitslosengeld jeweils 0,00 EUR. Kein BAföG/BAB – erwerbstätig Vollzeit als Sachbearbeiterin, BAföG 0,00 EUR. Vermögen oberhalb Grenze = false, keine Vermögenswerte ausgewählt. Kein sicher nicht erfülltes Kernmerkmal.</p><p>3. Tatsachenbasis (§ 9 WoGG, § 24 VwVfG): Miete rechnerisch plausibel und in sich stimmig: 670,00 Grundmiete + 75,00 Heizung/Warmwasser (zentral, Warmwasser nicht gesondert vereinbart) + 20,00 Wasser + 15,00 Entwässerung + 20,00 Müll + 5,00 Allgemeinstrom + 10,00 Hausreinigung/Winterdienst = 815,00 EUR in Antrag, Mietbescheinigung und Mietvertrag identisch. Bruttokaltmiete 815,00 – 75,00 = 740,00 EUR. Einkommen, Steuer-/Sozialabzüge (Steuern, Renten-, Kranken-/Pflegeversicherung = true) und Werbungskosten 1.230,00 EUR jährlich = 102,50 EUR monatlich belegt. Nicht auswertbarer Kontoauszug-Scan steht der Bewertung nicht entgegen, da Einkommen und Miete anderweitig vollständig belegt sind.</p><p>Ergebnis: Keine konkret belegten Ausschlussgründe, für die Berechnung erforderliche Werte vollständig, widerspruchsfrei und belegt – zur Berechnung freigegeben. Über die Höhe des Anspruchs entscheidet die nachgelagerte Berechnung nach §§ 19, 21 WoGG.</p></div>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-2 · Wohngeldberechnung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><span class="kb kb-mid">rechnerischer Nichtanspruch</span></div>
+          <div class="btext"><p>Rechnerischer Nichtanspruch. Nach § 19 Abs. 2 WoGG i. V. m. Anlage 3 ergibt sich bei einer zu berücksichtigenden Miete von 744,60 Euro (berücksichtigungsfähige Miete 634,20 Euro zuzüglich Heizkostenkomponente 110,40 Euro nach § 12 Abs. 6 WoGG) und einem wohngeldrechtlichen Gesamteinkommen von 1.594,25 Euro (aus 2.380,00 Euro monatlichem Einkommen nach den Werbungskosten, pauschalen Abzügen und Freibeträgen der §§ 16 bis 18 WoGG) für 1 zu berücksichtigendes Haushaltsmitglied ein rechnerisches Wohngeld von 9 Euro monatlich. Der Betrag unterschreitet die Mindestgrenze von 10 Euro nach § 21 Nr. 1 WoGG; ein Wohngeldanspruch besteht daher nicht.</p><p>Ergänzende Hinweise: Die Bruttokaltmiete oder Belastung überschreitet den Höchstbetrag einschließlich Klimakomponente und wurde entsprechend begrenzt.</p><p>Orientierungsberechnung. Eine rechtsverbindliche Entscheidung trifft ausschließlich die zuständige Wohngeldbehörde.</p></div>
+        </div>
+      </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-bad">0 · nicht erkannt</span></span></div>
+        <p>Der erwartete Befund war ein Abbruch in der FP aufgrund der mangelhaften Qualität des Kontoauszugs (Kategorie 5). Die Pipeline hat diesen Mangel zwar bemerkt, ihn aber fälschlicherweise als &#039;unerheblich&#039; eingestuft und das Verfahren bis zur materiellen Ablehnung fortgesetzt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle verwendeten Primärdaten (Einkommen 2.380 EUR, Miete 815 EUR, Personendaten) sind durch die Dokumente 1, 3, 4, 5 und 6 exakt belegt. Die Feststellung zum Kontoauszug (nicht lesbar) entspricht Dokument 2.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Die Ableitung des Nichtanspruchs in MP-2 ist in sich schlüssig: Die Pipeline nennt die Ausgangswerte, die berechneten Sozialleistungen (Wohngeld 9 EUR) und den Grund für die Ablehnung (Unterschreitung der 10-Euro-Grenze gemäß § 21 Nr. 1 WoGG). Jeder Schritt ist nachvollziehbar dokumentiert.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="vb vb-neutral">– keine</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Materielle Prüfung">MP</span> <span class="kb kb-neut">nicht erkannt</span></span></div>
+        <p>Die Pipeline hat den erwarteten Befund (mangelhafter Scan des Kontoauszugs) zwar in allen Phasen erwähnt, ihn jedoch explizit als unerheblich für die Bearbeitung eingestuft und den Antrag durchgewinkt. Da keine Phase den Sachverhalt als Beanstandung oder Mangel behandelt hat, wurde der Fehler nicht erkannt.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 6</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-neut">nicht erkannt</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Konsistenzprüfung TF-16 – Katharina Neumann: kein Widerspruch festgestellt.</p><ul class="bl"><li><span class="bkey">Name (§ 24 VwVfG):</span> Antrag „Katharina Neumann“ stimmt überein mit Verdienstbescheinigung („Neumann, Katharina“), Gehaltsabrechnungen („Neumann, Katharina“), Einkommenserklärung und Mietbescheinigung/Mietvertrag.</li><li><span class="bkey">Geburtsdatum (§ 24 VwVfG):</span> Antrag 14.04.1993 = Verdienstbescheinigung 14.04.1993 = Gehaltsabrechnungen 14.04.1993. Keine Abweichung.</li><li><span class="bkey">Anschrift (§ 24 VwVfG):</span> Antrag Wittelsbacherallee 92, 60385 Frankfurt am Main = Verdienstbescheinigung, Einkommenserklärung, Mietbescheinigung und Mietvertrag identisch. Kein abweichender Straßenname.</li><li><span class="bkey">Einkommen (§ 26 VwVfG):</span> Antrag 2.380,00 EUR monatlich = Verdienstbescheinigung je 2.380,00 EUR (12x), Gehaltsabrechnungen je 2.380,00 EUR brutto, Einkommenserklärung je 2.380,00 EUR. Abweichung 0 %, Richtwert 1/5 deutlich unterschritten.</li><li><span class="bkey">Haushaltsgröße (§ 5 WoGG):</span> Keine weiteren Haushaltsmitglieder benannt (Frage 06 leer, Frage 07 „false“, Frage 09 „false“) – passt zu 1-Personen-Haushalt der Antragstellerin. Kein Widerspruch.</li><li><span class="bkey">Miete (§ 9 WoGG):</span> Gesamtmiete Antrag 815,00 EUR ist rechnerisch vereinbar: Grundmiete 670 + Heizung 75 + Wasser 20 + Entwässerung 15 + Müll 20 + Allgemeinstrom 5 + Weitere 10 = 815 in Mietbescheinigung und Mietvertrag identisch. Wohnfläche überall 47 qm.</li><li><span class="bkey">Bankverbindung (§ 24 VwVfG):</span> Antrags-IBAN DE57500502010068241379 stimmt mit Arbeitnehmerkonto in Gehaltsabrechnungen überein und weist damit auf Antragstellerin. Vermieter-IBAN DE73500502010024791368 gehört erwartungsgemäß zum Vermieter, kein Widerspruch zur Auszahlungs-IBAN.</li></ul><p>Kontoauszug enthält keine auswertbaren Werte (null) – mangels vorhandener Werte nicht bewertbar, kein Widerspruch. Fehlendes bewertet die formelle Prüfung.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Formelle Prüfung – Testfall 16 (Katharina Neumann): APPROVED</p><p>Pflichtdokumente: Wohngeldantrag liegt vor; Einkommensnachweis liegt vor (Verdienstbescheinigung mit 12x 2.380 €, Gehaltsabrechnungen Feb–Jul 2026, Einkommenserklärung). Damit sind beide Pflichtdokumente i.S.v. §§ 22, 26 VwVfG, § 23 WoGG vorhanden.</p><p>Pflichtangaben: • Name: Neumann, Katharina – vorhanden</p><ul class="bl"><li><span class="bkey">Geburtsdatum:</span> 14.04.1993 – vorhanden</li><li><span class="bkey">Anschrift:</span> Wittelsbacherallee 92, 60385 Frankfurt am Main – vollständig (Straße, Hausnummer, PLZ, Ort)</li><li><span class="bkey">Haushalt:</span> keine weiteren Haushaltsmitglieder ersichtlich → 1-Personen-Haushalt, Zahl nicht zwingend erforderlich – bearbeitbar</li><li><span class="bkey">Miete:</span> Gesamtmiete 815,00 €/Monat &gt; 0 – vorhanden (§ 9 WoGG)</li><li><span class="bkey">Einkommen:</span> Art „Gehalt/Lohn“ nicht leer, Brutto 2.380 € &gt; 0 – vorhanden (§§ 13, 14 WoGG)</li></ul><p>Keine Pflichtangabe fehlt, kein Pflichtdokument fehlt, keine Prüffrage unklar. Optionale Angaben und materielle Fragen (z.B. Transferleistungen) sind nicht Gegenstand dieser Prüfung.</p></div>
+        </div>
+      <div class="schritt">
+        <div class="skopf">
+          <span class="sname">Materielle Prüfung (gesamt)</span>
+          <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span>
+          <span class="kb kb-bad">Ablehnung aus MP-2</span>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-1 · Fachliche Vorprüfung (Agent)</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Vorprüfung (Schritt 4 von 7) – Testfall TF-16, Katharina Neumann – Ergebnis: zur Berechnung freigegeben</p><p class="bkopf">1. Tatbestandsmerkmale (§§ 3, 5, 9, 13 WoGG)</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland:</span> Wittelsbacherallee 92, 60385 Frankfurt am Main angegeben; kein Zweitwohnsitz; Mietbescheinigung bestätigt Bewohntsein seit 01.04.2024 – erfüllt.</li><li><span class="bkey">Haushaltsgröße:</span> 1 Person (Antragstellerin allein; Frage 06 ohne weitere Personen, Frage 07 keine weiteren Bewohner) – mindestens eine Person – erfüllt.</li><li><span class="bkey">Einkommen &gt;0:</span> Gehalt/Lohn 2.380,00 EUR monatlich im Antrag, bestätigt durch Verdienstbescheinigung 08/2025–07/2026 je 2.380,00 EUR, Gehaltsabrechnungen 02–07/2026 je 2.380,00 EUR brutto und Einkommenserklärung – erfüllt und belegt.</li><li><span class="bkey">Miete &gt;0:</span> Gesamtmiete 815,00 EUR monatlich im Antrag, bestätigt durch Mietbescheinigung und Mietvertrag – erfüllt.</li><li><span class="bkey">Haushaltszugehörigkeit:</span> Antragstellerin ist Hauptmieterin der Wohnung, für die Wohngeld beantragt wird – erfüllt.</li></ul><p class="bkopf">2. Ausschlussgründe (§ 7 Abs.1, § 20 Abs.2, § 21 Nr.3 WoGG)</p><ul class="bl"><li>Kein Bezug von Bürgergeld/SGB II mit KdU aus den Daten ersichtlich (Frage 10: false; Einkommenserklärung ALG II 0,00 EUR).</li><li>Kein Bezug von Grundsicherung/Sozialhilfe mit KdU (Frage 10: false; Sozialhilfe 0,00 EUR).</li><li>Kein BAföG/BAB-Ausschluss (BAföG 0,00 EUR; Erwerbsstatus Arbeitnehmerin, Vollzeit).</li><li><span class="bkey">Kein Vermögens-Ausschluss (Frage 20:</span> Vermögen oberhalb Grenze = false, alle Vermögensarten false).</li></ul><p>Kein Ausschlussgrund geht konkret und eindeutig aus den Daten hervor. Die Einkommenshöhe allein ist kein Ausschlussgrund.</p><p class="bkopf">3. Tatsachenbasis (§ 9 WoGG, § 24 VwVfG)</p><ul class="bl"><li><span class="bkey">Miete rechnerisch plausibel und widerspruchsfrei:</span> 670 Grundmiete + 20 Müll + 15 Entwässerung + 20 Frischwasser + 5 Allgemeinstrom + 75 Heizung + 10 Hausreinigung/Winterdienst = 815,00 EUR; übereinstimmend in Antrag, Mietbescheinigung und Mietvertrag. Abzug Heizkosten 75,00 EUR berücksichtigt; Warmwasser enthalten ohne gesonderten Betrag – keine weitergehende Berechnung durch diese Vorprüfung.</li><li>Einkommen widerspruchsfrei und durch Verdienstbescheinigung, Gehaltsabrechnungen und Einkommenserklärung belegt; Abzüge (Steuern, Kranken-/Pflege-, Rentenversicherung) mit true bestätigt.</li><li>Kontoauszug-Scan ist laut Metadaten nicht auswertbar – unschädlich, da Einkommen anderweitig belegt; fehlende optionale Nachweise sind kein Ausschlussgrund.</li><li>Rechnerwerte für BMWSB-Rechner vollständig, belegt: PLZ 60385, 1 zu berücksichtigendes Mitglied, Bruttokaltmiete 740,00 EUR (815 minus 75 Heizung), Einkommen 2.380,00 EUR, Werbungskosten 102,50 EUR monatlich (1.230 EUR jährlich /12).</li></ul><p>Die Datengrundlage reicht für die materielle Bewertung und die nachgelagerte Berechnung aus. Es handelt sich um eine Vorprüfung ohne Entscheidung über Grund oder Höhe.</p><p>Über die Höhe des Anspruchs entscheidet die nachgelagerte Berechnung nach §§ 19, 21 WoGG.</p></div>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-2 · Wohngeldberechnung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><span class="kb kb-mid">rechnerischer Nichtanspruch</span></div>
+          <div class="btext"><p>Rechnerischer Nichtanspruch. Nach § 19 Abs. 2 WoGG i. V. m. Anlage 3 ergibt sich bei einer zu berücksichtigenden Miete von 744,60 Euro (berücksichtigungsfähige Miete 634,20 Euro zuzüglich Heizkostenkomponente 110,40 Euro nach § 12 Abs. 6 WoGG) und einem wohngeldrechtlichen Gesamteinkommen von 1.594,25 Euro (aus 2.380,00 Euro monatlichem Einkommen nach den Werbungskosten, pauschalen Abzügen und Freibeträgen der §§ 16 bis 18 WoGG) für 1 zu berücksichtigendes Haushaltsmitglied ein rechnerisches Wohngeld von 9 Euro monatlich. Der Betrag unterschreitet die Mindestgrenze von 10 Euro nach § 21 Nr. 1 WoGG; ein Wohngeldanspruch besteht daher nicht.</p><p>Ergänzende Hinweise: Die Bruttokaltmiete oder Belastung überschreitet den Höchstbetrag einschließlich Klimakomponente und wurde entsprechend begrenzt.</p><p>Orientierungsberechnung. Eine rechtsverbindliche Entscheidung trifft ausschließlich die zuständige Wohngeldbehörde.</p></div>
+        </div>
+      </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-bad">0 · nicht erkannt</span></span></div>
+        <p>Die Pipeline hat den zentralen Befund (FP Kategorie 5 - Dokument nicht zuverlaessig auswertbar) nicht erkannt. Stattdessen wurde die Formelle Pruefung mit APPROVED abgeschlossen und der Mangel in der Materiellen Pruefung als unschädlich abgetan.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle entscheidungstragenden Angaben (Einkommen 2.380 EUR, Miete 815 EUR, Haushaltsgroesse 1) sind durch die Dokumente 1, 3, 4, 5, 6 und 7 belegt. Die Nicht-Auswertbarkeit des Kontoauszugs wird korrekt aus den Metadaten von Dokument 2 übernommen.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Die Begruendungen sind in sich schluessig und die Ableitungen (insb. in MP-2 zum Nichtanspruch aufgrund der 10-Euro-Grenze nach § 21 Nr. 1 WoGG) sind vollstaendig dargelegt. Die Kette von MP-1 zu MP-2 folgt der Sonderregel fuer rechnerischen Nichtanspruch.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="vb vb-neutral">– keine</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Materielle Prüfung">MP</span> <span class="kb kb-neut">nicht erkannt</span></span></div>
+        <p>Die Pipeline hat den erwarteten Befund (mangelhafter Scan des Kontoauszugs) in keiner Phase als Beanstandung benannt, sondern ihn in KP und MP-1 ausdruecklich als unproblematisch eingestuft.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 7</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-neut">nicht erkannt</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Konsistenzprüfung TF-16 – Katharina Neumann – Ergebnis: kein Widerspruch</p><ul class="bl"><li><span class="bkey">Name (§24 VwVfG):</span> Antrag „Katharina Neumann“ stimmt überein mit Verdienstbescheinigung „Neumann, Katharina“, Gehaltsabrechnungen „Neumann, Katharina“, Einkommenserklärung „Neumann, Katharina“, Mietbescheinigung „Neumann, Katharina“ und Mietvertrag „Katharina Neumann“. Kein Widerspruch.</li><li><span class="bkey">Geburtsdatum (§24 VwVfG):</span> Antrag 14.04.1993 = Verdienstbescheinigung 14.04.1993 = Gehaltsabrechnungen 6x 14.04.1993. Kein Widerspruch.</li><li><span class="bkey">Anschrift (§24 VwVfG):</span> Antrag Wittelsbacherallee 92, 60385 Frankfurt am Main = Verdienstbescheinigung gleiche Anschrift = Mietbescheinigung gleiche Anschrift = Mietvertrag gleiche Anschrift = Einkommenserklärung gleiche Anschrift. Kein abweichender Straßenname. Kein Widerspruch.</li><li><span class="bkey">Einkommen (§26 VwVfG):</span> Antrag 2.380,00 € monatlich = Verdienstbescheinigung 12x 2.380,00 € = Gehaltsabrechnungen 6x 2.380,00 € brutto = Einkommenserklärung 6x 2.380,00 €. Abweichung 0%, deutlich unter Richtwert 1/5. Kein Widerspruch. Fehlender Nachweiszeitraum liegt nicht vor bzw. wäre kein Widerspruch.</li><li><span class="bkey">Haushaltsgröße (§5 WoGG):</span> Keine weiteren Haushaltsmitglieder in Frage 06 benannt (alle null), Frage 07 „weitere Personen wohnen in der Wohnung: false“, keine Veränderung/Todesfall. Passt zu 1-Personen-Haushalt (nur Antragstellerin). Kein Widerspruch.</li><li><span class="bkey">Miete (§9 WoGG):</span> Antrag Gesamtmiete 815 €, Heizkosten 75 € enthalten, Warmwasser enthalten ohne gesonderten Betrag. Mietbescheinigung rechnerisch: 670 +20+15+20+5+75+10 = 815 €. Mietvertrag: 670 +75+20+15+20+5+10 = 815 €. Wohnfläche überall 47 qm, Hauptmieter-Status übereinstimmend. Rechnerisch und logisch vereinbar. Kein Widerspruch.</li><li><span class="bkey">Bankverbindung (§24 VwVfG):</span> Antrag IBAN DE57500502010068241379, Bank Frankfurter Sparkasse, Zahlungsempfänger „an mich“. Dieselbe IBAN als Arbeitnehmerkonto in allen 6 Gehaltsabrechnungen bestätigt Zugehörigkeit zur Antragstellerin. Kein Hinweis auf andere Person. Kontoauszug ohne verwertbare Daten (alle null) ist nicht bewertbar und daher kein Widerspruch; Fehlendes bewertet formelle Prüfung.</li></ul><p>Keine der beschriebenen Prüfungen ergab einen Widerspruch aus zwei konkret vorhandenen Werten. Wirtschaftliche Lage, fehlende optionale Angaben und materielle Anspruchsfragen wurden nicht als Widerspruch gewertet.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Formelle Prüfung (Schritt 2 von 7) – Wohngeldantrag Katharina Neumann, TF-16: APPROVED</p><p>Geprüft wurde ausschließlich die formelle Vollständigkeit und Bearbeitbarkeit, ohne materielle Bewertung.</p><ul class="bl"><li><span class="bkey">Pflichtdokument Wohngeldantrag:</span> liegt vor (Wohngeldantrag_Testfall16_Katharina_Neumann_ausgefüllt.json, 11 Seiten, Erstantrag vom 22.08.2026 mit Unterschrift).</li><li><span class="bkey">Pflichtdokument Einkommensnachweis:</span> liegt vor (Verdienstbescheinigung mit 12x 2380,00 EUR brutto, Gehaltsabrechnungen 02-07/2026, Einkommenserklärung). Damit sind beide Pflichtdokumente nach § 22, § 26 VwVfG, § 23 WoGG vorhanden.</li><li><span class="bkey">Person des Antragstellers (§ 22 VwVfG, § 3 WoGG):</span> Name Neumann/Katharina, Geburtsdatum 14.04.1993, Anschrift Wittelsbacherallee 92, PLZ 60385, Wohnort Frankfurt am Main – alle vorhanden und nicht leer.</li><li><span class="bkey">Haushalt (§ 5 WoGG):</span> Keine weiteren Haushaltsmitglieder aus den Daten ersichtlich (Frage 06 alle null, Frage 07 false). Es gilt daher 1-Personen-Haushalt; eine ausdrückliche Zahl ist nicht zwingend erforderlich – kein Mangel.</li><li><span class="bkey">Miete (§ 9 WoGG):</span> Gesamtmiete 815,00 EUR/Monat &gt; 0 vorhanden. Es genügt ein Mietwert.</li><li><span class="bkey">Einkommen (§ 13, § 14 WoGG):</span> Art „Gehalt/Lohn“ nicht leer, Bruttobetrag 2380,00 EUR &gt; 0 vorhanden. Brutto- oder Nettobetrag genügt.</li></ul><p>Optionale Angaben (E-Mail, Staatsangehörigkeit, Telefon, Familienstand, Wohnfläche, IBAN etc.) sind für die formelle Vollständigkeit unbeachtlich. Hinweise auf Ausschlussgründe (z.B. Transferleistungen: verneint) wurden nicht als Mangel gewertet – Sache der materiellen Prüfung.</p><p>Ergebnis: Alle Pflichtdokumente und Pflichtangaben liegen vollständig und eindeutig vor. Antrag ist formell vollständig und bearbeitbar.</p></div>
+        </div>
+      <div class="schritt">
+        <div class="skopf">
+          <span class="sname">Materielle Prüfung (gesamt)</span>
+          <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span>
+          <span class="kb kb-bad">Ablehnung aus MP-2</span>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-1 · Fachliche Vorprüfung (Agent)</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Vorprüfung Wohngeldantrag – Testfall TF-16 (Katharina Neumann): Zur Berechnung freigegeben</p><p class="bkopf">1. Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland:</span> Wittelsbacherallee 92, 60385 Frankfurt am Main angegeben – belegt durch Antrag, Mietvertrag, Mietbescheinigung und Verdienstbescheinigung.</li><li><span class="bkey">Haushaltsgröße:</span> 1 Person (Antragstellerin als Hauptmieterin, keine weiteren Haushaltsmitglieder in Frage 06, keine weiteren Personen in Frage 07).</li><li><span class="bkey">Einkommen &gt; 0:</span> Monatlich 2.380,00 EUR Gehalt/Lohn, übereinstimmend belegt in Antrag Frage 12, Verdienstbescheinigung (08/2025–07/2026 je 2.380 EUR), 6 Gehaltsabrechnungen 02–07/2026 und Einkommenserklärung.</li><li><span class="bkey">Miete &gt; 0:</span> Gesamtmiete 815,00 EUR/Monat, Grundmiete 670,00 EUR/Monat; Antragstellerin ist Hauptmieterin seit 01.04.2024 und bewohnt die Wohnung laut Mietbescheinigung.</li></ul><p class="bkopf">2. Ausschlussgründe – kein konkreter Beleg</p><ul class="bl"><li><span class="bkey">SGB II / Bürgergeld (KdU):</span> Frage 10 „false“, Einkommenserklärung Arbeitslosengeld II 0,00 EUR.</li><li><span class="bkey">Grundsicherung/Sozialhilfe:</span> Frage 10 „false“, Einkommenserklärung Sozialhilfe 0,00 EUR.</li><li><span class="bkey">BAföG/BAB nach § 20 Abs. 2 WoGG:</span> Erwerbsstatus Arbeitnehmerin, Vollzeit, Einkommenserklärung BAföG 0,00 EUR – kein Beleg.</li><li><span class="bkey">Vermögen nach § 21 Nr. 3 WoGG:</span> Frage 20 „Vermögen oberhalb der maßgeblichen Grenze: false“, keine gegenteiligen Werte.</li></ul><p>Der nicht auswertbare Kontoauszug-Scan ist ein fehlender optionaler Nachweis, kein Ausschlussgrund. Die Einkommenshöhe allein ist kein Ausschlussgrund.</p><p class="bkopf">3. Tatsachenbasis für die Berechnung</p><ul class="bl"><li><span class="bkey">Miete rechnerisch plausibel und widerspruchsfrei:</span> 670 Grundmiete + 20 Müll + 15 Entwässerung + 20 Wasser + 5 Allgemeinstrom + 10 Hausreinigung/Winterdienst + 75 Heizkosten = 815 Gesamtmiete; Bruttokaltmiete 740,00 EUR nach Abzug Heizkosten. Warmwasser über Heizung ohne gesonderten Betrag, Garage/Stellplatz, Haushaltsenergie und Servicepauschale jeweils „false“. Wohnfläche 47 qm in Antrag, Mietvertrag und Mietbescheinigung identisch.</li><li>Rechnerwerte vollständig, belegt und widerspruchsfrei: PLZ 60385, 1 zu berücksichtigendes Mitglied, Steuern / Kranken-Pflege / Rentenbeiträge jeweils „true“ und durch Gehaltsabrechnungen bestätigt, Werbungskosten 1.230 EUR jährlich = 102,50 EUR monatlich, kein Unterhalt, keine Behinderung/Pflege, nicht alleinerziehend, kein Heimfall.</li></ul><p>Ergebnis der Vorprüfung: Keine Ausschlussgründe belegt, für die Berechnung erforderliche Werte liegen vollständig und stimmig vor. Über die Höhe des Anspruchs entscheidet die nachgelagerte Berechnung nach §§ 19, 21 WoGG.</p></div>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-2 · Wohngeldberechnung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><span class="kb kb-mid">rechnerischer Nichtanspruch</span></div>
+          <div class="btext"><p>Rechnerischer Nichtanspruch. Nach § 19 Abs. 2 WoGG i. V. m. Anlage 3 ergibt sich bei einer zu berücksichtigenden Miete von 744,60 Euro (berücksichtigungsfähige Miete 634,20 Euro zuzüglich Heizkostenkomponente 110,40 Euro nach § 12 Abs. 6 WoGG) und einem wohngeldrechtlichen Gesamteinkommen von 1.594,25 Euro (aus 2.380,00 Euro monatlichem Einkommen nach den Werbungskosten, pauschalen Abzügen und Freibeträgen der §§ 16 bis 18 WoGG) für 1 zu berücksichtigendes Haushaltsmitglied ein rechnerisches Wohngeld von 9 Euro monatlich. Der Betrag unterschreitet die Mindestgrenze von 10 Euro nach § 21 Nr. 1 WoGG; ein Wohngeldanspruch besteht daher nicht.</p><p>Ergänzende Hinweise: Die Bruttokaltmiete oder Belastung überschreitet den Höchstbetrag einschließlich Klimakomponente und wurde entsprechend begrenzt.</p><p>Orientierungsberechnung. Eine rechtsverbindliche Entscheidung trifft ausschließlich die zuständige Wohngeldbehörde.</p></div>
+        </div>
+      </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-bad">0 · nicht erkannt</span></span></div>
+        <p>Der erwartete Befund war die Erkennung des mangelhaften Scans (FP Kategorie 5) und eine entsprechende Nachforderung. Die Pipeline hat den Mangel zwar in der KP und FP erwaehnt, ihn aber als &#039;unbeachtlich&#039; bzw. &#039;nicht bewertbar&#039; abgetan und den Fall stattdessen bis zur materiellen Ablehnung (Kein Anspruch) durchgewinkt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle wesentlichen Tatsachenbehauptungen (Einkommen 2.380 EUR, Miete 815 EUR, Haushaltsgroesse 1) sind durch die Dokumente 1, 3, 4, 5 und 6 belegt. Die von MP-2 genannten Rechengroessen (Gesamteinkommen, zu beruecksichtigende Miete) sind gesetzeskonforme Ableitungen aus diesen belegten Werten.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Die Pipeline leitet das Ergebnis zwingend her: MP-1 stellt die Vollstaendigkeit der fuer die Rechnung notwendigen Daten fest (trotz des fehlenden Kontoauszugs), und MP-2 berechnet daraus einen Anspruch von 9 Euro, was korrekt zur Ablehnung wegen Unterschreitung der Bagatellgrenze (§ 21 Nr. 1 WoGG) fuehrt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="vb vb-neutral">– keine</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Materielle Prüfung">MP</span> <span class="kb kb-neut">nicht erkannt</span></span></div>
+        <p>Die Pipeline hat den erwarteten Befund (mangelhafter Scan des Kontoauszugs) in der KP und FP zwar registriert, aber ausdruecklich als fuer die jeweilige Phase unerheblich eingestuft und den Antrag stattdessen materiell abgelehnt.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 8</span><span class="mini"><span class="vb vb-rejected">✕ TECHN. FEHLER</span></span></summary>
+      <div class="dbody">
+        <p class="errtext mono">&quot;Your request is invalid or could not be processed by the service&quot;</p>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-bad">0 · nicht erkannt</span></span></div>
+        <p>Die Pipeline hat den Testfall nicht bearbeitet (alle Phasen &#039;NICHT ERREICHT&#039;). Der fachliche Zustand (FP-Mangel) wurde somit nicht erkannt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        <p>Da keine Phase ein Ergebnis geliefert hat und keine Tatsachenbehauptungen aufgestellt wurden, gilt der Lauf gemäß den Sonderregeln als technisch fehlgeschlagen.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        <p>Es wurde keine Begründung oder Ableitung erzeugt, da keine Phase ausgeführt wurde. Gemäß den Regeln für technisch fehlgeschlagene Läufe ist hier die Mindestpunktzahl zu vergeben.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★<span class="dim">★★★</span></span> <span class="b">1 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="vb vb-neutral">– keine</span> <span class="mut">· eskaliert in</span> <span class="vb vb-neutral">– keine</span> <span class="vb vb-neutral">–</span></span></div>
+        <p>Die Pipeline hat keine der Phasen durchlaufen, daher wurde der erwartete Befund (Qualitätsmangel des Kontoauszugs in der FP) nicht erkannt.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 9</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-neut">nicht erkannt</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung TF-16 – Katharina Neumann – kein Widerspruch festgestellt</p><ul class="bl"><li><span class="bkey">Name:</span> Antrag „Katharina Neumann“ = Verdienstbescheinigung „Neumann, Katharina“ = Mietbescheinigung „Neumann, Katharina“ = Mietvertrag „Katharina Neumann“ = Gehaltsabrechnungen „Neumann, Katharina“ = Einkommenserklärung „Neumann, Katharina“. Übereinstimmend.</li><li><span class="bkey">Geburtsdatum:</span> Antrag 14.04.1993 = Verdienstbescheinigung 14.04.1993 = Gehaltsabrechnungen 14.04.1993. Übereinstimmend.</li><li><span class="bkey">Anschrift:</span> Antrag Wittelsbacherallee 92, 60385 Frankfurt = Verdienstbescheinigung gleiche Anschrift = Mietbescheinigung gleiche Anschrift = Mietvertrag gleiche Anschrift = Gehaltsabrechnung implizit / Einkommenserklärung gleiche Anschrift. Kein abweichender Straßenname.</li><li><span class="bkey">Einkommen:</span> Antrag 2.380 € monatlich = Verdienstbescheinigung 2.380 € x12 = Gehaltsabrechnungen je 2.380 € = Einkommenserklärung je 2.380 €. Abweichung 0%, deutlich unter Richtwert 20%.</li><li><span class="bkey">Haushaltsgröße:</span> Keine weiteren Haushaltsmitglieder in Frage 06 / 07 benannt, keine Mitbewohner, keine Veränderung. 1-Personen-Haushalt (nur Antragstellerin) in sich schlüssig.</li><li><span class="bkey">Miete:</span> Antrag Gesamtmiete 815 € inkl. Heizkosten 75 € rechnerisch vereinbar mit Mietbescheinigung (670 +20+15+20+5+75+10 =815) und Mietvertrag (670+75+20+15+20+5+10=815). Wohnfläche jeweils 47 qm. Widerspruchsfrei.</li><li><span class="bkey">Bankverbindung:</span> Antrag-IBAN DE57500502010068241379 „an mich“ wird durch Gehaltsabrechnungen als Arbeitnehmerkonto derselben Person bestätigt. Vermieter-IBAN DE73500502010024791368 in Mietbescheinigung und Mietvertrag identisch, gehört erwartungsgemäß anderem Inhaber. Kein Hinweis auf fremde Person.</li><li><span class="bkey">Kontoauszug:</span> Keine auswertbaren Werte (alle null) – mangels vorhandener Werte nicht bewertbar, kein Widerspruch. Fehlendes bewertet formelle Prüfung.</li></ul><p>Ergebnis: Bei keiner Prüfung liegt ein Widerspruch aus zwei konkret vorhandenen Werten vor → APPROVED.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Formelle Pr&amp;uuml;fung TF-16 &amp;ndash; Katharina Neumann: APPROVED</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li>Wohngeldantrag liegt vor (Wohngeldantrag_Testfall16).</li><li>Einkommensnachweis liegt vor (Verdienstbescheinigung + Gehaltsabrechnungen + Einkommenserkl&amp;auml;rung mit Bruttolohn 2380 EUR monatlich).</li></ul><p class="bkopf">Pflichtangaben</p><ul class="bl"><li><span class="bkey">Name:</span> Neumann, Katharina vorhanden.</li><li><span class="bkey">Geburtsdatum:</span> 14.04.1993 vorhanden.</li><li><span class="bkey">Anschrift:</span> Wittelsbacherallee 92 vorhanden.</li><li><span class="bkey">PLZ/Wohnort:</span> 60385 Frankfurt am Main vorhanden.</li><li><span class="bkey">Haushalt:</span> keine weiteren Haushaltsmitglieder ersichtlich &amp;rarr; 1-Personen-Haushalt, keine Zahl erforderlich.</li><li><span class="bkey">Miete:</span> Gesamtmiete 815,00 EUR &gt; 0 vorhanden (&amp;sect; 9 WoGG).</li><li><span class="bkey">Einkommen:</span> Art &amp;bdquo;Gehalt/Lohn&amp;ldquo; + Brutto 2380,00 EUR &gt; 0 vorhanden (&amp;sect;&amp;sect; 13, 14 WoGG).</li></ul><p>Keine fehlenden Pflichtdokumente oder Pflichtfelder. Optionale Angaben und materielle Fragen (Ausschlussgr&amp;uuml;nde, Wirtschaftlichkeit) nicht gegenst&amp;auml;ndlich. Antrag ist formell vollst&amp;auml;ndig und bearbeitbar.</p></div>
+        </div>
+      <div class="schritt">
+        <div class="skopf">
+          <span class="sname">Materielle Prüfung (gesamt)</span>
+          <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span>
+          <span class="kb kb-bad">Ablehnung aus MP-2</span>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-1 · Fachliche Vorprüfung (Agent)</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Vorprüfung (Schritt 4 von 7) – Ergebnis: zur Berechnung freigegeben</p><p class="bkopf">1. Tatbestandsmerkmale</p><ul class="bl"><li><span class="bkey">Wohnung in Deutschland:</span> Wittelsbacherallee 92, 60385 Frankfurt am Main – § 3 WoGG anhand der Daten erfüllt.</li><li><span class="bkey">Haushaltsgröße:</span> 1 Person (nur Antragstellerin Katharina Neumann, keine weiteren Haushaltsmitglieder nach Frage 06/07) – § 5 WoGG erfüllt.</li><li><span class="bkey">Haushaltszugehörigkeit:</span> Antragstellerin ist Hauptmieterin der Wohnung, für die Wohngeld beantragt wird, Einzug 01.04.2024, bewohnt laut Mietbescheinigung – § 5 WoGG erfüllt.</li><li><span class="bkey">Einkommen &gt; 0:</span> monatlich 2.380,00 EUR brutto aus Gehalt/Lohn, belegt durch Verdienstbescheinigung (12x 2.380 EUR, 08/2025-07/2026), 6 Gehaltsabrechnungen und Einkommenserklärung – § 13 WoGG erfüllt.</li><li><span class="bkey">Miete &gt; 0:</span> Gesamtmiete 815,00 EUR/Monat laut Antrag, Mietbescheinigung und Mietvertrag übereinstimmend – § 9 WoGG erfüllt.</li></ul><p class="bkopf">2. Ausschlussgründe – kein konkreter Ausschluss belegt</p><ul class="bl"><li>Keine Transferleistungen nach Frage 10 (false), Einkommenserklärung Abschnitt 03: ALG II 0, Sozialhilfe 0, Arbeitslosengeld 0 – kein Ausschluss nach § 7 Abs. 1 WoGG.</li><li><span class="bkey">Kein BAföG/BAB:</span> Einkommenserklärung BAföG 0,00 EUR, kein Ausbildungsverhältnis – kein Ausschluss nach § 20 Abs. 2 WoGG.</li><li><span class="bkey">Vermögen:</span> Frage 20 „Vermögen oberhalb der maßgeblichen Grenze&quot; false, keine Vermögenswerte ausgewählt – keine konkrete Überschreitung nach § 21 Nr. 3 WoGG.</li><li>Kein sicher nicht erfülltes Kernmerkmal (Wohnsitz, Einkommen, Miete vorhanden).</li></ul><p class="bkopf">3. Tatsachenbasis für die Berechnung</p><ul class="bl"><li><span class="bkey">Miete rechnerisch plausibel und widerspruchsfrei:</span> 670 Grundmiete + 20 Müll + 15 Entwässerung + 20 Wasser + 5 Allgemeinstrom + 75 Heizung + 10 Hausreinigung/Winterdienst = 815 EUR; deckt sich in Antrag, Mietbescheinigung und Mietvertrag. Wohnfläche 47 qm übereinstimmend. Abzug Heizkosten 75 EUR ergibt Bruttokaltmiete 740 EUR für den Rechner; Warmwasser über Heizung ohne separaten Betrag.</li><li>Einkommen widerspruchsfrei und belegt; Werbungskosten 1.230 EUR jährlich laut Einkommenserklärung = 102,50 EUR monatlich; Steuern, Renten-, Kranken-/Pflegebeiträge positiv belegt.</li><li>Nicht maschinell lesbarer Kontoauszug-Scan ist ein fehlender optionaler Nachweis und kein Ausschlussgrund; Datengrundlage nach § 24 VwVfG für Ausschlussprüfung und Rechnerwerte ausreichend.</li></ul><p>Es wird kein Anspruch dem Grunde nach zugesagt und keine Bewilligung in Aussicht gestellt. Über die Höhe des Anspruchs entscheidet die nachgelagerte Berechnung nach §§ 19, 21 WoGG.</p></div>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-2 · Wohngeldberechnung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><span class="kb kb-mid">rechnerischer Nichtanspruch</span></div>
+          <div class="btext"><p>Rechnerischer Nichtanspruch. Nach § 19 Abs. 2 WoGG i. V. m. Anlage 3 ergibt sich bei einer zu berücksichtigenden Miete von 744,60 Euro (berücksichtigungsfähige Miete 634,20 Euro zuzüglich Heizkostenkomponente 110,40 Euro nach § 12 Abs. 6 WoGG) und einem wohngeldrechtlichen Gesamteinkommen von 1.594,25 Euro (aus 2.380,00 Euro monatlichem Einkommen nach den Werbungskosten, pauschalen Abzügen und Freibeträgen der §§ 16 bis 18 WoGG) für 1 zu berücksichtigendes Haushaltsmitglied ein rechnerisches Wohngeld von 9 Euro monatlich. Der Betrag unterschreitet die Mindestgrenze von 10 Euro nach § 21 Nr. 1 WoGG; ein Wohngeldanspruch besteht daher nicht.</p><p>Ergänzende Hinweise: Die Bruttokaltmiete oder Belastung überschreitet den Höchstbetrag einschließlich Klimakomponente und wurde entsprechend begrenzt.</p><p>Orientierungsberechnung. Eine rechtsverbindliche Entscheidung trifft ausschließlich die zuständige Wohngeldbehörde.</p></div>
+        </div>
+      </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-bad">0 · nicht erkannt</span></span></div>
+        <p>Die Pipeline hat den zentralen Befund (FP Kategorie 5 - Dokument nicht zuverlässig auswertbar) nicht erkannt. Stattdessen wurde der mangelhafte Scan in der FP ignoriert (APPROVED) und der Fall in der MP-2 aufgrund einer Einkommensberechnung abgelehnt, was nicht dem erwarteten Prüfungsabbruch in der FP entspricht.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle wesentlichen Tatsachenbehauptungen (Einkommen 2.380 EUR, Miete 815 EUR, Haushaltsgröße 1) sind durch die Dokumente 1, 3, 4, 5, 6 und 7 vollständig belegt. Die Feststellung zum Kontoauszug in Dokument 2 deckt sich mit der Beschreibung der Pipeline.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Die Pipeline führt schlüssig dar, warum sie zu ihren Ergebnissen kommt: Die KP sieht keinen Widerspruch in vorhandenen Werten, die FP sieht alle Pflichtfelder als befüllt an, und die MP-2 leitet den Nichtanspruch rechnerisch aus den zuvor genannten Werten her. Jeder Schritt ist nachvollziehbar dokumentiert.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="vb vb-neutral">– keine</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Materielle Prüfung">MP</span> <span class="kb kb-neut">nicht erkannt</span></span></div>
+        <p>Die Pipeline hat den erwarteten Befund (mangelhafter Scan des Kontoauszugs) zwar in der KP und MP-1 erwähnt, ihn dort aber ausdrücklich als unproblematisch bzw. nicht widersprüchlich eingestuft. Eine Beanstandung im Sinne einer Ablehnung oder Nachforderung erfolgte in keiner Phase.</p>
+      </div></div>
+      </div>
+    </details>
+    <details>
+      <summary><span class="chev">›</span><span class="mono b">Lauf 10</span><span class="mini"><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span> <span class="kb kb-neut">nicht erkannt</span></span></summary>
+      <div class="dbody">
+        
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Konsistenzprüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Konsistenzprüfung TF-16 – Katharina Neumann – kein Widerspruch festgestellt</p><ul class="bl"><li><span class="bkey">Name (§24 VwVfG):</span> Antrag „Katharina Neumann“ stimmt überein mit Verdienstbescheinigung „Neumann, Katharina“, Gehaltsabrechnungen „Neumann, Katharina“, Einkommenserklärung „Neumann, Katharina“, Mietbescheinigung „Neumann, Katharina“ und Mietvertrag „Katharina Neumann“. Kein Widerspruch.</li><li><span class="bkey">Geburtsdatum (§24 VwVfG):</span> Antrag 14.04.1993 = Verdienstbescheinigung 14.04.1993 = alle 6 Gehaltsabrechnungen 14.04.1993. Kein Widerspruch.</li><li><span class="bkey">Anschrift (§24 VwVfG):</span> Antrag Wittelsbacherallee 92, 60385 Frankfurt am Main = Mietbescheinigung Wittelsbacherallee 92, 60385 Frankfurt am Main = Verdienstbescheinigung gleiche Anschrift = Mietvertrag Wittelsbacherallee 92, 60385 Frankfurt am Main = Einkommenserklärung gleiche Anschrift. Kein abweichender Straßenname, keine abweichende Hausnummer/PLZ.</li><li><span class="bkey">Einkommen (§26 VwVfG):</span> Antrag 2.380,00 EUR monatlich = Verdienstbescheinigung 12x 2.380,00 EUR = Gehaltsabrechnungen 6x 2.380,00 EUR brutto = Einkommenserklärung 6x 2.380,00 EUR. Abweichung 0%, weit unter Richtwert ein Fünftel. Fehlender Nachweiszeitraum liegt nicht vor. Kein Widerspruch.</li><li><span class="bkey">Haushaltsgröße (§5 WoGG):</span> Keine weiteren Haushaltsmitglieder in Frage 06 benannt (alle null), Frage 07 „weitere Personen wohnen in der Wohnung: false“, Frage 09 keine Veränderung. Angabe 1-Personen-Haushalt passt zu benannten Personen. Kein Widerspruch.</li><li><span class="bkey">Miete (§9 WoGG):</span> Antrag Gesamtmiete 815,00 EUR ist rechnerisch vereinbar: Grundmiete 670,00 EUR (Mietvertrag + Mietbescheinigung) + Heizkosten 75,00 EUR + Wasser 20,00 EUR + Entwässerung 15,00 EUR + Müll 20,00 EUR + Allgemeinstrom 5,00 EUR + weitere Betriebskosten 10,00 EUR Hausreinigung/Winterdienst = 815,00 EUR. Wohnfläche 47 qm in allen Dokumenten identisch. Kein Widerspruch.</li><li><span class="bkey">Bankverbindung (§24 VwVfG):</span> Antrag IBAN DE57500502010068241379 = IBAN Arbeitnehmerkonto in allen Gehaltsabrechnungen. Gehört eindeutig zur Antragstellerin. Vermieter-IBAN DE73500502010024791368 in Mietvertrag und Mietbescheinigung identisch und als Vermieterkonto erklärt, kein Hinweis auf fremde Person beim Antragstellerkonto. Kontoauszug enthält keine auswertbaren Kontodaten (null) und ist daher nicht bewertbar, kein Widerspruch.</li></ul><p>Keine der beschriebenen Prüfungen ergab zwei konkret vorhandene, sich logisch ausschließende Werte. Fehlendes / null ist nicht bewertbar und steht APPROVED nicht entgegen.</p></div>
+        </div>
+        <div class="schritt">
+          <div class="skopf"><span class="sname">Formelle Prüfung</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p class="bkopf">Formelle Vollständigkeitsprüfung – Wohngeldantrag Katharina Neumann (TF-16)</p><p class="bkopf">Pflichtdokumente</p><ul class="bl"><li>Wohngeldantrag liegt vor (Wohngeldantrag_Testfall16...json, dokumenttyp Wohngeldantrag_fuer_den_Mietzuschuss).</li><li>Einkommensnachweis liegt vor (Verdienstbescheinigung mit 12x 2.380 EUR brutto, Gehaltsabrechnungen 02-07/2026, Einkommenserklärung vom 22.08.2026).</li></ul><p>Der nicht auswertbare Kontoauszug-Scan ist kein Pflichtdokument und begründet daher keinen Mangel.</p><p class="bkopf">Pflichtangaben</p><ul class="bl"><li><span class="bkey">Name:</span> Neumann, Katharina vorhanden.</li><li><span class="bkey">Geburtsdatum:</span> 14.04.1993 vorhanden.</li><li><span class="bkey">Anschrift:</span> Wittelsbacherallee 92 vorhanden.</li><li><span class="bkey">PLZ/ Wohnort:</span> 60385 Frankfurt am Main vorhanden.</li><li><span class="bkey">Haushalt:</span> keine weiteren Haushaltsmitglieder ersichtlich → 1-Personen-Haushalt, Zahl nicht zwingend erforderlich.</li><li><span class="bkey">Miete:</span> Gesamtmiete 815,00 EUR/Monat &gt; 0.</li><li><span class="bkey">Einkommen:</span> Art „Gehalt/Lohn“ nicht leer, Bruttobetrag 2.380,00 EUR &gt; 0.</li></ul><p>Alle Pflichtdokumente und Pflichtangaben nach §§ 22, 26 VwVfG, §§ 3, 5, 9, 13, 14 WoGG, § 23 WoGG liegen vor. Keine unklare Prüffrage. Antrag ist formell vollständig und bearbeitbar.</p></div>
+        </div>
+      <div class="schritt">
+        <div class="skopf">
+          <span class="sname">Materielle Prüfung (gesamt)</span>
+          <span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span>
+          <span class="kb kb-bad">Ablehnung aus MP-2</span>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-1 · Fachliche Vorprüfung (Agent)</span><span class="vb vb-approved" title="APPROVED">✓ APPROVED</span></div>
+          <div class="btext"><p>Vorprüfung (Schritt 4 von 7) – Ergebnis: zur Berechnung freigegeben</p><p class="bkopf">1. Tatbestandsmerkmale</p><ul class="bl"><li>Wohnung in Deutschland / Hauptwohnsitz (§ 3 WoGG): Wittelsbacherallee 92, 60385 Frankfurt am Main, als Hauptmieterin bewohnt – belegt durch Antrag Frage 02/21, Mietvertrag und Mietbescheinigung.</li><li><span class="bkey">Haushaltsgröße (§ 5 WoGG):</span> 1 Person, keine weiteren Haushaltsmitglieder (Frage 06 leer), keine weiteren Personen in der Wohnung (Frage 07 nein).</li><li><span class="bkey">Einkommen (§ 13 WoGG):</span> monatlich 2.380,00 EUR Gehalt/Lohn, belegt durch Antrag Frage 12, Verdienstbescheinigung 08/2025–07/2026, Gehaltsabrechnungen 02–07/2026 und Einkommenserklärung – widerspruchsfrei.</li><li><span class="bkey">Miete (§ 9 WoGG):</span> Gesamtmiete 815,00 EUR/Monat, belegt durch Antrag Frage 23, Mietbescheinigung und Mietvertrag mit in sich stimmiger Aufschlüsselung (670 Grundmiete + 75 Heizung + 20 Wasser + 15 Entwässerung + 20 Müll + 5 Allgemeinstrom + 10 weitere Betriebskosten = 815).</li><li><span class="bkey">Haushaltszugehörigkeit (§ 5 WoGG):</span> Antragstellerin = Hauptmieterin, Einzug 01.04.2024, Wohnung wird bewohnt.</li></ul><p>2. Ausschlussgründe: Kein Ausschlussgrund konkret belegt – Transferleistungen nach Frage 10 verneint, Einkommenserklärung weist ALG II/Sozialhilfe/BAföG mit 0,00 EUR aus, Vermögen oberhalb Grenze nach Frage 20 verneint, kein BAföG-/BAB-Sachverhalt ersichtlich, erwerbstätig als Arbeitnehmerin in Vollzeit.</p><p>3. Tatsachenbasis (§ 9 WoGG, § 24 VwVfG): Miete rechnerisch plausibel und über drei Quellen konsistent; Warmwasserkosten über Heizung enthalten, ohne gesonderten Betrag – kein Widerspruch. Einkommen, Abzüge (Steuern, Kranken-/Pflege- und Rentenbeiträge) und Werbungskosten (1.230 EUR jährlich = 102,50 EUR monatlich) belegt. Nicht auswertbarer Kontoauszug-Scan ist kein fehlender Pflichtwert für den Rechner.</p><p>Es wird kein Anspruch dem Grunde nach zugesagt und keine Bewilligung in Aussicht gestellt. Über die Höhe des Anspruchs entscheidet die nachgelagerte Berechnung nach §§ 19, 21 WoGG.</p></div>
+        </div>
+        <div class="schritt sub">
+          <div class="skopf"><span class="sname">MP-2 · Wohngeldberechnung</span><span class="vb vb-rejected" title="REJECTED">✕ REJECTED</span><span class="kb kb-mid">rechnerischer Nichtanspruch</span></div>
+          <div class="btext"><p>Rechnerischer Nichtanspruch. Nach § 19 Abs. 2 WoGG i. V. m. Anlage 3 ergibt sich bei einer zu berücksichtigenden Miete von 744,60 Euro (berücksichtigungsfähige Miete 634,20 Euro zuzüglich Heizkostenkomponente 110,40 Euro nach § 12 Abs. 6 WoGG) und einem wohngeldrechtlichen Gesamteinkommen von 1.594,25 Euro (aus 2.380,00 Euro monatlichem Einkommen nach den Werbungskosten, pauschalen Abzügen und Freibeträgen der §§ 16 bis 18 WoGG) für 1 zu berücksichtigendes Haushaltsmitglied ein rechnerisches Wohngeld von 9 Euro monatlich. Der Betrag unterschreitet die Mindestgrenze von 10 Euro nach § 21 Nr. 1 WoGG; ein Wohngeldanspruch besteht daher nicht.</p><p>Ergänzende Hinweise: Die Bruttokaltmiete oder Belastung überschreitet den Höchstbetrag einschließlich Klimakomponente und wurde entsprechend begrenzt.</p><p>Orientierungsberechnung. Eine rechtsverbindliche Entscheidung trifft ausschließlich die zuständige Wohngeldbehörde.</p></div>
+        </div>
+      </div>
+        <div class="judges"><div class="jt">AI as a Judge</div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">J1</span><span class="jname">Fehlererkennung</span><span class="jwert"><span class="kb kb-bad">0 · nicht erkannt</span></span></div>
+        <p>Die Pipeline hat den zentralen Befund (FP Kategorie 5 - Dokument nicht zuverlässig auswertbar) nicht erkannt. Stattdessen wurde der mangelhafte Scan in der FP ausdrücklich als &#039;kein Pflichtdokument&#039; und &#039;kein Mangel&#039; bewertet, was der Ground Truth widerspricht.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2A</span><span class="jname">Groundedness</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Alle von der Pipeline genannten Tatsachen (Einkommen 2.380 EUR, Miete 815 EUR, Haushaltsgröße 1) sind durch die Dokumente 1, 3, 4, 5, 6 und 7 vollständig belegt. Auch die Feststellung zum Zustand des Kontoauszugs entspricht der Beschreibung in Dokument 2.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">2B</span><span class="jname">Logische Gültigkeit</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        <p>Die Pipeline leitet ihr Ergebnis (REJECTED wegen KEIN_ANSPRUCH) schlüssig aus den zuvor festgestellten Tatsachen ab. Der Weg von den belegten Ausgangswerten über die gesetzlichen Rechenschritte bis zur Unterschreitung der 10-Euro-Grenze wird lückenlos und zwingend dargelegt.</p>
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">NV</span><span class="jname">Nachvollziehbarkeit (berechnet: Minimum aus 2A und 2B)</span><span class="jwert"><span class="stars">★★★★<span class="dim"></span></span> <span class="b">4 / 4</span></span></div>
+        
+      </div>
+      <div class="jblock">
+        <div class="jhead"><span class="jkurz">—</span><span class="jname">Phase der Erkennung</span><span class="jwert"><span class="vb vb-neutral">– keine</span> <span class="mut">· eskaliert in</span> <span class="ph" title="Materielle Prüfung">MP</span> <span class="kb kb-neut">nicht erkannt</span></span></div>
+        <p>Die Pipeline hat den erwarteten Befund (mangelhafter Scan des Kontoauszugs) zwar in allen Phasen thematisiert, ihn jedoch explizit als unerheblich für den Fortgang des Verfahrens eingestuft und nicht beanstandet. Da der Fehler somit nicht als Beanstandung benannt wurde, lautet das Ergebnis KEINE.</p>
+      </div></div>
+      </div>
+    </details>
+</section>
+</div>
+<div class="cg-footer"><div class="inner">
+  Automatisiert erzeugtes Prüfergebnis · bedarf der Bestätigung durch einen menschlichen Prüfer ·
+  <span class="mono">Testlauf TL-2026-09-09T12-35-28-982Z · erstellt 9.9.2026, 12:35:28</span>
+</div></div>
+<script type="application/json" id="testfall-daten">{"testlaufId":"TL-2026-09-09T12-35-28-982Z","zeitpunkt":"2026-09-09T12:35:28.982Z","fallId":"TF-16","fallName":"Katharina Neumann","art":"FP","kategorie":5,"kategorieName":"F-QUALITY Dokument nicht zuverlaessig auswertbar","istFehlerfall":true,"soll":{"kp":"APPROVED","fp":"REJECTED","mp":"NICHT ERWARTET"},"laeufeGesamt":10,"auswertbar":8,"technischeFehler":2,"exactMatch":0,"exactMatchPct":0,"betrag":{"soll":null,"istWerte":[0],"korrekt":null,"geprueft":0},"phasen":{"kp":{"modus":"verdict","reached":8,"correct":8,"basis":8,"pct":100,"soll":"APPROVED","verteilung":{"APPROVED":8}},"fp":{"modus":"verdict","reached":8,"correct":0,"basis":8,"pct":0,"soll":"REJECTED","verteilung":{"APPROVED":8}},"mp":{"modus":"nicht_erwartet","reached":8,"correct":0,"basis":8,"pct":0,"soll":"NICHT ERWARTET","verteilung":{"REJECTED":8}}},"judge":{"j1":{"n":8,"pass":0,"fail":8,"quote":0,"dist":[8,0],"ohne":0},"j2g":{"n":8,"mean":4,"dist":[0,0,0,8],"ohne":0},"j2l":{"n":8,"mean":4,"dist":[0,0,0,8],"ohne":0},"j2":{"n":8,"mean":4,"dist":[0,0,0,8],"ohne":0}},"kopplung":{"verteilung":{"nicht_erkannt":8},"erkannt":0,"eskaliertBeiErkannt":0,"phasentreu":0,"unplausibel":0},"laeufe":[{"runIndex":1,"technischerFehler":false,"sollKonform":false,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","mpAgentVerdict":"APPROVED","mpQuelle":"BERECHNUNG","berVerdict":"REJECTED","berKlasse":"KEIN_ANSPRUCH","istBetrag":0,"berechnungStatus":"KEIN_ANSPRUCH_BERECHNET","betragKorrekt":null,"j1":0,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"KEINE","eskaliertIn":"MP","kopplung":"nicht_erkannt"},{"runIndex":2,"technischerFehler":false,"sollKonform":false,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","mpAgentVerdict":"APPROVED","mpQuelle":"BERECHNUNG","berVerdict":"REJECTED","berKlasse":"KEIN_ANSPRUCH","istBetrag":0,"berechnungStatus":"KEIN_ANSPRUCH_BERECHNET","betragKorrekt":null,"j1":0,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"KEINE","eskaliertIn":"MP","kopplung":"nicht_erkannt"},{"runIndex":3,"technischerFehler":true,"sollKonform":false,"kpVerdict":null,"fpVerdict":null,"mpVerdict":null,"mpAgentVerdict":null,"mpQuelle":null,"berVerdict":null,"berKlasse":null,"istBetrag":null,"berechnungStatus":null,"betragKorrekt":null,"j1":0,"j2g":1,"j2l":1,"j2":1,"erkanntIn":"KEINE","eskaliertIn":"KEINE","kopplung":null},{"runIndex":4,"technischerFehler":false,"sollKonform":false,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","mpAgentVerdict":"APPROVED","mpQuelle":"BERECHNUNG","berVerdict":"REJECTED","berKlasse":"KEIN_ANSPRUCH","istBetrag":0,"berechnungStatus":"KEIN_ANSPRUCH_BERECHNET","betragKorrekt":null,"j1":0,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"KEINE","eskaliertIn":"MP","kopplung":"nicht_erkannt"},{"runIndex":5,"technischerFehler":false,"sollKonform":false,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","mpAgentVerdict":"APPROVED","mpQuelle":"BERECHNUNG","berVerdict":"REJECTED","berKlasse":"KEIN_ANSPRUCH","istBetrag":0,"berechnungStatus":"KEIN_ANSPRUCH_BERECHNET","betragKorrekt":null,"j1":0,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"KEINE","eskaliertIn":"MP","kopplung":"nicht_erkannt"},{"runIndex":6,"technischerFehler":false,"sollKonform":false,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","mpAgentVerdict":"APPROVED","mpQuelle":"BERECHNUNG","berVerdict":"REJECTED","berKlasse":"KEIN_ANSPRUCH","istBetrag":0,"berechnungStatus":"KEIN_ANSPRUCH_BERECHNET","betragKorrekt":null,"j1":0,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"KEINE","eskaliertIn":"MP","kopplung":"nicht_erkannt"},{"runIndex":7,"technischerFehler":false,"sollKonform":false,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","mpAgentVerdict":"APPROVED","mpQuelle":"BERECHNUNG","berVerdict":"REJECTED","berKlasse":"KEIN_ANSPRUCH","istBetrag":0,"berechnungStatus":"KEIN_ANSPRUCH_BERECHNET","betragKorrekt":null,"j1":0,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"KEINE","eskaliertIn":"MP","kopplung":"nicht_erkannt"},{"runIndex":8,"technischerFehler":true,"sollKonform":false,"kpVerdict":null,"fpVerdict":null,"mpVerdict":null,"mpAgentVerdict":null,"mpQuelle":null,"berVerdict":null,"berKlasse":null,"istBetrag":null,"berechnungStatus":null,"betragKorrekt":null,"j1":0,"j2g":1,"j2l":1,"j2":1,"erkanntIn":"KEINE","eskaliertIn":"KEINE","kopplung":null},{"runIndex":9,"technischerFehler":false,"sollKonform":false,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","mpAgentVerdict":"APPROVED","mpQuelle":"BERECHNUNG","berVerdict":"REJECTED","berKlasse":"KEIN_ANSPRUCH","istBetrag":0,"berechnungStatus":"KEIN_ANSPRUCH_BERECHNET","betragKorrekt":null,"j1":0,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"KEINE","eskaliertIn":"MP","kopplung":"nicht_erkannt"},{"runIndex":10,"technischerFehler":false,"sollKonform":false,"kpVerdict":"APPROVED","fpVerdict":"APPROVED","mpVerdict":"REJECTED","mpAgentVerdict":"APPROVED","mpQuelle":"BERECHNUNG","berVerdict":"REJECTED","berKlasse":"KEIN_ANSPRUCH","istBetrag":0,"berechnungStatus":"KEIN_ANSPRUCH_BERECHNET","betragKorrekt":null,"j1":0,"j2g":4,"j2l":4,"j2":4,"erkanntIn":"KEINE","eskaliertIn":"MP","kopplung":"nicht_erkannt"}]}</script>
+</body></html>
